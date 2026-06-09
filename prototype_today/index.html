@@ -152,7 +152,7 @@
   .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
   .shop-item { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 2px solid transparent; text-align: center; transition: all 0.2s; }
   .shop-item:hover { border-color: rgba(255,255,255,0.2); }
-  .shop-item-emoji { font-size: 28px; margin-bottom: 4px; }
+  .shop-item-emoji { font-size: 28px; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
   .shop-item-name { font-size: 12px; color: #fff; margin-bottom: 2px; }
   .shop-item-quality { font-size: 10px; margin-bottom: 4px; }
   .shop-item-price { font-size: 13px; color: #facc15; }
@@ -251,13 +251,78 @@
   .repair-bar-box { margin: 8px 0; }
   .repair-bar-bg { height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden; }
   .repair-bar-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 5px; transition: width 1s; }
+
+  /* Pixel art rendering */
+  .pixel-img { image-rendering: pixelated; image-rendering: crisp-edges; }
+  .char-canvas {
+    background: url('bg_cabin.png') center/cover no-repeat !important;
+    image-rendering: pixelated;
+  }
+  .creation-preview {
+    background: url('bg_cabin.png') center/cover no-repeat !important;
+    image-rendering: pixelated;
+  }
+  .creation-title {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    letter-spacing: 2px;
+  }
+  .panel-box {
+    background: rgba(20, 15, 35, 0.85) !important;
+    border: 1px solid rgba(168, 85, 247, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .cabin-slot {
+    background: rgba(30, 25, 45, 0.7) !important;
+    border: 2px dashed rgba(168, 85, 247, 0.2) !important;
+  }
+  .cabin-slot:hover {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+    background: rgba(50, 40, 70, 0.5) !important;
+  }
+  .sea-card {
+    background: rgba(20, 25, 50, 0.8) !important;
+    border: 2px solid rgba(80, 120, 200, 0.2) !important;
+  }
+  .shop-item {
+    background: rgba(25, 20, 40, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+  }
+  .cloth-card {
+    background: rgba(25, 20, 40, 0.8) !important;
+    border: 2px solid transparent !important;
+  }
+  .cloth-card.selected {
+    border-color: #f5576c !important;
+    background: rgba(245, 87, 108, 0.15) !important;
+    box-shadow: 0 0 12px rgba(245, 87, 108, 0.2);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  }
+  .btn-game:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .hp-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #f87171, #fca5a5) !important;
+  }
+  .shame-bar-fill {
+    background: linear-gradient(90deg, #4ade80, #facc15, #f87171, #a855f7) !important;
+  }
+  .dur-bar-fill { border-radius: 4px; }
+
 </style>
 </head>
 <body>
 
 <!-- ==================== 创角界面 ==================== -->
 <div id="creationScreen">
-  <h1>🎣 爆衣钓鱼王国</h1>
+  <h1 style="text-shadow: 0 0 20px rgba(168,85,247,0.5), 0 2px 4px rgba(0,0,0,0.3); font-size: 32px;">🎣 爆衣钓鱼王国</h1>
   <div class="subtitle">创建你的冒险者</div>
   <div class="creation-panel">
     <div class="creation-title">👤 角色创建</div>
@@ -358,7 +423,7 @@
     <!-- 船员配置区 -->
     <div class="crew-panel" id="crewConfigPanel">
       <div class="crew-header">
-        <div class="crew-avatar">💕</div>
+        <img id="crewAvatar" class="crew-avatar pixel-img" src="sprite_lily.png" style="width:48px;height:64px;image-rendering:pixelated;">
         <div class="crew-info">
           <div class="crew-name">船员配置</div>
           <div class="crew-stats" id="crewConfigText">尚未结婚，无法配置船员</div>
@@ -535,6 +600,37 @@
 </div>
 
 <script>
+// ========================
+// Sprite 预加载
+// ========================
+const SPRITES = {};
+function loadSprite(name, src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => { SPRITES[name] = img; resolve(); };
+    img.onerror = () => { console.warn('Failed to load sprite:', src); resolve(); };
+    img.src = src;
+  });
+}
+let spritesReady = false;
+async function preloadSprites() {
+  await Promise.all([
+    loadSprite('f', 'sprite_f.png'),
+    loadSprite('f_damaged', 'sprite_f_damaged.png'),
+    loadSprite('f_broken', 'sprite_f_broken.png'),
+    loadSprite('f_underwear', 'sprite_f_underwear.png'),
+    loadSprite('m', 'sprite_m.png'),
+    loadSprite('m_damaged', 'sprite_m_damaged.png'),
+    loadSprite('m_underwear', 'sprite_m_underwear.png'),
+    loadSprite('lily', 'sprite_lily.png'),
+    loadSprite('hein', 'sprite_hein.png'),
+    loadSprite('boss', 'sprite_boss.png'),
+  ]);
+  spritesReady = true;
+  console.log('All sprites loaded');
+}
+preloadSprites();
+
 // ========================
 // 常量数据
 // ========================
@@ -2159,138 +2255,87 @@ function randInt(min, max) {
 // ========================
 let animTime = 0;
 function drawCharacterOnContext(c, w, h, t, isPreview) {
-  const skin = SKIN_TONES[charData.skinTone];
-  const hairColor = HAIR_COLORS[charData.hairColor];
-  const eyeColor = EYE_COLORS[charData.eyeColor];
-  const breathY = Math.sin(t * 2) * 3;
-  const blink = Math.sin(t * 3) > 0.95 ? 0.1 : 1;
+  if (!spritesReady) {
+    // Fallback: draw loading text
+    c.fillStyle = '#fff';
+    c.font = '14px sans-serif';
+    c.textAlign = 'center';
+    c.fillText('Loading sprites...', w/2, h/2);
+    return;
+  }
 
-  // 身体
-  c.fillStyle = skin;
-  c.beginPath();
-  c.ellipse(w/2, h/2 + 40 + breathY, 60, 90, 0, 0, Math.PI * 2);
-  c.fill();
+  // Determine sprite based on gender and damage state
+  const gender = charData.gender === 'female' ? 'f' : 'm';
+  let spriteKey = gender;
 
-  // 衣服（根据破损程度变色）
-  const cloth = CLOTHES[selectedCloth];
-  let clothColor = cloth.color;
-  let brokenRatio = 0;
   if (!isPreview && player.dur) {
+    const cloth = CLOTHES[selectedCloth];
     const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
     const curTotal = player.dur.top + player.dur.bottom + player.dur.legs;
-    brokenRatio = 1 - (curTotal / maxTotal);
-    if (brokenRatio > 0.3) clothColor = mixColor(cloth.color, cloth.brokenColor, brokenRatio);
+    const brokenRatio = 1 - (curTotal / maxTotal);
+    if (brokenRatio > 0.6) {
+      spriteKey = gender + '_underwear';
+    } else if (brokenRatio > 0.3) {
+      spriteKey = gender + '_broken';
+    } else if (brokenRatio > 0.1) {
+      spriteKey = gender + '_damaged';
+    }
   }
 
-  c.fillStyle = clothColor;
-  c.globalAlpha = 0.8;
-  c.beginPath();
-  c.moveTo(w/2 - 50, h/2 + 20 + breathY);
-  c.lineTo(w/2 + 50, h/2 + 20 + breathY);
-  c.lineTo(w/2 + 40, h/2 + 140 + breathY);
-  c.lineTo(w/2 - 40, h/2 + 140 + breathY);
-  c.closePath();
-  c.fill();
-  c.globalAlpha = 1;
+  const sprite = SPRITES[spriteKey] || SPRITES[gender];
+  if (!sprite) return;
 
-  // 头
-  c.fillStyle = skin;
-  c.beginPath();
-  c.arc(w/2, h/2 - 50 + breathY * 0.5, 55, 0, Math.PI * 2);
-  c.fill();
+  // Breath animation (bob up and down)
+  const breathY = Math.sin(t * 2) * 4;
+  const scale = Math.min(w / 64, h / 96) * 0.75;
+  const bw = 64 * scale;
+  const bh = 96 * scale;
+  const bx = (w - bw) / 2;
+  const by = (h - bh) / 2 + breathY + 20;
 
-  // 头发
-  c.fillStyle = hairColor;
-  const hairStyle = charData.gender === 'female' ? HAIR_STYLES_F[charData.hairStyle] : HAIR_STYLES_M[charData.hairStyle];
-  if (hairStyle === '长发' || hairStyle === '中长发') {
-    c.beginPath();
-    c.ellipse(w/2, h/2 - 60 + breathY * 0.5, 65, 75, 0, 0, Math.PI * 2);
-    c.fill();
-    // 刘海
-    c.fillStyle = hairColor;
-    c.beginPath();
-    c.moveTo(w/2 - 50, h/2 - 80 + breathY * 0.5);
-    c.quadraticCurveTo(w/2, h/2 - 60 + breathY * 0.5, w/2 + 50, h/2 - 80 + breathY * 0.5);
-    c.lineTo(w/2 + 55, h/2 - 50 + breathY * 0.5);
-    c.lineTo(w/2 - 55, h/2 - 50 + breathY * 0.5);
-    c.closePath();
-    c.fill();
-  } else if (hairStyle === '短发' || hairStyle === '刺头') {
-    c.beginPath();
-    c.arc(w/2, h/2 - 55 + breathY * 0.5, 58, Math.PI, Math.PI * 2);
-    c.fill();
-  } else {
-    c.beginPath();
-    c.ellipse(w/2, h/2 - 55 + breathY * 0.5, 62, 70, 0, 0, Math.PI * 2);
-    c.fill();
+  c.imageSmoothingEnabled = false;
+  c.drawImage(sprite, bx, by, bw, bh);
+
+  // Blink overlay (simulate blinking with semi-transparent rect over eyes)
+  const blink = Math.sin(t * 3) > 0.95;
+  if (blink) {
+    c.fillStyle = 'rgba(255,230,220,0.7)';
+    const eyeW = bw * 0.18;
+    const eyeH = bh * 0.06;
+    const eyeY = by + bh * 0.19;
+    c.fillRect(bx + bw * 0.32, eyeY, eyeW, eyeH);
+    c.fillRect(bx + bw * 0.52, eyeY, eyeW, eyeH);
   }
 
-  // 眼睛
-  c.fillStyle = eyeColor;
-  const eyeY = h/2 - 55 + breathY * 0.5;
-  // 左眼
-  c.beginPath();
-  c.ellipse(w/2 - 22, eyeY, 10 * blink, 14 * blink, 0, 0, Math.PI * 2);
-  c.fill();
-  // 右眼
-  c.beginPath();
-  c.ellipse(w/2 + 22, eyeY, 10 * blink, 14 * blink, 0, 0, Math.PI * 2);
-  c.fill();
-  // 高光
-  c.fillStyle = '#fff';
-  c.beginPath();
-  c.arc(w/2 - 18, eyeY - 4, 4, 0, Math.PI * 2);
-  c.fill();
-  c.beginPath();
-  c.arc(w/2 + 26, eyeY - 4, 4, 0, Math.PI * 2);
-  c.fill();
-
-  // 眉毛
-  c.strokeStyle = hairColor;
-  c.lineWidth = 3;
-  c.beginPath();
-  c.moveTo(w/2 - 35, eyeY - 22);
-  c.lineTo(w/2 - 10, eyeY - 18);
-  c.stroke();
-  c.beginPath();
-  c.moveTo(w/2 + 10, eyeY - 18);
-  c.lineTo(w/2 + 35, eyeY - 22);
-  c.stroke();
-
-  // 嘴
-  c.strokeStyle = '#c0392b';
-  c.lineWidth = 2;
-  c.beginPath();
-  if (player.shame >= 60 && !isPreview) {
-    // 羞耻时的嘴型
-    c.arc(w/2, h/2 - 25 + breathY * 0.5, 8, 0, Math.PI);
-  } else {
-    c.arc(w/2, h/2 - 25 + breathY * 0.5, 8, 0.1, Math.PI - 0.1);
-  }
-  c.stroke();
-
-  // 脸红（羞耻时）
+  // Blush overlay based on shame
   if (!isPreview && player.shame > 20) {
-    const blushAlpha = Math.min(player.shame / 100, 0.6);
-    c.fillStyle = `rgba(255, 100, 100, ${blushAlpha})`;
+    const blushAlpha = Math.min(player.shame / 100, 0.5);
+    c.fillStyle = `rgba(255, 100, 120, ${blushAlpha})`;
+    const blushR = bw * 0.12;
     c.beginPath();
-    c.ellipse(w/2 - 40, h/2 - 35 + breathY * 0.5, 15, 10, 0, 0, Math.PI * 2);
+    c.ellipse(bx + bw * 0.22, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
     c.fill();
     c.beginPath();
-    c.ellipse(w/2 + 40, h/2 - 35 + breathY * 0.5, 15, 10, 0, 0, Math.PI * 2);
+    c.ellipse(bx + bw * 0.78, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
     c.fill();
   }
 
-  // 破损提示线
-  if (!isPreview && brokenRatio > 0.2) {
-    c.strokeStyle = '#ef4444';
-    c.lineWidth = 2;
-    c.setLineDash([5, 5]);
-    c.beginPath();
-    c.moveTo(w/2 - 30, h/2 + 50 + breathY);
-    c.lineTo(w/2 + 20, h/2 + 70 + breathY);
-    c.stroke();
-    c.setLineDash([]);
+  // Damage indicator lines
+  if (!isPreview) {
+    const cloth = CLOTHES[selectedCloth];
+    const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+    const curTotal = player.dur.top + player.dur.bottom + player.dur.legs;
+    const brokenRatio = 1 - (curTotal / maxTotal);
+    if (brokenRatio > 0.2) {
+      c.strokeStyle = '#ef4444';
+      c.lineWidth = 2;
+      c.setLineDash([5, 5]);
+      c.beginPath();
+      c.moveTo(bx + bw * 0.2, by + bh * 0.55);
+      c.lineTo(bx + bw * 0.5, by + bh * 0.65);
+      c.stroke();
+      c.setLineDash([]);
+    }
   }
 }
 
