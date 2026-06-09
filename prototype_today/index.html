@@ -224,7 +224,13 @@
   .inv-quality-dot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.5); }
 
   /* 战斗 */
-  .character-panel { width: 340px; background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); }
+  .battle-bg-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; background-repeat: no-repeat; z-index: 0; border-radius: 16px; transition: background-image 0.5s ease; }
+  .battle-bg-near { background-image: url('bg_sea.png'); }
+  .battle-bg-shallow { background-image: url('bg_sea2.png'); }
+  .battle-bg-mid { background-image: url('bg_sea2.png'); }
+  .battle-bg-deep { background-image: url('bg_sea3.png'); }
+  .battle-bg-sky { background-image: url('bg_sea4.png'); }
+  .character-panel { width: 340px; background: rgba(0,0,0,0.45); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); }
   .char-canvas { width: 100%; height: 400px; background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%); border-radius: 12px; position: relative; overflow: hidden; }
   .shame-bar-container { margin-top: 12px; }
   .bar-label { font-size: 12px; color: #ccc; margin-bottom: 4px; display: flex; justify-content: space-between; }
@@ -625,8 +631,9 @@
   </div>
 
   <!-- ========== 战斗 ========== -->
-  <div class="panel-box hidden" id="battlePanel">
-    <div class="game-container">
+  <div class="panel-box hidden" id="battlePanel" style="position:relative;overflow:hidden;">
+    <div class="battle-bg-wrap" id="battleBgWrap"></div>
+    <div class="game-container" style="position:relative;z-index:1;">
       <div class="character-panel">
         <div style="font-size:13px; color:#aaa; margin-bottom:8px;">👤 <span id="battleCharName">艾莉</span> <span style="color:#888;font-size:11px;">(装备: <span id="battleClothName">新手布衣</span>)</span></div>
         <canvas id="charCanvas" class="char-canvas" width="340" height="400"></canvas>
@@ -2181,7 +2188,13 @@ function startSailing() {
 // ========================
 let crewDamageTotal = 0;
 
+function setBattleBg() {
+  const bg = document.getElementById('battleBgWrap');
+  if (bg) bg.className = 'battle-bg-wrap battle-bg-' + (selectedSea || 'near');
+}
+
 function startFishingAtSea(sea) {
+  setBattleBg();
   showScreen('fishing');
   document.getElementById('fishingStatus').textContent = `已到达 ${sea.name}，准备钓鱼...`;
   document.getElementById('btnStartFish').classList.remove('hidden');
@@ -2224,6 +2237,7 @@ function endFishingSafe() {
 }
 
 function startBattle() {
+  setBattleBg();
   battleState = 'battling';
   crewDamageTotal = 0;
   const bossKey = (selectedSea === 'near' && questStep >= 4) ? 'tutorial' : 'abyss';

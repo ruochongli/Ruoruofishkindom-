@@ -714,24 +714,237 @@ def draw_bg_city():
     return img
 
 
-def draw_bg_sea():
-    W, H = 640, 480
-    img = create_image(W, H, (10, 20, 50, 255))
+def draw_fishing_scene(palette):
+    """
+    像素风钓鱼场景背景（参考图风格）
+    palette: 色调配置字典
+    """
+    W, H = 640, 360
+    img = create_image(W, H)
     d = ImageDraw.Draw(img)
-    for y in range(0, H):
-        c = int(10 + y * 0.15)
-        dr(d, 0, y, W, 1, (c//2, c, c+20, 255))
     import random
     random.seed(42)
-    for _ in range(30):
-        bx = random.randint(0, W-4)
-        by = random.randint(50, H-10)
-        dr(d, bx, by, 3, 3, (200, 230, 255, 100))
-    for rx in [0, 100, 250, 400, 550]:
-        rh = random.randint(30, 60)
-        dr(d, rx, H-rh, 80, rh, (20, 25, 40, 255))
-        dr(d, rx+10, H-rh+10, 60, rh-20, (30, 35, 50, 255))
+
+    sky_top = palette['sky_top']
+    sky_mid = palette['sky_mid']
+    sky_bot = palette['sky_bot']
+    mountain_far = palette['mountain_far']
+    mountain_mid = palette['mountain_mid']
+    mountain_near = palette['mountain_near']
+    forest = palette['forest']
+    water_top = palette['water_top']
+    water_bot = palette['water_bot']
+    wave = palette['wave']
+    sun = palette.get('sun', None)
+    aurora = palette.get('aurora', None)
+
+    # ===== 天空渐变 =====
+    sky_h = 160
+    for y in range(sky_h):
+        ratio = y / sky_h
+        r = int(sky_top[0] + (sky_mid[0] - sky_top[0]) * ratio)
+        g = int(sky_top[1] + (sky_mid[1] - sky_top[1]) * ratio)
+        b = int(sky_top[2] + (sky_mid[2] - sky_top[2]) * ratio)
+        dr(d, 0, y, W, 1, (r, g, b, 255))
+
+    # ===== 太阳/月亮 =====
+    if sun:
+        sx, sy, sr = sun
+        for dy in range(-sr, sr+1):
+            for dx in range(-sr, sr+1):
+                if dx*dx + dy*dy <= sr*sr:
+                    brightness = 1 - (dx*dx + dy*dy) / (sr*sr)
+                    c = int(200 + 55 * brightness)
+                    dot(d, sx+dx, sy+dy, (c, c, int(c*0.9), 255))
+
+    # ===== 极光 =====
+    if aurora:
+        for i in range(3):
+            ax = 80 + i * 200
+            ay = 20 + i * 15
+            for dy in range(0, 40):
+                for dx in range(0, 160):
+                    fade = max(0, 1 - abs(dx - 80) / 80) * max(0, 1 - dy / 40)
+                    if fade > 0.3 and random.random() < fade * 0.5:
+                        a = int(120 * fade)
+                        dot(d, ax+dx, ay+dy, (aurora[0], aurora[1], aurora[2], a))
+
+    # ===== 星星 =====
+    if palette.get('stars', False):
+        for _ in range(60):
+            sx = random.randint(0, W-1)
+            sy = random.randint(0, sky_h-40)
+            br = random.randint(180, 255)
+            dot(d, sx, sy, (br, br, int(br*0.95), 255))
+            if random.random() < 0.3:
+                dot(d, sx+1, sy, (br, br, int(br*0.95), 180))
+
+    # ===== 远山（多层，空气透视）=====
+    # 最远山
+    for i in range(8):
+        mx = i * 90 - 30
+        mh = random.randint(40, 70)
+        dr(d, mx, sky_h - mh, 100, mh, mountain_far)
+    # 中山
+    for i in range(6):
+        mx = i * 120 - 40
+        mh = random.randint(50, 85)
+        dr(d, mx, sky_h - mh, 130, mh, mountain_mid)
+    # 近山
+    for i in range(5):
+        mx = i * 150 - 50
+        mh = random.randint(60, 100)
+        dr(d, mx, sky_h - mh, 160, mh, mountain_near)
+
+    # ===== 树林剪影 =====
+    # 松树群
+    for i in range(20):
+        tx = random.randint(0, W-20)
+        ty = sky_h - random.randint(10, 30)
+        th = random.randint(30, 55)
+        # 树干
+        dr(d, tx+8, ty, 4, th, forest)
+        # 树冠三层
+        dr(d, tx, ty-10, 20, 15, forest)
+        dr(d, tx+2, ty-20, 16, 12, forest)
+        dr(d, tx+5, ty-28, 10, 10, forest)
+
+    # ===== 水面 =====
+    water_y = sky_h
+    water_h = H - water_y
+    for y in range(water_h):
+        ratio = y / water_h
+        r = int(water_top[0] + (water_bot[0] - water_top[0]) * ratio)
+        g = int(water_top[1] + (water_bot[1] - water_top[1]) * ratio)
+        b = int(water_top[2] + (water_bot[2] - water_top[2]) * ratio)
+        dr(d, 0, water_y+y, W, 1, (r, g, b, 255))
+
+    # ===== 水面波纹（参考图风格：白色水平短线）=====
+    for _ in range(80):
+        wx = random.randint(0, W-40)
+        wy = random.randint(water_y+5, H-5)
+        wl = random.randint(8, 30)
+        alpha = random.randint(40, 100)
+        dot(d, wx, wy, (wave[0], wave[1], wave[2], alpha))
+        for i in range(1, wl):
+            if random.random() < 0.7:
+                dot(d, wx+i, wy, (wave[0], wave[1], wave[2], alpha))
+
+    # ===== 岸边岩石（左下角+右下角）=====
+    # 左侧岩石群
+    for i in range(5):
+        rx = random.randint(-20, 80)
+        ry = random.randint(water_y-10, water_y+15)
+        rw = random.randint(30, 60)
+        rh = random.randint(20, 40)
+        dr(d, rx, ry, rw, rh, mountain_near)
+        dr(d, rx+5, ry+5, rw-10, rh-10, palette.get('rock_light', mountain_mid))
+    # 右侧岩石群
+    for i in range(5):
+        rx = random.randint(W-80, W+20)
+        ry = random.randint(water_y-10, water_y+15)
+        rw = random.randint(30, 60)
+        rh = random.randint(20, 40)
+        dr(d, rx, ry, rw, rh, mountain_near)
+        dr(d, rx+5, ry+5, rw-10, rh-10, palette.get('rock_light', mountain_mid))
+
+    # ===== 小船剪影（参考图中心元素）=====
+    bx, by = W//2 - 30, water_y + 20
+    # 船身
+    dr(d, bx, by+8, 60, 12, (40, 30, 25, 255))
+    dr(d, bx+5, by+6, 50, 4, (50, 40, 35, 255))
+    # 船内人物剪影
+    dr(d, bx+25, by-8, 8, 14, (30, 25, 20, 255))  # 身体
+    dr(d, bx+23, by-14, 12, 8, (30, 25, 20, 255))  # 头
+    # 鱼竿
+    for i in range(18):
+        dot(d, bx+30+i, by-14-int(i*0.4), (25, 20, 15, 255))
+    # 鱼线
+    for i in range(25):
+        dot(d, bx+48, by-6+i, (200, 220, 240, 80))
+
+    # ===== 水面倒影（参考图风格）=====
+    # 天空颜色在水面的柔和倒影
+    for y in range(water_y, water_y + 40):
+        for x in range(0, W, 4):
+            if random.random() < 0.15:
+                rc = random.randint(0, 30)
+                dot(d, x, y, (water_top[0]+rc, water_top[1]+rc, water_top[2]+rc, 60))
+
     return img
+
+
+def draw_bg_sea():
+    """近海区 - 白天/黄昏，温暖蓝绿色调"""
+    return draw_fishing_scene({
+        'sky_top': (100, 160, 220),
+        'sky_mid': (140, 190, 230),
+        'sky_bot': (180, 210, 240),
+        'mountain_far': (80, 120, 160),
+        'mountain_mid': (60, 100, 140),
+        'mountain_near': (40, 70, 100),
+        'forest': (30, 55, 40),
+        'water_top': (60, 130, 180),
+        'water_bot': (30, 70, 110),
+        'wave': (200, 230, 255),
+        'sun': (520, 40, 25),
+        'stars': False,
+    })
+
+
+def draw_bg_sea2():
+    """远海区 - 日落，粉紫色调"""
+    return draw_fishing_scene({
+        'sky_top': (120, 100, 160),
+        'sky_mid': (200, 140, 160),
+        'sky_bot': (240, 180, 170),
+        'mountain_far': (100, 80, 120),
+        'mountain_mid': (80, 60, 100),
+        'mountain_near': (60, 45, 80),
+        'forest': (50, 35, 55),
+        'water_top': (140, 100, 130),
+        'water_bot': (80, 50, 80),
+        'wave': (255, 220, 230),
+        'sun': (320, 50, 30),
+        'stars': False,
+    })
+
+
+def draw_bg_sea3():
+    """深海区 - 夜晚，深蓝星空"""
+    return draw_fishing_scene({
+        'sky_top': (15, 20, 50),
+        'sky_mid': (25, 35, 75),
+        'sky_bot': (40, 50, 90),
+        'mountain_far': (20, 25, 50),
+        'mountain_mid': (15, 20, 40),
+        'mountain_near': (10, 15, 30),
+        'forest': (8, 12, 25),
+        'water_top': (20, 35, 70),
+        'water_bot': (10, 15, 35),
+        'wave': (180, 210, 255),
+        'sun': (520, 35, 20),
+        'stars': True,
+    })
+
+
+def draw_bg_sea4():
+    """神秘海域 - 极光，紫绿色调"""
+    return draw_fishing_scene({
+        'sky_top': (20, 25, 55),
+        'sky_mid': (40, 35, 80),
+        'sky_bot': (60, 50, 90),
+        'mountain_far': (25, 30, 55),
+        'mountain_mid': (20, 25, 45),
+        'mountain_near': (15, 18, 35),
+        'forest': (12, 15, 28),
+        'water_top': (30, 40, 70),
+        'water_bot': (15, 20, 40),
+        'wave': (160, 255, 220),
+        'sun': (520, 30, 18),
+        'stars': True,
+        'aurora': (80, 255, 180),
+    })
 
 
 if __name__ == '__main__':
@@ -751,4 +964,7 @@ if __name__ == '__main__':
     save(draw_bg_cabin(), 'bg_cabin.png')
     save(draw_bg_city(), 'bg_city.png')
     save(draw_bg_sea(), 'bg_sea.png')
+    save(draw_bg_sea2(), 'bg_sea2.png')
+    save(draw_bg_sea3(), 'bg_sea3.png')
+    save(draw_bg_sea4(), 'bg_sea4.png')
     print("\nAll cute sprites generated!")
