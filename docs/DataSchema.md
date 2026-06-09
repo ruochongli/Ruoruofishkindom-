@@ -68,12 +68,12 @@ enum RelationshipStage {
 ```gdscript
 class_name AppearanceData
 
-var skin_tone: int = 2
+var skin_tone: int = 2          // 创角时自选，默认白皙偏粉
 var face_shape: int = 0
-var hair_style: int = 0
-var hair_color: Color = Color("#5c3a21")
+var hair_style: int = 0         // 创角时自选，见 ArtPlan.md 发型表
+var hair_color: Color           // 创角时自选（16色），无硬编码默认值
 var eye_style: int = 0
-var eye_color: Color = Color("#3b82f6")
+var eye_color: Color            // 创角时自选（16色），无硬编码默认值
 var eyebrow_style: int = 0
 var mouth_style: int = 0
 
