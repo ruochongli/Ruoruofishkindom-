@@ -179,7 +179,7 @@ namespace BurstFishingKingdom.Battle
             var crew = _crewSystem.GetActiveCrew();
             if (crew == null) return;
 
-            int dps = crew.GetCurrentDPS();
+            int dps = _crewSystem.GetCurrentDPS();
             var cd = crew.NPCData.CombatData;
             
             bool isCrit = UnityEngine.Random.value < cd.CritChance;

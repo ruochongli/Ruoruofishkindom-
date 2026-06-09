@@ -154,8 +154,9 @@ namespace BurstFishingKingdom.UI
             else
             {
                 // 重新设置船员为配偶
-                var spouse = FindObjectOfType<NPC.RomanceSystem>()?.GetRelationById(_crewSystem.SpouseId);
-                // TODO: 从NPCData加载
+                var spouseNPC = Resources.Load<NPC.NPCData>("Data/NPCs/" + _crewSystem.SpouseId);
+                if (spouseNPC != null)
+                    _crewSystem.SetCrew(spouseNPC);
             }
             
             UpdateCrewPanel();
