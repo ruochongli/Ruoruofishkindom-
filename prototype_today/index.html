@@ -34,6 +34,11 @@
   .creation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .creation-preview { background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; min-height: 380px; position: relative; border: 1px solid rgba(255,255,255,0.06); box-shadow: inset 0 2px 8px rgba(0,0,0,0.2); overflow: hidden; }
   .creation-preview::after { content: '✨'; position: absolute; font-size: 60px; opacity: 0.03; bottom: 20px; right: 20px; }
+  .char-preview-live2d { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+  .char-preview-img { width: 200px; height: auto; image-rendering: pixelated; animation: charBreath 3s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(168,85,247,0.25)); transition: filter 0.3s; }
+  .char-preview-img:hover { filter: drop-shadow(0 0 32px rgba(236,72,153,0.4)); }
+  @keyframes charBreath { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.03); } }
+  .char-preview-glow { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 140px; height: 20px; background: radial-gradient(ellipse, rgba(168,85,247,0.25), transparent 70%); animation: charBreath 3s ease-in-out infinite; pointer-events: none; }
   .creation-controls { display: flex; flex-direction: column; gap: 16px; padding: 8px 4px; }
   .ctrl-row { display: flex; align-items: center; gap: 12px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.03); transition: background 0.2s; }
   .ctrl-row:hover { background: rgba(255,255,255,0.06); }
@@ -378,7 +383,12 @@
   <div class="creation-panel">
     <div class="creation-title">✦ 角色创建 ✦</div>
     <div class="creation-grid">
-      <div class="creation-preview"><canvas id="previewCanvas" width="300" height="360"></canvas></div>
+      <div class="creation-preview">
+        <div class="char-preview-live2d">
+          <img id="previewCharImg" src="sprite_f.png" alt="角色预览" class="char-preview-img">
+          <div class="char-preview-glow"></div>
+        </div>
+      </div>
       <div class="creation-controls">
         <div class="ctrl-row">
           <label>性别</label>
@@ -1054,8 +1064,7 @@ let currentRecipe = null;
 
 const canvas = document.getElementById('charCanvas');
 const ctx = canvas.getContext('2d');
-const previewCanvas = document.getElementById('previewCanvas');
-const pCtx = previewCanvas.getContext('2d');
+const previewCharImg = document.getElementById('previewCharImg');
 
 // ========================
 // 创角
@@ -1109,33 +1118,60 @@ function cs(rgb,a){return a!==undefined?`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a}
 function drawCharacterPreview(c,w,h,t){
   const g=charData.gender,skin=hexToRgb(SKIN_TONES[charData.skinTone]||SKIN_TONES[0]),hair=hexToRgb(HAIR_COLORS[charData.hairColor]||HAIR_COLORS[0]),eye=hexToRgb(EYE_COLORS[charData.eyeColor]||EYE_COLORS[0]);
   const sd=shadeC(skin,-15),sm=shadeC(skin,-8),hd=shadeC(hair,-25),hl=shadeC(hair,20),ed=shadeC(eye,-30),ec=shadeC(eye,10);
-  const by=Math.sin(t*2)*3,sc=Math.min(w/64,h/96)*0.75,ox=(w-64*sc)/2,oy=(h-96*sc)/2+by+20;
+  const breath=Math.sin(t*2)*3,sc=Math.min(w/64,h/96)*0.75,ox=(w-64*sc)/2,oy=(h-96*sc)/2+breath+20;
+  // 眨眼周期: 每3秒眨眼一次, 持续0.15秒
+  const blinkCycle=(t*1.5)%3,blink=blinkCycle<0.15?Math.sin(blinkCycle/0.15*Math.PI):0;
   c.save();c.translate(ox,oy);c.scale(sc,sc);
   const R=(x,y,w,h,col,al)=>{c.fillStyle=al!==undefined?`rgba(${col[0]},${col[1]},${col[2]},${al})`:cs(col);c.fillRect(x,y,w,h);};
-  R(16,90,32,4,[0,0,0],0.15);
+  // 阴影
+  R(14,90,36,4,[0,0,0],0.1);
   if(g==='female'){
+    // 腿部(无过膝袜,基础款)
     R(24,64,7,22,skin);R(24,64,2,22,sd);R(33,64,7,22,skin);R(33,64,2,22,sd);
-    R(24,72,7,14,[255,240,245]);R(24,72,2,14,[235,220,230]);R(23,72,9,3,[255,200,215]);
-    R(33,72,7,14,[255,240,245]);R(33,72,2,14,[235,220,230]);R(32,72,9,3,[255,200,215]);
-    R(23,86,9,4,[30,28,40]);R(33,86,9,4,[30,28,40]);R(26,85,2,2,[220,60,90]);R(36,85,2,2,[220,60,90]);
+    // 小皮鞋
+    R(23,86,9,4,[30,28,40]);R(33,86,9,4,[30,28,40]);R(26,85,2,2,[220,60,90]);R(36,85,2,2,[220,60,90]);R(23,88,9,2,[50,45,65]);R(33,88,9,2,[50,45,65]);
+    // 白色内衣上衣
     R(22,38,20,14,[255,250,250]);R(22,38,20,3,[255,220,230]);R(22,48,20,3,[255,220,230]);
     R(29,42,6,4,[220,60,90]);R(30,41,4,2,[220,60,90]);R(31,40,2,2,[180,40,60]);
     R(23,36,2,6,[230,190,210]);R(39,36,2,6,[230,190,210]);
+    // 白色内衣下装
     R(24,52,16,10,[255,250,250]);R(24,52,16,2,[255,220,230]);R(26,60,12,2,[255,220,230]);
+    // 手臂
     R(14,38,6,20,skin);R(14,38,2,20,sd);R(44,38,6,20,skin);R(44,38,2,20,sd);
     R(14,54,6,2,[255,220,230]);R(44,54,6,2,[255,220,230]);
+    // 脖子
     R(30,32,4,6,sd);
-    R(20,10,24,20,skin);R(20,10,4,20,sd);R(40,10,4,20,sm);
-    R(22,28,20,6,skin);R(24,30,16,4,skin);R(26,32,12,2,skin);
+    // 耳朵
+    R(18,22,3,5,skin);R(43,22,3,5,skin);
+    // ====== 头部(改进脸型) ======
+    R(20,10,24,18,skin);R(20,10,4,18,sd);R(40,10,4,18,sm);
+    // 下巴更自然
+    R(22,26,20,4,skin);R(24,28,16,4,skin);R(26,30,12,2,skin);R(28,32,8,2,skin);
+    // ====== 眼睛(更精致+眨眼) ======
     const ey=17;
-    const scl=(x,y,w,h)=>R(x,y,w,h,[255,245,250]);
-    R(24,ey,9,2,ed);scl(24,ey+2,9,3);R(26,ey+2,5,3,eye);R(27,ey+3,3,2,ed);R(28,ey+2,2,2,[255,255,255]);R(26,ey+2,1,1,[255,255,255]);R(24,ey+5,9,1,eye);
-    R(23,ey-1,3,1,[50,45,65]);R(22,ey,2,1,[50,45,65]);R(30,ey-1,2,1,[50,45,65]);
-    R(35,ey,9,2,ed);scl(35,ey+2,9,3);R(37,ey+2,5,3,eye);R(38,ey+3,3,2,ed);R(39,ey+2,2,2,[255,255,255]);R(37,ey+2,1,1,[255,255,255]);R(35,ey+5,9,1,eye);
-    R(42,ey-1,3,1,[50,45,65]);R(44,ey,2,1,[50,45,65]);R(36,ey-1,2,1,[50,45,65]);
+    if(blink<0.5){
+      const scl=(x,y,w,h)=>R(x,y,w,h,[255,245,250]);
+      // 左眼
+      R(24,ey-1,9,3,ed);scl(24,ey+2,9,5);R(26,ey+2,5,5,eye);R(27,ey+3,3,3,ed);
+      R(28,ey+2,2,2,[255,255,255]);R(26,ey+4,1,1,[255,255,255]);R(24,ey+7,9,2,eye);
+      // 睫毛
+      R(23,ey-1,3,1,[50,45,65]);R(22,ey,2,1,[50,45,65]);R(30,ey-1,2,1,[50,45,65]);
+      // 右眼
+      R(35,ey-1,9,3,ed);scl(35,ey+2,9,5);R(37,ey+2,5,5,eye);R(38,ey+3,3,3,ed);
+      R(39,ey+2,2,2,[255,255,255]);R(37,ey+4,1,1,[255,255,255]);R(35,ey+7,9,2,eye);
+      R(42,ey-1,3,1,[50,45,65]);R(44,ey,2,1,[50,45,65]);R(36,ey-1,2,1,[50,45,65]);
+    }else{
+      // 闭眼
+      R(24,ey+3,9,2,ed);R(35,ey+3,9,2,ed);R(24,ey+5,9,1,[50,45,65]);R(35,ey+5,9,1,[50,45,65]);
+      R(26,ey+2,2,1,[50,45,65]);R(37,ey+2,2,1,[50,45,65]);
+    }
+    // 眉毛
     R(25,14,7,1,hd);R(26,13,2,1,hd);R(36,14,7,1,hd);R(38,13,2,1,hd);
+    // 嘴
     R(31,28,2,1,[220,100,120]);
-    c.globalAlpha=0.55;R(20,23,5,4,[255,160,170]);R(39,23,5,4,[255,160,170]);c.globalAlpha=1;
+    // 腮红
+    c.globalAlpha=0.4;R(20,23,5,4,[255,160,170]);R(39,23,5,4,[255,160,170]);c.globalAlpha=1;
+    // ====== 头发(更丰富层次) ======
     const hs=charData.hairStyle%5;
     if(hs===0||hs===2||hs===3){R(16,8,32,10,hair);R(14,10,4,30,hair);R(14,14,2,26,hd);R(48,10,4,30,hair);R(50,14,2,26,hd);R(12,20,4,35,hair);R(12,24,2,28,hd);R(48,20,4,35,hair);R(50,24,2,28,hd);}
     else if(hs===1){R(16,8,32,10,hair);R(16,12,4,18,hair);R(16,16,2,12,hd);R(44,12,4,18,hair);R(46,16,2,12,hd);}
@@ -1146,8 +1182,9 @@ function drawCharacterPreview(c,w,h,t){
     R(18,14,4,14,hair);R(42,14,4,14,hair);R(18,18,2,10,hd);R(44,18,2,10,hd);
     if(hs===2){R(10,16,6,20,hair);R(10,16,2,20,hd);R(48,16,6,20,hair);R(48,16,2,20,hd);R(10,20,4,4,[220,60,90]);R(50,20,4,4,[220,60,90]);}
     else if(hs===3){R(44,12,8,28,hair);R(46,14,2,24,hd);R(48,18,4,4,[220,60,90]);}
-    R(28,2,8,4,[30,28,40]);R(26,1,4,4,[30,28,40]);R(34,1,4,4,[30,28,40]);R(30,2,4,3,[220,60,90]);R(31,1,2,2,[255,215,100]);
+    // 无头饰(基础款)
   }else{
+    // 男性
     R(24,60,7,24,skin);R(24,60,2,24,sd);R(33,60,7,24,skin);R(33,60,2,24,sd);
     R(24,58,16,12,[255,250,250]);R(24,58,16,2,[255,220,230]);R(26,66,12,3,[255,220,230]);
     R(23,86,9,4,[30,28,40]);R(33,86,9,4,[30,28,40]);
@@ -1157,26 +1194,32 @@ function drawCharacterPreview(c,w,h,t){
     R(14,36,6,6,[255,250,250]);R(44,36,6,6,[255,250,250]);
     R(30,30,4,6,sd);
     R(22,8,20,22,skin);R(22,8,4,22,sd);R(38,8,4,22,sm);R(24,28,16,4,skin);
+    // 耳朵
+    R(20,18,2,5,skin);R(42,18,2,5,skin);
     const sclm=(x,y,w,h)=>R(x,y,w,h,[255,245,250]);
-    R(25,17,8,2,ed);sclm(25,19,8,3);R(27,19,4,3,eye);R(28,20,2,2,ed);R(29,19,1,1,[255,255,255]);R(25,22,8,1,eye);
-    R(35,17,8,2,ed);sclm(35,19,8,3);R(37,19,4,3,eye);R(38,20,2,2,ed);R(39,19,1,1,[255,255,255]);R(35,22,8,1,eye);
-    R(24,16,3,1,[50,45,65]);R(23,17,2,1,[50,45,65]);R(32,16,2,1,[50,45,65]);R(38,16,3,1,[50,45,65]);R(41,17,2,1,[50,45,65]);R(36,16,2,1,[50,45,65]);
+    if(blink<0.5){
+      R(25,17,8,2,ed);sclm(25,19,8,3);R(27,19,4,3,eye);R(28,20,2,2,ed);R(29,19,1,1,[255,255,255]);R(25,22,8,1,eye);
+      R(35,17,8,2,ed);sclm(35,19,8,3);R(37,19,4,3,eye);R(38,20,2,2,ed);R(39,19,1,1,[255,255,255]);R(35,22,8,1,eye);
+      R(24,16,3,1,[50,45,65]);R(23,17,2,1,[50,45,65]);R(32,16,2,1,[50,45,65]);R(38,16,3,1,[50,45,65]);R(41,17,2,1,[50,45,65]);R(36,16,2,1,[50,45,65]);
+    }else{
+      R(25,19,8,2,ed);R(35,19,8,2,ed);R(25,21,8,1,[50,45,65]);R(35,21,8,1,[50,45,65]);
+    }
     R(24,14,8,1,hd);R(25,13,3,1,hd);R(36,14,8,1,hd);R(38,13,3,1,hd);
     R(31,27,2,1,[220,100,120]);
-    c.globalAlpha=0.5;R(20,22,5,4,[255,160,170]);R(39,22,5,4,[255,160,170]);c.globalAlpha=1;
+    c.globalAlpha=0.4;R(20,22,5,4,[255,160,170]);R(39,22,5,4,[255,160,170]);c.globalAlpha=1;
     const mh=charData.hairStyle%4;
     if(mh===0){R(20,2,24,10,hair);R(18,6,5,18,hair);R(41,6,5,18,hair);R(16,10,4,14,hair);R(44,10,4,14,hair);R(22,4,20,6,hl);R(24,6,4,4,hd);R(36,6,4,4,hd);R(38,0,3,3,hl);}
     else if(mh===1){R(18,2,28,10,hair);R(16,6,5,22,hair);R(43,6,5,22,hair);R(14,12,4,16,hd);R(46,12,4,16,hd);R(20,4,24,6,hl);R(22,6,4,4,hd);R(38,6,4,4,hd);R(40,0,3,3,hl);}
     else if(mh===2){R(20,2,24,10,hair);R(18,4,6,8,hl);R(40,4,6,8,hl);R(16,6,4,6,hair);R(44,6,4,6,hair);R(22,0,4,4,hl);R(36,0,4,4,hl);R(30,0,4,6,hl);}
     else{R(20,2,24,10,hair);R(18,6,5,18,hair);R(41,6,5,18,hair);R(16,10,4,12,hd);R(44,10,4,12,hd);R(22,4,20,6,hl);}
   }
-  R(28,34,8,1,[255,215,100]);R(31,35,2,2,[220,60,90]);
   c.restore();
 }
 function drawPreview(){
-  const w=previewCanvas.width,h=previewCanvas.height;
-  pCtx.clearRect(0,0,w,h);
-  drawCharacterPreview(pCtx,w,h,previewTime);
+  if(previewCharImg){
+    const gender=charData.gender==='female'?'f':'m';
+    previewCharImg.src='sprite_'+gender+'.png';
+  }
 }
 function animatePreview() { previewTime += 0.016; drawPreview(); requestAnimationFrame(animatePreview); }
 
