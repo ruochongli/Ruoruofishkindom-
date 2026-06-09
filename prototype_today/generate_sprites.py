@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-生成若若的钓鱼王国 - 像素风格角色精灵图 V3
-超萌可爱风 / 大眼睫毛 / 粉嫩腮红 / 樱桃小嘴 / 白色内衣
+生成若若的钓鱼王国 - 像素风格角色精灵图 V4
+基础款 / 无兔耳 / 无过膝袜 / 白色内衣
 """
 from PIL import Image, ImageDraw
 import os
@@ -87,15 +87,7 @@ def draw_female_cute(dress_type='full', damaged=False):
     dr(d, 33, 64, 7, 22, P['leg'])
     dr(d, 33, 64, 2, 22, P['leg_dark'])
 
-    # 白色过膝袜
-    dr(d, 24, 72, 7, 14, P['sock'])
-    dr(d, 24, 72, 2, 14, P['sock_dark'])
-    dr(d, 23, 72, 9, 3, P['sock_lace'])
-    dr(d, 33, 72, 7, 14, P['sock'])
-    dr(d, 33, 72, 2, 14, P['sock_dark'])
-    dr(d, 32, 72, 9, 3, P['sock_lace'])
-
-    # 小皮鞋
+    # 小皮鞋（基础款无袜子）
     dr(d, 23, 86, 9, 4, P['black'])
     dr(d, 33, 86, 9, 4, P['black'])
     dr(d, 26, 85, 2, 2, P['ribbon'])
@@ -229,18 +221,7 @@ def draw_female_cute(dress_type='full', damaged=False):
     dr(d, 18, 18, 2, 10, P['hair_dark'])
     dr(d, 44, 18, 2, 10, P['hair_dark'])
 
-    # 头饰
-    dr(d, 28, 2, 8, 4, P['black'])
-    dr(d, 26, 1, 4, 4, P['black'])
-    dr(d, 34, 1, 4, 4, P['black'])
-    dr(d, 30, 2, 4, 3, P['ribbon'])
-    dr(d, 31, 1, 2, 2, P['gold'])
-    dr(d, 27, 0, 2, 2, P['lace'])
-    dr(d, 35, 0, 2, 2, P['lace'])
-
-    # 项链
-    dr(d, 28, 34, 8, 1, P['gold'])
-    dr(d, 31, 35, 2, 2, P['ribbon'])
+    # 无头饰 / 无项链（基础款）
 
     return img
 
