@@ -343,6 +343,166 @@ def draw_male_cute(dress_type='full', damaged=False):
     return img
 
 
+# ========== 创角立绘预览（128x192 精细版）==========
+def draw_female_portrait():
+    W, H = 128, 192
+    img = create_image(W, H)
+    d = ImageDraw.Draw(img)
+    s = P['skin']; sd = P['skin_shade']; sm = P['skin_mid']
+    h = P['hair']; hd = P['hair_dark']; hl = P['hair_shine']
+    e = P['eye_red']; ed = P['eye_dark']; el = P['eye_line']
+    c = P['cloth']; cl = P['lace']; cd = P['lace_dark']
+    r = P['ribbon']; rd = P['ribbon_dark']
+    b = P['black']; m = P['mouth']; sh = P['shadow']
+
+    # 阴影
+    dr(d, 28, 180, 72, 8, sh)
+
+    # 腿
+    dr(d, 48, 128, 14, 44, s); dr(d, 48, 128, 4, 44, sd)
+    dr(d, 66, 128, 14, 44, s); dr(d, 66, 128, 4, 44, sd)
+
+    # 鞋子
+    dr(d, 46, 172, 18, 8, b); dr(d, 66, 172, 18, 8, b)
+    dr(d, 52, 170, 4, 4, r); dr(d, 72, 170, 4, 4, r)
+    dr(d, 46, 176, 18, 4, (50,45,65)); dr(d, 66, 176, 18, 4, (50,45,65))
+
+    # 白色内衣
+    dr(d, 44, 76, 40, 28, c); dr(d, 44, 76, 40, 6, cl); dr(d, 44, 100, 40, 6, cl)
+    dr(d, 58, 84, 12, 8, r); dr(d, 60, 82, 8, 4, r); dr(d, 62, 80, 4, 4, rd)
+    dr(d, 46, 72, 4, 12, cd); dr(d, 78, 72, 4, 12, cd)
+    dr(d, 48, 104, 32, 20, c); dr(d, 48, 104, 32, 4, cl); dr(d, 52, 120, 24, 4, cl)
+
+    # 手臂
+    dr(d, 28, 76, 12, 40, s); dr(d, 28, 76, 4, 40, sd)
+    dr(d, 88, 76, 12, 40, s); dr(d, 88, 76, 4, 40, sd)
+    dr(d, 28, 108, 12, 4, cl); dr(d, 88, 108, 12, 4, cl)
+
+    # 脖子
+    dr(d, 60, 64, 8, 12, sd)
+
+    # 耳朵
+    dr(d, 36, 44, 6, 10, s); dr(d, 86, 44, 6, 10, s)
+
+    # 脸
+    dr(d, 40, 20, 48, 36, s); dr(d, 40, 20, 8, 36, sd); dr(d, 80, 20, 8, 36, sm)
+    dr(d, 44, 52, 40, 8, s); dr(d, 48, 56, 32, 8, s); dr(d, 52, 60, 24, 4, s); dr(d, 56, 64, 16, 4, s)
+
+    # 眼睛
+    ey = 34
+    # 左眼
+    dr(d, 48, ey-2, 18, 6, ed); dr(d, 48, ey+4, 18, 10, (255,245,250))
+    dr(d, 52, ey+4, 10, 10, e); dr(d, 54, ey+6, 6, 6, ed)
+    dr(d, 56, ey+4, 4, 4, (255,255,255)); dr(d, 52, ey+8, 2, 2, (255,255,255))
+    dr(d, 48, ey+14, 18, 4, e)
+    dr(d, 46, ey-2, 6, 2, el); dr(d, 44, ey, 4, 2, el); dr(d, 64, ey-2, 4, 2, el)
+    # 右眼
+    dr(d, 70, ey-2, 18, 6, ed); dr(d, 70, ey+4, 18, 10, (255,245,250))
+    dr(d, 74, ey+4, 10, 10, e); dr(d, 76, ey+6, 6, 6, ed)
+    dr(d, 78, ey+4, 4, 4, (255,255,255)); dr(d, 74, ey+8, 2, 2, (255,255,255))
+    dr(d, 70, ey+14, 18, 4, e)
+    dr(d, 84, ey-2, 6, 2, el); dr(d, 88, ey, 4, 2, el); dr(d, 72, ey-2, 4, 2, el)
+
+    # 眉毛
+    dr(d, 50, 28, 14, 2, hd); dr(d, 52, 26, 4, 2, hd)
+    dr(d, 72, 28, 14, 2, hd); dr(d, 76, 26, 4, 2, hd)
+
+    # 嘴
+    dr(d, 62, 56, 4, 2, m)
+
+    # 腮红
+    for x in range(40, 50):
+        for y in range(46, 54):
+            dot(d, x, y, (255, 160, 170, 100))
+    for x in range(78, 88):
+        for y in range(46, 54):
+            dot(d, x, y, (255, 160, 170, 100))
+
+    # 头发
+    dr(d, 32, 16, 64, 20, h); dr(d, 28, 20, 8, 60, h); dr(d, 28, 28, 4, 52, hd)
+    dr(d, 96, 20, 8, 60, h); dr(d, 100, 28, 4, 52, hd)
+    dr(d, 24, 40, 8, 70, h); dr(d, 24, 48, 4, 56, hd)
+    dr(d, 96, 40, 8, 70, h); dr(d, 100, 48, 4, 56, hd)
+
+    dr(d, 36, 8, 56, 20, h); dr(d, 40, 4, 48, 12, hl); dr(d, 44, 6, 40, 8, h)
+    dr(d, 40, 12, 48, 16, h); dr(d, 44, 16, 12, 10, hl); dr(d, 60, 16, 12, 10, hl)
+    dr(d, 76, 16, 8, 10, hl); dr(d, 40, 20, 48, 4, hd); dr(d, 36, 24, 6, 12, h)
+    dr(d, 86, 24, 6, 12, h)
+
+    dr(d, 76, 0, 6, 8, h); dr(d, 78, 0, 4, 4, hl)
+
+    dr(d, 36, 28, 8, 28, h); dr(d, 84, 28, 8, 28, h)
+    dr(d, 36, 36, 4, 20, hd); dr(d, 88, 36, 4, 20, hd)
+
+    return img
+
+
+def draw_male_portrait():
+    W, H = 128, 192
+    img = create_image(W, H)
+    d = ImageDraw.Draw(img)
+    s = P['skin']; sd = P['skin_shade']; sm = P['skin_mid']
+    h = P['hair']; hd = P['hair_dark']; hl = P['hair_shine']
+    e = P['eye_red']; ed = P['eye_dark']; el = P['eye_line']
+    c = P['cloth']; cl = P['lace']; cd = P['lace_dark']
+    r = P['ribbon']; rd = P['ribbon_dark']
+    b = P['black']; m = P['mouth']; sh = P['shadow']
+
+    dr(d, 28, 180, 72, 8, sh)
+
+    dr(d, 48, 120, 14, 48, s); dr(d, 48, 120, 4, 48, sd)
+    dr(d, 66, 120, 14, 48, s); dr(d, 66, 120, 4, 48, sd)
+
+    dr(d, 46, 172, 18, 8, b); dr(d, 66, 172, 18, 8, b)
+
+    dr(d, 48, 116, 32, 24, c); dr(d, 48, 116, 32, 4, cl); dr(d, 52, 132, 24, 6, cl)
+    dr(d, 48, 140, 32, 16, c); dr(d, 48, 140, 32, 4, cl); dr(d, 52, 152, 24, 4, cl)
+
+    dr(d, 56, 80, 16, 8, r); dr(d, 46, 76, 4, 12, cd); dr(d, 78, 76, 4, 12, cd)
+    dr(d, 44, 72, 40, 28, c); dr(d, 44, 72, 40, 6, cl); dr(d, 44, 96, 40, 6, cl)
+
+    dr(d, 28, 72, 12, 44, s); dr(d, 28, 72, 4, 44, sd)
+    dr(d, 88, 72, 12, 44, s); dr(d, 88, 72, 4, 44, sd)
+    dr(d, 28, 72, 12, 12, c); dr(d, 88, 72, 12, 12, c)
+
+    dr(d, 60, 60, 8, 12, sd)
+
+    dr(d, 40, 16, 48, 40, s); dr(d, 40, 16, 8, 40, sd); dr(d, 80, 16, 8, 40, sm)
+    dr(d, 44, 52, 40, 8, s); dr(d, 48, 56, 32, 8, s)
+
+    ey = 30
+    dr(d, 50, ey-2, 16, 6, ed); dr(d, 50, ey+4, 16, 8, (255,245,250))
+    dr(d, 54, ey+4, 8, 8, e); dr(d, 56, ey+6, 4, 4, ed)
+    dr(d, 58, ey+4, 2, 2, (255,255,255)); dr(d, 54, ey+8, 2, 2, (255,255,255))
+    dr(d, 50, ey+12, 16, 4, e)
+    dr(d, 48, ey-2, 6, 2, el); dr(d, 46, ey, 4, 2, el); dr(d, 64, ey-2, 4, 2, el)
+
+    dr(d, 70, ey-2, 16, 6, ed); dr(d, 70, ey+4, 16, 8, (255,245,250))
+    dr(d, 74, ey+4, 8, 8, e); dr(d, 76, ey+6, 4, 4, ed)
+    dr(d, 78, ey+4, 2, 2, (255,255,255)); dr(d, 74, ey+8, 2, 2, (255,255,255))
+    dr(d, 70, ey+12, 16, 4, e)
+    dr(d, 84, ey-2, 6, 2, el); dr(d, 88, ey, 4, 2, el); dr(d, 72, ey-2, 4, 2, el)
+
+    dr(d, 50, 26, 14, 2, hd); dr(d, 52, 24, 4, 2, hd)
+    dr(d, 72, 26, 14, 2, hd); dr(d, 76, 24, 4, 2, hd)
+
+    dr(d, 62, 54, 4, 2, m)
+
+    for x in range(40, 50):
+        for y in range(44, 52):
+            dot(d, x, y, (255, 160, 170, 90))
+    for x in range(78, 88):
+        for y in range(44, 52):
+            dot(d, x, y, (255, 160, 170, 90))
+
+    dr(d, 40, 4, 48, 20, h); dr(d, 36, 12, 10, 36, h); dr(d, 82, 12, 10, 36, h)
+    dr(d, 32, 20, 8, 28, h); dr(d, 88, 20, 8, 28, h)
+    dr(d, 44, 8, 40, 12, hl); dr(d, 48, 12, 8, 8, hd); dr(d, 72, 12, 8, 8, hd)
+    dr(d, 40, 20, 48, 4, hd); dr(d, 76, 0, 6, 8, hl)
+
+    return img
+
+
 def draw_npc_lily():
     W, H = 48, 64
     img = create_image(W, H)
@@ -547,6 +707,8 @@ if __name__ == '__main__':
     save(draw_male_cute('full', False), 'sprite_m.png')
     save(draw_male_cute('full', True), 'sprite_m_damaged.png')
     save(draw_male_cute('underwear', False), 'sprite_m_underwear.png')
+    save(draw_female_portrait(), 'char_preview_f.png')
+    save(draw_male_portrait(), 'char_preview_m.png')
     save(draw_npc_lily(), 'sprite_lily.png')
     save(draw_npc_hein(), 'sprite_hein.png')
     save(draw_boss(), 'sprite_boss.png')
