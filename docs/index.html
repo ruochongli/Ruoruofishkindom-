@@ -1,0 +1,3684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>若若的钓鱼王国 - 原型验证 v2.0</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #eee;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 28px; margin-bottom: 8px;
+    background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-size: 13px; color: #aaa; margin-bottom: 16px; }
+  .game-container { display: flex; gap: 20px; width: 100%; max-width: 1000px; }
+
+  /* 创角 */
+  #creationScreen { animation: fadeIn 0.6s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .creation-panel { width: 100%; max-width: 820px; background: rgba(20,20,40,0.6); border-radius: 24px; padding: 32px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05); backdrop-filter: blur(10px); position: relative; overflow: hidden; }
+  .creation-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(168,85,247,0.4), transparent); }
+  .creation-title { font-size: 24px; text-align: center; margin-bottom: 24px; color: #fff; font-weight: 600; letter-spacing: 2px; background: linear-gradient(90deg, #c4b5fd, #f9a8d4, #c4b5fd); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
+  @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+  .creation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .creation-preview { background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; min-height: 380px; position: relative; border: 1px solid rgba(255,255,255,0.06); box-shadow: inset 0 2px 8px rgba(0,0,0,0.2); overflow: hidden; }
+  .creation-preview::after { content: '✨'; position: absolute; font-size: 60px; opacity: 0.03; bottom: 20px; right: 20px; }
+  .char-preview-live2d { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+  .char-preview-img { width: 240px; height: auto; image-rendering: pixelated; animation: charBreath 3s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(168,85,247,0.25)); transition: filter 0.3s; }
+  .char-preview-img:hover { filter: drop-shadow(0 0 32px rgba(236,72,153,0.4)); }
+  @keyframes charBreath { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.03); } }
+  .char-preview-glow { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 140px; height: 20px; background: radial-gradient(ellipse, rgba(168,85,247,0.25), transparent 70%); animation: charBreath 3s ease-in-out infinite; pointer-events: none; }
+  .creation-controls { display: flex; flex-direction: column; gap: 16px; padding: 8px 4px; }
+  .ctrl-row { display: flex; align-items: center; gap: 12px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.03); transition: background 0.2s; }
+  .ctrl-row:hover { background: rgba(255,255,255,0.06); }
+  .ctrl-row label { width: 60px; font-size: 13px; color: #a5b4fc; font-weight: 500; }
+  .ctrl-row input[type="text"] { flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.25); color: #fff; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+  .ctrl-row input[type="text"]:focus { outline: none; border-color: rgba(168,85,247,0.5); box-shadow: 0 0 0 3px rgba(168,85,247,0.1); }
+  .gender-btn { padding: 8px 22px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #aaa; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+  .gender-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .gender-btn.selected { background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(168,85,247,0.3); }
+  .color-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  .color-dot:hover { transform: scale(1.2); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .color-dot.selected { border-color: #fff; box-shadow: 0 0 0 3px rgba(168,85,247,0.4), 0 4px 12px rgba(0,0,0,0.2); }
+  .style-arrows { display: flex; align-items: center; gap: 10px; }
+  .style-arrows button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.2); color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+  .style-arrows button:hover { background: rgba(168,85,247,0.2); color: #fff; border-color: rgba(168,85,247,0.4); }
+  .style-arrows span { font-size: 13px; color: #ddd; min-width: 60px; text-align: center; font-weight: 500; }
+  .create-actions { margin-top: 28px; display: flex; justify-content: center; gap: 16px; }
+  .create-actions .btn-primary { padding: 14px 40px; font-size: 16px; border-radius: 14px; background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 6px 20px rgba(139,92,246,0.3); transition: all 0.2s; }
+  .create-actions .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(139,92,246,0.4); }
+  .create-actions .btn-secondary { padding: 14px 28px; font-size: 15px; border-radius: 14px; transition: all 0.2s; }
+  .btn-primary { padding: 12px 36px; border: none; border-radius: 12px; background: linear-gradient(90deg, #667eea, #764ba2); color: white; font-size: 16px; font-family: inherit; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+  .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
+  .btn-secondary { padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(255,255,255,0.05); color: #ddd; font-size: 14px; font-family: inherit; cursor: pointer; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+  /* 游戏主界面 */
+  .main-game { display: none; width: 100%; max-width: 1000px; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+  .top-left { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .top-item { font-size: 13px; color: #ccc; }
+  .top-item span { color: #fff; font-weight: bold; }
+  .top-item .gold { color: #facc15; }
+  .top-item .ship-name { color: #67e8f9; }
+  .top-item .time-display { color: #f472b6; }
+  .top-item.clickable { cursor: pointer; transition: opacity 0.2s; }
+  .top-item.clickable:hover { opacity: 0.8; }
+
+  /* 通用面板 */
+  .panel-box { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
+  .panel-title { font-size: 16px; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .hidden { display: none !important; }
+
+  /* 船舱 */
+  .cabin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 400px; margin: 0 auto; }
+  .cabin-slot { aspect-ratio: 1; background: rgba(0,0,0,0.25); border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .cabin-slot:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+  .cabin-slot.occupied { border-style: solid; border-color: rgba(102,126,234,0.5); background: rgba(102,126,234,0.08); }
+  .cabin-slot-icon { font-size: 24px; margin-bottom: 4px; }
+  .cabin-slot-label { font-size: 11px; color: #aaa; }
+
+  /* 像素地图船舱 */
+  .cabin-map-wrap { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cabin-map-area { flex: 1; min-width: 300px; text-align: center; }
+  #cabinMap { width: 100%; max-width: 480px; border-radius: 12px; image-rendering: pixelated; background: #1a1a2e; display: block; margin: 0 auto; cursor: pointer; border: 2px solid rgba(255,255,255,0.08); }
+  .cabin-interact-hint { text-align: center; margin-top: 8px; font-size: 12px; color: #facc15; min-height: 18px; }
+  .cabin-char-panel { width: 220px; min-width: 200px; background: rgba(255,255,255,0.05); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.1); }
+  .cabin-char-name { font-size: 13px; color: #aaa; margin-bottom: 8px; text-align: center; }
+  #cabinCharCanvas { width: 100%; border-radius: 8px; background: linear-gradient(180deg,#2a2a4a,#1a1a2e); display: block; }
+  .cabin-char-stats { margin-top: 10px; }
+  .cabin-char-info { margin-top: 10px; font-size: 11px; color: #aaa; line-height: 1.7; }
+
+  /* 人物界面 */
+  .char-profile-wrap { display: flex; gap: 20px; flex-wrap: wrap; }
+  .char-profile-left { flex: 1; min-width: 280px; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+  .char-profile-right { flex: 1; min-width: 300px; }
+  .char-illust-frame { width: 100%; max-width: 360px; aspect-ratio: 744/968; background: linear-gradient(180deg,#2a2a4a,#1a1a2e); border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; }
+  .char-illust-img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: auto; transition: transform 0.3s ease; }
+  .char-illust-frame:hover .char-illust-img { transform: scale(1.02); }
+  .char-template-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; width: 100%; max-width: 360px; }
+  .char-template-thumb { width: 100%; aspect-ratio: 744/968; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; opacity: 0.6; transition: all 0.2s; }
+  .char-template-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .char-template-thumb:hover { opacity: 1; transform: translateY(-2px); }
+  .char-template-thumb.active { border-color: #f472b6; opacity: 1; box-shadow: 0 0 12px rgba(244,114,182,0.3); }
+  .char-info-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+  .char-info-name { font-size: 24px; font-weight: bold; color: #fff; margin-bottom: 8px; text-align: center; }
+  .char-info-meta { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .char-info-tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
+  .char-info-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0; }
+  .char-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .char-stat-row:last-child { border-bottom: none; }
+  .char-stat-row span:first-child { color: #aaa; }
+  .char-stat-row span:last-child { color: #fff; font-weight: bold; }
+  .char-equip-row { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+  .char-equip-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .char-equip-name { font-size: 14px; color: #fff; font-weight: bold; }
+  .char-equip-stat { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  /* 衣服选择 */
+  .clothes-selector { display: flex; gap: 10px; margin-bottom: 10px; }
+  .cloth-card { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+  .cloth-card:hover { background: rgba(255,255,255,0.08); }
+  .cloth-card.selected { border-color: #f5576c; background: rgba(245,87,108,0.1); }
+  .cloth-card h3 { font-size: 14px; margin-bottom: 6px; }
+  .cloth-card p { font-size: 11px; color: #aaa; line-height: 1.4; }
+  .cloth-stat { font-size: 11px; color: #cbd5e1; margin-top: 6px; }
+
+  /* 船员选择面板 */
+  .crew-panel { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; margin-top: 12px; border: 2px dashed rgba(236,72,153,0.3); }
+  .crew-panel.active { border-style: solid; border-color: rgba(236,72,153,0.6); background: rgba(236,72,153,0.08); }
+  .crew-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .crew-avatar { font-size: 32px; }
+  .crew-info { flex: 1; }
+  .crew-name { font-size: 14px; color: #fff; }
+  .crew-stats { font-size: 12px; color: #aaa; }
+  .crew-btns { display: flex; gap: 8px; margin-top: 8px; }
+
+  /* 海域选择 */
+  .sea-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .sea-card { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .sea-card:hover { border-color: rgba(255,255,255,0.2); }
+  .sea-card.selected { border-color: #667eea; background: rgba(102,126,234,0.1); }
+  .sea-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .sea-card h4 { font-size: 14px; margin-bottom: 4px; }
+  .sea-card p { font-size: 11px; color: #aaa; }
+  .sea-difficulty { margin-top: 6px; font-size: 11px; }
+
+  /* 航行 */
+  .sailing-panel { text-align: center; padding: 30px; }
+  .sailing-ship { font-size: 48px; margin-bottom: 12px; }
+  .sailing-text { font-size: 16px; color: #fff; margin-bottom: 8px; }
+  .sailing-sub { font-size: 13px; color: #aaa; margin-bottom: 16px; }
+  .sailing-progress { width: 100%; max-width: 400px; margin: 0 auto; height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden; }
+  .sailing-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 5px; transition: width 0.1s linear; }
+  .sailing-event { margin-top: 14px; padding: 10px; border-radius: 10px; font-size: 13px; display: none; }
+  .sailing-event.bonus { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .sailing-event.danger { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  /* 城市 */
+  .city-buildings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .building-btn { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; color: #eee; font-family: inherit; font-size: 13px; }
+  .building-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+
+  /* AI制衣台 */
+  .craft-input-area { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .craft-input-area textarea { width: 100%; min-height: 60px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; color: #fff; font-size: 14px; font-family: inherit; resize: vertical; }
+  .craft-input-area textarea::placeholder { color: #888; }
+  .keyword-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .keyword-tag { padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; font-size: 12px; transition: all 0.15s; color: #ccc; }
+  .keyword-tag:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+  .keyword-tag.active { background: rgba(102,126,234,0.3); border-color: #667eea; color: #fff; }
+
+  .recipe-card { background: rgba(0,0,0,0.2); border-radius: 14px; padding: 18px; border: 2px solid; margin-top: 12px; }
+  .recipe-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .recipe-name { font-size: 16px; font-weight: bold; }
+  .recipe-quality { font-size: 13px; padding: 2px 10px; border-radius: 10px; }
+  .recipe-preview { width: 100%; height: 120px; background: linear-gradient(135deg, #2a2a4a, #1a1a2e); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 48px; }
+  .material-list { display: flex; flex-direction: column; gap: 6px; }
+  .material-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; }
+  .mat-quality { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .mat-name { flex: 1; }
+  .mat-amount { color: #aaa; }
+  .mat-status { font-size: 11px; }
+  .mat-status.ok { color: #4ade80; }
+  .mat-status.missing { color: #f87171; }
+  .mat-hint { color: #888; font-size: 10px; }
+
+  /* 品质颜色 */
+  .q-common { color: #e2e8f0; border-color: rgba(226,232,240,0.3); }
+  .q-uncommon { color: #4ade80; border-color: rgba(74,222,128,0.4); }
+  .q-rare { color: #3b82f6; border-color: rgba(59,130,246,0.4); }
+  .q-epic { color: #a855f7; border-color: rgba(168,85,247,0.5); }
+  .q-legendary { color: #f97316; border-color: rgba(249,115,22,0.5); }
+  .q-mythic { color: #facc15; border-color: rgba(250,204,21,0.5); }
+
+  /* 每日商店 */
+  .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .shop-item { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 2px solid transparent; text-align: center; transition: all 0.2s; }
+  .shop-item:hover { border-color: rgba(255,255,255,0.2); }
+  .shop-item-emoji { font-size: 28px; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+  .shop-item-name { font-size: 12px; color: #fff; margin-bottom: 2px; }
+  .shop-item-quality { font-size: 10px; margin-bottom: 4px; }
+  .shop-item-price { font-size: 13px; color: #facc15; }
+  .shop-item-btn { margin-top: 6px; padding: 4px 12px; border-radius: 6px; border: none; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; font-size: 11px; font-family: inherit; cursor: pointer; }
+  .shop-item-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .shop-refresh-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px 14px; }
+
+  /* 背包 */
+  .inventory-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .inv-item { aspect-ratio: 1; background: rgba(0,0,0,0.2); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; }
+  .inv-item-emoji { font-size: 20px; }
+  .inv-item-count { position: absolute; bottom: 2px; right: 4px; font-size: 10px; color: #aaa; }
+  .inv-quality-dot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.5); }
+
+  /* 战斗 */
+  .battle-bg-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; background-repeat: no-repeat; z-index: 0; border-radius: 16px; transition: background-image 0.5s ease; }
+  .battle-bg-near { background-image: url('bg_sea.png'); }
+  .battle-bg-shallow { background-image: url('bg_sea2.png'); }
+  .battle-bg-mid { background-image: url('bg_sea2.png'); }
+  .battle-bg-deep { background-image: url('bg_sea3.png'); }
+  .battle-bg-sky { background-image: url('bg_sea4.png'); }
+  .character-panel { width: 340px; background: rgba(0,0,0,0.45); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(4px); }
+  .char-canvas { width: 100%; height: 400px; background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 100%); border-radius: 12px; position: relative; overflow: hidden; }
+  .shy-bar-container { margin-top: 12px; }
+  .bar-label { font-size: 12px; color: #ccc; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .shy-bar-bg { height: 20px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; }
+  .shy-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4ade80, #facc15, #f87171, #a855f7); border-radius: 10px; transition: width 0.5s ease; }
+  .active-skills { margin-top: 10px; min-height: 40px; }
+  .skill-tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin: 2px; background: rgba(168,85,247,0.3); border: 1px solid rgba(168,85,247,0.5); color: #d8b4fe; }
+  .right-panel { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .boss-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .boss-name { font-size: 18px; font-weight: bold; color: #fca5a5; }
+  .boss-hp-text { font-size: 12px; color: #aaa; }
+  .hp-bar-bg { height: 24px; background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden; }
+  .hp-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ef4444, #f87171); border-radius: 12px; transition: width 0.4s ease; }
+  .log-box { flex: 1; min-height: 180px; max-height: 220px; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+  .log-entry { margin-bottom: 4px; padding: 3px 6px; border-radius: 6px; }
+  .log-damage { color: #fca5a5; }
+  .log-wear { color: #fdba74; }
+  .log-skill { color: #d8b4fe; background: rgba(168,85,247,0.1); }
+  .log-loot { color: #4ade80; }
+  .log-system { color: #94a3b8; font-style: italic; }
+  .log-npc { color: #7dd3fc; }
+  .log-quest { color: #facc15; }
+  .log-craft { color: #a855f7; }
+  .log-crew { color: #7dd3fc; }
+  .log-repair { color: #4ade80; }
+
+  button.btn-game { padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-family: inherit; transition: transform 0.1s, opacity 0.2s; }
+  button.btn-game:hover { transform: translateY(-1px); opacity: 0.9; }
+  button.btn-game:active { transform: translateY(0); }
+  button.btn-primary { background: linear-gradient(90deg, #667eea, #764ba2); color: white; }
+  button.btn-secondary { background: rgba(255,255,255,0.1); color: #ddd; border: 1px solid rgba(255,255,255,0.2); }
+  button.btn-selected { background: linear-gradient(90deg, #f093fb, #f5576c); color: white; }
+  button.btn-romance { background: linear-gradient(90deg, #f472b6, #ec4899); color: white; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .durability-display { margin-top: 10px; font-size: 12px; }
+  .dur-part { display: flex; align-items: center; margin: 4px 0; gap: 8px; }
+  .dur-label { width: 50px; color: #aaa; }
+  .dur-bar-bg { flex: 1; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; }
+  .dur-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .dur-value { width: 50px; text-align: right; font-size: 11px; color: #ccc; }
+
+  @keyframes shake { 0%{transform:translate(0)} 25%{transform:translate(-3px,2px)} 50%{transform:translate(3px,-2px)} 75%{transform:translate(-2px,3px)} 100%{transform:translate(0)} }
+  .shaking { animation: shake 0.3s; }
+
+  .fishing-progress { width: 100%; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; margin: 10px 0; overflow: hidden; }
+  .fishing-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 4px; transition: width 0.1s linear; }
+
+  /* 线张力条 */
+  .tension-bar-bg { width: 100%; height: 14px; background: rgba(0,0,0,0.3); border-radius: 7px; overflow: hidden; position: relative; }
+  .tension-bar-fill { height: 100%; width: 0%; border-radius: 7px; transition: width 0.15s ease, background 0.3s ease; background: linear-gradient(90deg, #4ade80, #facc15); }
+  .tension-bar-fill.danger { background: linear-gradient(90deg, #facc15, #ef4444) !important; }
+  .tension-bar-fill.critical { background: linear-gradient(90deg, #ef4444, #dc2626) !important; animation: tension-pulse 0.3s ease infinite alternate; }
+  @keyframes tension-pulse { from { opacity: 1; } to { opacity: 0.6; } }
+
+  /* 收线按钮脉冲 */
+  #btnReel { animation: reel-pulse 0.6s ease infinite; }
+  #btnReel:active { transform: scale(0.95); }
+  @keyframes reel-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+  }
+
+  /* 浮标动画 */
+  .float-bob { animation: float-bob 2s ease-in-out infinite; display:inline-block; }
+  @keyframes float-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .float-bite { animation: float-bite 0.15s ease infinite; display:inline-block; }
+  @keyframes float-bite {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(4px) rotate(-8deg); }
+    75% { transform: translateY(4px) rotate(8deg); }
+  }
+  .float-sunk { animation: float-sunk 0.3s ease forwards; display:inline-block; }
+  @keyframes float-sunk { to { transform: translateY(12px) scale(0.8); opacity: 0.5; } }
+
+  .npc-bubble { background: rgba(59,130,246,0.15); border-left: 3px solid #60a5fa; padding: 10px 14px; border-radius: 0 10px 10px 0; margin: 8px 0; font-size: 13px; }
+  .npc-name-tag { color: #93c5fd; font-weight: bold; margin-right: 6px; }
+  .crew-bubble { background: rgba(236,72,153,0.15); border-left: 3px solid #f472b6; padding: 10px 14px; border-radius: 0 10px 10px 0; margin: 8px 0; font-size: 13px; }
+  .crew-name-tag { color: #f9a8d4; font-weight: bold; margin-right: 6px; }
+
+  .quest-hint { background: rgba(250,204,21,0.1); border: 1px solid rgba(250,204,21,0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; color: #fde047; }
+
+  .favor-bar-bg { width: 200px; height: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; }
+  .favor-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #f472b6, #ec4899); transition: width 0.5s ease; }
+  .relationship-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; margin-top: 6px; }
+  .rel-stranger { background: rgba(148,163,184,0.2); color: #94a3b8; }
+  .rel-acquaintance { background: rgba(56,189,248,0.2); color: #38bdf8; }
+  .rel-friendly { background: rgba(74,222,128,0.2); color: #4ade80; }
+  .rel-intimate { background: rgba(250,204,21,0.2); color: #facc15; }
+  .rel-lover { background: rgba(244,114,182,0.2); color: #f472b6; }
+  .rel-engaged { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+  .rel-married { background: linear-gradient(90deg, rgba(236,72,153,0.3), rgba(250,204,21,0.3)); color: #fce7f3; border: 1px solid rgba(236,72,153,0.4); }
+
+  .schedule-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .schedule-row.current { background: rgba(102,126,234,0.15); border-radius: 6px; padding: 4px 8px; margin: 0 -8px; }
+  .schedule-time { color: #888; width: 80px; }
+  .schedule-loc { color: #ccc; flex: 1; }
+  .schedule-activity { color: #aaa; }
+
+  /* 战后修补动画 */
+  .repair-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  .repair-box { background: linear-gradient(180deg, #1a1a2e, #16213e); border: 2px solid rgba(74,222,128,0.3); border-radius: 20px; padding: 30px; max-width: 400px; width: 90%; text-align: center; }
+  .repair-emoji { font-size: 48px; margin-bottom: 12px; }
+  .repair-title { font-size: 18px; color: #fff; margin-bottom: 12px; }
+  .repair-npc { font-size: 14px; color: #f9a8d4; margin-bottom: 8px; }
+  .repair-line { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+  .repair-bar-box { margin: 8px 0; }
+  .repair-bar-bg { height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden; }
+  .repair-bar-fill { height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 5px; transition: width 1s; }
+
+  /* Pixel art rendering */
+  .pixel-img { image-rendering: pixelated; image-rendering: crisp-edges; }
+  .char-canvas {
+    background: url('bg_cabin.png') center/cover no-repeat !important;
+    image-rendering: pixelated;
+  }
+  /* 钓鱼/战斗时显示海洋背景 */
+  .char-canvas.fishing-scene {
+    background: transparent !important;
+  }
+  .character-panel.fishing-scene {
+    background: rgba(0,0,0,0.12);
+    backdrop-filter: blur(2px);
+  }
+  .creation-preview {
+    background: url('bg_cabin.png') center/cover no-repeat !important;
+    image-rendering: pixelated;
+  }
+  .creation-title {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    letter-spacing: 2px;
+  }
+  .panel-box {
+    background: rgba(20, 15, 35, 0.85) !important;
+    border: 1px solid rgba(168, 85, 247, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .cabin-slot {
+    background: rgba(30, 25, 45, 0.7) !important;
+    border: 2px dashed rgba(168, 85, 247, 0.2) !important;
+  }
+  .cabin-slot:hover {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+    background: rgba(50, 40, 70, 0.5) !important;
+  }
+  .sea-card {
+    background: rgba(20, 25, 50, 0.8) !important;
+    border: 2px solid rgba(80, 120, 200, 0.2) !important;
+  }
+  .shop-item {
+    background: rgba(25, 20, 40, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+  }
+  .cloth-card {
+    background: rgba(25, 20, 40, 0.8) !important;
+    border: 2px solid transparent !important;
+  }
+  .cloth-card.selected {
+    border-color: #f5576c !important;
+    background: rgba(245, 87, 108, 0.15) !important;
+    box-shadow: 0 0 12px rgba(245, 87, 108, 0.2);
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+  }
+  .btn-game:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .hp-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #f87171, #fca5a5) !important;
+  }
+  .shy-bar-fill {
+    background: linear-gradient(90deg, #4ade80, #facc15, #f87171, #a855f7) !important;
+  }
+  .dur-bar-fill { border-radius: 4px; }
+
+</style>
+</head>
+<body>
+
+<!-- ==================== 创角界面 ==================== -->
+<div id="creationScreen">
+  <h1 style="text-shadow: 0 0 30px rgba(168,85,247,0.4), 0 4px 8px rgba(0,0,0,0.3); font-size: 36px; letter-spacing: 4px; margin-bottom: 6px;">🎣 若若的钓鱼王国</h1>
+  <div class="subtitle" style="font-size: 14px; color: #a5b4fc; letter-spacing: 1px; margin-bottom: 24px;"> </div>
+  <div class="creation-panel">
+    <div class="creation-title">✦ 角色创建 ✦</div>
+    <div class="creation-grid">
+      <div class="creation-preview">
+        <div class="char-preview-live2d">
+          <img id="previewCharImg" src="sprite_f.png" alt="角色预览" class="char-preview-img">
+          <div class="char-preview-glow"></div>
+        </div>
+      </div>
+      <div class="creation-controls">
+        <div class="ctrl-row">
+          <label>性别</label>
+          <span style="color:#f472b6;font-size:14px;">♀ 女性</span>
+        </div>
+        <div class="ctrl-row">
+          <label>名字</label>
+          <input type="text" id="playerName" value="若若" maxlength="8" placeholder="输入角色名">
+        </div>
+        <div class="ctrl-row">
+          <label>肤色</label>
+          <div class="color-options" id="skinColors"></div>
+        </div>
+        <div class="ctrl-row">
+          <label>发型</label>
+          <div class="style-arrows">
+            <button onclick="changeHair(-1)">◀</button>
+            <span id="hairLabel">长发</span>
+            <button onclick="changeHair(1)">▶</button>
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <label>发色</label>
+          <div class="color-options" id="hairColors"></div>
+        </div>
+        <div class="ctrl-row">
+          <label>瞳色</label>
+          <div class="color-options" id="eyeColors"></div>
+        </div>
+      </div>
+    </div>
+    <div class="create-actions">
+      <button class="btn-secondary" onclick="randomizeChar()">🎲 随机生成</button>
+      <button class="btn-primary" onclick="startGame()">✨ 开始冒险</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 游戏主界面 ==================== -->
+<div class="main-game" id="gameScreen">
+
+  <!-- 顶部状态栏 -->
+  <div class="top-bar">
+    <div class="top-left">
+      <div class="top-item">👤 <span id="charName">若若</span></div>
+      <div class="top-item">🚢 <span class="ship-name" id="shipName">初心号</span></div>
+      <div class="top-item">📍 <span id="locationName">宁静港湾村</span></div>
+      <div class="top-item">🕐 <span class="time-display" id="timeDisplay">08:00</span></div>
+      <div class="top-item">💰 <span class="gold" id="goldDisplay">0</span></div>
+      <div class="top-item hidden" id="crewIndicator">💕 <span id="crewName" style="color:#f472b6;"></span></div>
+      <div class="top-item clickable" onclick="openCharacter()" title="查看人物档案">🎭 人物</div>
+    </div>
+    <div class="top-item" id="gamePhase">当前: 在船上</div>
+  </div>
+
+  <!-- 任务提示 -->
+  <div class="quest-hint hidden" id="questHint">
+    📜 <span id="questText">去船舱的衣橱配置你的出征装备</span>
+  </div>
+
+  <!-- ========== 船舱界面 ========== -->
+  <div class="panel-box" id="shipCabinPanel">
+    <div class="panel-title">
+      <span>🚢 <span id="cabinShipName">初心号</span></span>
+      <span style="font-size:12px;color:#aaa;" id="cabinHint">WASD / ⬆⬇⬅➡ Move | SPACE Interact</span>
+    </div>
+    <div class="cabin-map-wrap">
+      <div class="cabin-map-area">
+        <canvas id="cabinMap" width="480" height="320"></canvas>
+        <div class="cabin-interact-hint" id="cabinInteractHint"></div>
+      </div>
+      <div class="cabin-char-panel" id="cabinCharPanel">
+        <div class="cabin-char-name">👤 <span id="cabinCharName">--</span></div>
+        <canvas id="cabinCharCanvas" width="200" height="180"></canvas>
+        <div class="cabin-char-stats">
+          <div class="bar-label"><span>❤️ Durability</span><span id="cabinHpText">--</span></div>
+          <div class="shy-bar-bg"><div class="shy-bar-fill" id="cabinHpBar" style="width:0%; background:linear-gradient(90deg,#f87171,#ef4444);"></div></div>
+        </div>
+        <div class="cabin-char-stats">
+          <div class="bar-label"><span>😳 害羞度</span><span id="cabinShyText">--</span></div>
+          <div class="shy-bar-bg"><div class="shy-bar-fill" id="cabinShyBar"></div></div>
+        </div>
+        <div class="cabin-char-info">
+          <div>⚔️ ATK: <span id="cabinAtk">--</span></div>
+          <div>🛡️ DEF: <span id="cabinDef">--</span></div>
+          <div>👗 <span id="cabinClothName">--</span></div>
+          <div>💰 <span id="cabinGold" style="color:#facc15;">--</span> G</div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="openInventory()">🎒 Bag</button>
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="enterCity()">🏘️ City</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 衣橱 ========== -->
+  <div class="panel-box hidden" id="wardrobePanel">
+    <div class="panel-title">👗 船上衣橱 — 配置出征装备</div>
+    <div class="clothes-selector">
+      <div class="cloth-card selected" id="cloth-underwear" onclick="selectCloth('underwear')">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <img src="cloth_underwear.png" style="width:48px; height:72px; image-rendering:pixelated; flex-shrink:0;">
+          <div>
+            <h3>🤍 白色蕾丝内衣</h3>
+            <p>轻薄可爱，害羞度积累较快。</p>
+            <div class="cloth-stat">耐久: 60/60/50 | 防御: 5 | 攻击: 10</div>
+          </div>
+        </div>
+      </div>
+      <div class="cloth-card" id="cloth-dress" onclick="selectCloth('dress')">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <img src="cloth_dress.png" style="width:48px; height:72px; image-rendering:pixelated; flex-shrink:0;">
+          <div>
+            <h3>🌸 新手布衣</h3>
+            <p>结实耐用的基础衣服。</p>
+            <div class="cloth-stat">耐久: 100/100/100 | 防御: 15 | 攻击: 20</div>
+          </div>
+        </div>
+      </div>
+      <div class="cloth-card" id="cloth-pajamas" onclick="selectCloth('pajamas')">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <img src="cloth_pajamas.png" style="width:48px; height:72px; image-rendering:pixelated; flex-shrink:0;">
+          <div>
+            <h3>🌙 轻薄睡衣</h3>
+            <p>几乎没有防护，害羞度积累极快。</p>
+            <div class="cloth-stat">耐久: 40/40/30 | 防御: 0 | 攻击: 15</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 船员配置区 -->
+    <div class="crew-panel" id="crewConfigPanel">
+      <div class="crew-header">
+        <img id="crewAvatar" class="crew-avatar pixel-img" src="sprite_lily.png" style="width:48px;height:64px;image-rendering:pixelated;">
+        <div class="crew-info">
+          <div class="crew-name">船员配置</div>
+          <div class="crew-stats" id="crewConfigText">尚未结婚，无法配置船员</div>
+        </div>
+      </div>
+      <div class="crew-btns" id="crewConfigBtns"></div>
+    </div>
+
+    <div style="text-align:center; margin-top:12px;">
+      <button class="btn-game btn-primary" onclick="closeWardrobe()">✅ 确认配置，返回船舱</button>
+    </div>
+  </div>
+
+  <!-- ========== 制衣台 ========== -->
+  <div class="panel-box hidden" id="craftingPanel">
+    <div class="panel-title">🧵 制衣台</div>
+    <div class="craft-input-area">
+      <div style="font-size:13px;color:#aaa;margin-bottom:8px;">📝 描述你想要的衣服（支持关键词组合）：</div>
+      <textarea id="craftInput" placeholder="例如：鸣潮弗洛洛风格的红色哥特连衣裙，带蕾丝和蝴蝶结"></textarea>
+      <div class="keyword-tags" id="keywordTags"></div>
+      <div style="margin-top:10px; display:flex; gap:8px;">
+        <button class="btn-game btn-primary" onclick="generateRecipe()">✨ 开始设计</button>
+        <button class="btn-game btn-secondary" onclick="clearCraftInput()">🔄 清空</button>
+      </div>
+    </div>
+    <div id="recipeResult"></div>
+    <div style="text-align:center; margin-top:12px;">
+      <button class="btn-game btn-secondary" onclick="backToCabin()">⬅️ 返回船舱</button>
+    </div>
+  </div>
+
+  <!-- ========== 背包 ========== -->
+  <div class="panel-box hidden" id="inventoryPanel">
+    <div class="panel-title">🎒 背包 <span style="font-size:12px;color:#aaa;">（点击材料查看详情）</span></div>
+    <div class="inventory-grid" id="inventoryGrid"></div>
+    <div id="inventoryDetail" style="margin-top:10px; font-size:12px; color:#aaa;"></div>
+    <div style="text-align:center; margin-top:12px;">
+      <button class="btn-game btn-secondary" onclick="backToCabin()">⬅️ 返回船舱</button>
+    </div>
+  </div>
+
+  <!-- ========== 海域选择 ========== -->
+  <div class="panel-box hidden" id="seaSelectPanel">
+    <div class="panel-title">🌊 选择目标海域</div>
+    <div class="sea-grid" id="seaGrid"></div>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="btn-game btn-secondary" onclick="backToCabin()">⬅️ 返回船舱</button>
+      <button class="btn-game btn-primary" id="btnSail" onclick="startSailing()" disabled>⚓ 启航！</button>
+    </div>
+  </div>
+
+  <!-- ========== 航行 ========== -->
+  <div class="panel-box hidden sailing-panel" id="sailingPanel">
+    <div class="sailing-ship" id="sailingShipEmoji">🛶</div>
+    <div class="sailing-text" id="sailingText">正在出海...</div>
+    <div class="sailing-sub" id="sailingSub">目标: 近海区</div>
+    <div class="sailing-progress"><div class="sailing-progress-fill" id="sailingProgressFill"></div></div>
+    <div class="sailing-event" id="sailingEvent"></div>
+  </div>
+
+  <!-- ========== 城市 ========== -->
+  <div class="panel-box hidden" id="cityPanel">
+    <div class="panel-title">🏘️ 宁静港湾村 — 当前时间: <span id="cityTime">08:00</span></div>
+    <div style="margin-bottom:12px; font-size:12px; color:#aaa;">
+      NPC位置会随时间变化！<button class="btn-game btn-secondary" style="padding:4px 10px; font-size:11px; margin-left:8px;" onclick="advanceTime()">⏩ 推进2小时</button>
+    </div>
+    <div class="city-buildings">
+      <button class="building-btn" onclick="visitNPC('lily')">💐<br>花店找莉莉</button>
+      <button class="building-btn" onclick="visitMarket()">🏪<br>市场</button>
+      <button class="building-btn" onclick="visitDailyShop()">🏪<br>每日商店</button>
+    </div>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="btn-game btn-secondary" onclick="returnToShip()">⬅️ 返回船上</button>
+    </div>
+  </div>
+
+  <!-- ========== NPC互动 ========== -->
+  <div class="panel-box hidden" id="npcPanel">
+    <div id="npcContent"></div>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="btn-game btn-secondary" onclick="backToCity()">⬅️ 返回城市</button>
+    </div>
+  </div>
+
+  <!-- ========== 送礼 ========== -->
+  <div class="panel-box hidden" id="giftPanel">
+    <div class="panel-title">🎁 选择礼物</div>
+    <div id="giftGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;"></div>
+    <div id="giftPreview" style="background:rgba(0,0,0,0.2); border-radius:10px; padding:12px; text-align:center; font-size:13px; display:none;"></div>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="btn-game btn-secondary" onclick="closeGiftPanel()">⬅️ 取消</button>
+      <button class="btn-game btn-primary" id="btnGiveGift" onclick="giveGift()" disabled>💝 送出礼物</button>
+    </div>
+  </div>
+
+  <!-- ========== 每日商店 ========== -->
+  <div class="panel-box hidden" id="shopPanel">
+    <div class="panel-title">
+      <span>🏪 每日商店 — 材料店</span>
+      <span style="font-size:12px;color:#aaa;">下次自动刷新: 06:00</span>
+    </div>
+    <div class="shop-refresh-bar" style="margin-bottom:12px;">
+      <span style="font-size:12px;color:#aaa;">今日手动刷新: <span id="shopRefreshCount">0</span>/10</span>
+      <button class="btn-game btn-secondary" style="padding:6px 14px; font-size:12px;" id="btnShopRefresh" onclick="refreshShop()">🔄 手动刷新 <span id="shopRefreshCost">100</span>G</button>
+    </div>
+    <div class="shop-grid" id="shopGrid"></div>
+    <div id="shopHint" style="font-size:12px; color:#facc15; margin-top:8px;"></div>
+    <div style="text-align:center; margin-top:12px;">
+      <button class="btn-game btn-secondary" onclick="backToCity()">⬅️ 返回城市</button>
+    </div>
+  </div>
+
+  <!-- ========== 战斗 ========== -->
+  <div class="panel-box hidden" id="battlePanel" style="position:relative;overflow:hidden;">
+    <div class="battle-bg-wrap" id="battleBgWrap"></div>
+    <div class="game-container" style="position:relative;z-index:1;">
+      <div class="character-panel">
+        <div style="font-size:13px; color:#aaa; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+          👤 <span id="battleCharName">若若</span>
+          <span style="color:#888;font-size:11px;">(装备: <span id="battleClothName">新手布衣</span>)</span>
+          <img id="battleClothPreview" src="cloth_dress.png" style="width:32px; height:48px; image-rendering:pixelated; display:none;">
+        </div>
+        <canvas id="charCanvas" class="char-canvas" width="340" height="400"></canvas>
+        <div class="durability-display" id="durabilityDisplay"></div>
+        <div class="shy-bar-container">
+          <div class="bar-label"><span>😳 害羞度</span><span id="shyValue">0 / 100</span></div>
+          <div class="shy-bar-bg"><div class="shy-bar-fill" id="shyBar"></div></div>
+        </div>
+        <div class="active-skills" id="activeSkills"><span style="font-size:11px; color:#666;">暂无激活技能</span></div>
+
+        <!-- 战斗中的NPC船员显示 -->
+        <div id="battleCrewPanel" class="hidden" style="margin-top:12px; padding:10px; background:rgba(236,72,153,0.08); border-radius:10px; border:1px solid rgba(236,72,153,0.2);">
+          <div style="font-size:13px; color:#f9a8d4; margin-bottom:6px;">💕 <span id="battleCrewName">船员</span> <span style="font-size:11px;color:#888;">(战斗中)</span></div>
+          <div style="font-size:12px; color:#7dd3fc;" id="battleCrewDps">DPS: --</div>
+          <div style="font-size:11px; color:#aaa;" id="battleCrewTotal">累计伤害: 0</div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="panel-box">
+          <div class="boss-header">
+            <span class="boss-name" id="bossNameDisplay">???</span>
+            <span class="boss-hp-text" id="bossHpText">HP: ???</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill" id="bossHpBar"></div></div>
+          <div style="margin-top:8px; font-size:12px; color:#aaa;" id="bossDesc">准备战斗...</div>
+        </div>
+        <!-- 钓鱼交互面板 -->
+        <div class="panel-box" id="fishingInteractPanel">
+          <div style="font-size:13px; color:#aaa; margin-bottom:6px;">🎣 钓鱼状态</div>
+          <div id="fishingStatus">等待指令...</div>
+
+          <!-- 浮标状态 -->
+          <div id="floatStatus" style="margin-top:8px; font-size:24px; text-align:center; min-height:32px;"></div>
+
+          <!-- 当前目标鱼信息 -->
+          <div id="fishInfoPanel" class="hidden" style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.3); border-radius:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span id="fishEmoji" style="font-size:22px;">🐟</span>
+              <span id="fishName" style="font-weight:bold; color:#f0f0f0;">???</span>
+              <span id="fishRarity" style="font-size:11px; padding:2px 8px; border-radius:8px; background:rgba(255,255,255,0.1);">普通</span>
+            </div>
+            <div class="bar-label" style="margin-bottom:4px;"><span>🐟 鱼体力</span><span id="fishHpText">30 / 30</span></div>
+            <div class="hp-bar-bg" style="height:14px;"><div class="hp-bar-fill" id="fishHpBar" style="width:100%; background:linear-gradient(90deg, #4ade80, #3b82f6);"></div></div>
+          </div>
+
+          <!-- 线张力条 -->
+          <div id="tensionPanel" class="hidden" style="margin-top:10px;">
+            <div class="bar-label" style="margin-bottom:4px;"><span>🧵 线张力</span><span id="tensionValue">0%</span></div>
+            <div class="tension-bar-bg"><div class="tension-bar-fill" id="tensionBar"></div></div>
+            <div id="tensionWarning" style="font-size:11px; color:#f87171; margin-top:4px; text-align:center; opacity:0; transition:opacity 0.3s;">⚠️ 线要断了！</div>
+          </div>
+
+          <!-- 抛竿进度 -->
+          <div class="fishing-progress hidden" id="fishingProgress" style="margin-top:10px;"><div class="fishing-progress-fill" id="fishingProgressFill"></div></div>
+        </div>
+        <div class="panel-box log-box" id="logBox"><div class="log-entry log-system">战斗日志将显示在这里...</div></div>
+        <div class="panel-box">
+          <div class="controls" id="controls">
+            <button class="btn-game btn-primary" id="btnStartFish" onclick="startFishing()">🎣 开始垂钓</button>
+            <button class="btn-game btn-primary hidden" id="btnReel" onclick="doReel()">🎣 收线！</button>
+            <button class="btn-game btn-secondary hidden" id="btnStopFish" onclick="stopAutoFishing()">⏹️ 停止</button>
+            <button class="btn-game btn-secondary hidden" id="btnReturn" onclick="returnToShipAfterBattle()">🚢 返航</button>
+            <button class="btn-game btn-secondary" id="btnReset" onclick="resetBattle()">🔄 重置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 人物界面 ========== -->
+  <div class="panel-box hidden" id="characterPanel">
+    <div class="panel-title">
+      <span>🎭 人物档案</span>
+      <span style="font-size:12px;color:#aaa;">点击模板切换立绘</span>
+    </div>
+    <div class="char-profile-wrap">
+      <div class="char-profile-left">
+        <div class="char-illust-frame">
+          <img id="charIllust" src="assets/char_template_01.jpg" alt="角色立绘" class="char-illust-img">
+        </div>
+        <div class="char-template-grid" id="charTemplateGrid"></div>
+      </div>
+      <div class="char-profile-right">
+        <div class="char-info-card">
+          <div class="char-info-name" id="profileCharName">若若</div>
+          <div class="char-info-meta">
+            <span class="char-info-tag" id="profileGender">♀ 女性</span>
+            <span class="char-info-tag" id="profileLevel">Lv.1</span>
+            <span class="char-info-tag" id="profileTitle">见习钓师</span>
+          </div>
+          <div class="char-info-divider"></div>
+          <div class="char-stat-row"><span>⚔️ 攻击力</span><span id="profileAtk">20</span></div>
+          <div class="char-stat-row"><span>🛡️ 防御力</span><span id="profileDef">15</span></div>
+          <div class="char-stat-row"><span>❤️ 最大耐久</span><span id="profileMaxHp">100</span></div>
+          <div class="char-stat-row"><span>😳 害羞阈值</span><span id="profileShyCap">100</span></div>
+          <div class="char-stat-row"><span>🎣 钓鱼力</span><span id="profileFish">10</span></div>
+          <div class="char-info-divider"></div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">当前装备</div>
+            <div class="char-equip-name" id="profileEquip">👗 新手布衣</div>
+            <div class="char-equip-stat" id="profileEquipStat">耐久 100/100/100 | 防御 +15 | 攻击 +20</div>
+          </div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">配偶</div>
+            <div class="char-equip-name" id="profileSpouse">--</div>
+            <div class="char-equip-stat" id="profileSpouseStat">暂无</div>
+          </div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">船员</div>
+            <div class="char-equip-name" id="profileCrew">--</div>
+            <div class="char-equip-stat" id="profileCrewStat">暂无</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
+          <button class="btn-game btn-secondary" onclick="showScreen('cabin')">⬅️ 返回船舱</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 战后修补覆盖层 -->
+<div id="repairOverlay" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:100;">
+  <div class="repair-box" id="repairBox">
+    <div class="repair-emoji" id="repairEmoji">🪡</div>
+    <div class="repair-title" id="repairTitle">战斗结束！</div>
+    <div class="repair-npc" id="repairNpcName"></div>
+    <div id="repairLines"></div>
+    <div id="repairBars"></div>
+    <div style="margin-top:16px;">
+      <button class="btn-game btn-primary" id="btnCloseRepair" onclick="closeRepairOverlay()">✨ 继续</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================
+// Sprite 预加载
+// ========================
+const SPRITES = {};
+function loadSprite(name, src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => { SPRITES[name] = img; resolve(); };
+    img.onerror = () => { console.warn('Failed to load sprite:', src); resolve(); };
+    img.src = src;
+  });
+}
+let spritesReady = false;
+async function preloadSprites() {
+  await Promise.all([
+    // 女性标准形态（5阶段爆衣）
+    loadSprite('f', 'sprite_f.png'),
+    loadSprite('f_full', 'sprite_f_full.png'),
+    loadSprite('f_stage1', 'sprite_f_stage1.png'),
+    loadSprite('f_stage2', 'sprite_f_stage2.png'),
+    loadSprite('f_stage3', 'sprite_f_stage3.png'),
+    loadSprite('f_stage4', 'sprite_f_stage4.png'),
+    loadSprite('f_stage5', 'sprite_f_stage5.png'),
+    // 女性Q版形态（5阶段爆衣）
+    loadSprite('f_q', 'sprite_f_q.png'),
+    loadSprite('f_q_full', 'sprite_f_q_full.png'),
+    loadSprite('f_q_stage1', 'sprite_f_q_stage1.png'),
+    loadSprite('f_q_stage2', 'sprite_f_q_stage2.png'),
+    loadSprite('f_q_stage3', 'sprite_f_q_stage3.png'),
+    loadSprite('f_q_stage4', 'sprite_f_q_stage4.png'),
+    loadSprite('f_q_stage5', 'sprite_f_q_stage5.png'),
+    loadSprite('lily', 'sprite_lily.png'),
+    loadSprite('boss', 'sprite_boss.png'),
+  ]);
+  spritesReady = true;
+  console.log('All sprites loaded');
+}
+preloadSprites();
+
+// ========================
+// 常量数据
+// ========================
+const SKIN_TONES = ['#f5d0c5','#e8b4a0','#d4a373','#c68642','#8d5524','#3d2314'];
+const HAIR_COLORS = ['#5c3a21','#2d2d2d','#d4a017','#c0392b','#8e44ad','#2980b9','#27ae60','#ecf0f1','#e91e63','#ff9800'];
+const EYE_COLORS = ['#3b82f6','#22c55e','#a855f7','#ef4444','#f59e0b','#14b8a6','#6366f1','#ec4899'];
+const HAIR_STYLES_F = ['长发','短发','双马尾','马尾','卷发','波波头','侧马尾','姬发','狼尾','盘发'];
+
+const CLOTHES = {
+  underwear: { name: "白色蕾丝内衣", maxDur: { top: 60, bottom: 60, legs: 50 }, defense: 5, attack: 10, color: "#fff0f5", brokenColor: "#ffb6c1", preview: "cloth_underwear.png", desc: "轻薄可爱，害羞度积累较快。" },
+  dress: { name: "新手布衣", maxDur: { top: 100, bottom: 100, legs: 100 }, defense: 15, attack: 20, color: "#67e8f9", brokenColor: "#155e75", preview: "cloth_dress.png", desc: "结实耐用的基础衣服。" },
+  pajamas: { name: "轻薄睡衣", maxDur: { top: 40, bottom: 40, legs: 30 }, defense: 0, attack: 15, color: "#fbcfe8", brokenColor: "#9d174d", preview: "cloth_pajamas.png", desc: "几乎没有防护，害羞度积累极快。" }
+};
+
+const SKILLS = [
+  { name: "慌乱反击", desc: "伤害+40%", threshold: 30, type: "dmg", value: 0.4 },
+  { name: "破衣解放", desc: "无视30%防御", threshold: 60, type: "ignore", value: 0.3 },
+  { name: "极限绽放", desc: "伤害翻倍", threshold: 90, type: "dmg", value: 1.0 }
+];
+
+const BOSSES = {
+  tutorial: { name: "溪流鲤鱼王", maxHp: 120, defense: 5, attack: 25 },
+  abyss: { name: "深渊鲤鱼", maxHp: 200, defense: 10, attack: 35 }
+};
+
+// ========================
+// 鱼类数据（按海域难度分布）
+// ========================
+const FISH_TYPES = {
+  common_fish:  { id: 'common_fish',  name: '普通鱼',   emoji: '🐟', hp: 30,  maxHp: 30,  struggleRate: 0.3, escapeTime: 5000,  exp: 10,  q: 0, desc: '随处可见的小鱼' },
+  rare_fish:    { id: 'rare_fish',    name: '稀有鱼',   emoji: '🐠', hp: 60,  maxHp: 60,  struggleRate: 0.5, escapeTime: 4000,  exp: 25,  q: 1, desc: '色彩斑斓的珍稀品种' },
+  golden_fish:  { id: 'golden_fish',  name: '金鱼',     emoji: '🐡', hp: 100, maxHp: 100, struggleRate: 0.7, escapeTime: 3000,  exp: 50,  q: 2, desc: '金光闪闪的幸运象征' },
+  legendary_fish:{ id: 'legendary_fish',name: '传说鱼',  emoji: '🦈', hp: 180, maxHp: 180, struggleRate: 0.85, escapeTime: 2500, exp: 100, q: 3, desc: '深海传说中的巨兽' },
+  mythic_fish:  { id: 'mythic_fish',  name: '神话鱼',   emoji: '🐉', hp: 300, maxHp: 300, struggleRate: 0.95, escapeTime: 2000, exp: 200, q: 4, desc: '只存在于神话中的生物' },
+};
+
+// 海域鱼类分布 [海域难度] → [鱼的key数组，权重越高出现越多]
+const SEA_FISH_POOL = {
+  1: [['common_fish', 8], ['rare_fish', 2]],
+  2: [['common_fish', 5], ['rare_fish', 4], ['golden_fish', 1]],
+  4: [['common_fish', 3], ['rare_fish', 4], ['golden_fish', 3]],
+  7: [['rare_fish', 3], ['golden_fish', 4], ['legendary_fish', 3]],
+  10:[['golden_fish', 3], ['legendary_fish', 4], ['mythic_fish', 3]],
+};
+
+// 钓鱼状态常量
+const FISHING_STATE = {
+  IDLE: 'idle',       // 空闲，等待玩家开始
+  CASTING: 'casting', // 抛竿中
+  WAITING: 'waiting', // 等待鱼咬钩
+  BITING: 'biting',   // 鱼咬钩了！（短暂窗口期）
+  REELING: 'reeling', // 拉线对抗中
+  CAUGHT: 'caught',   // 成功钓到
+  ESCAPED: 'escaped', // 鱼跑了
+};
+
+const SEAS = [
+  { id: 'near', name: '近海区', diff: 1, unlock: 1, desc: '安全的新手海域', boss: 'tutorial' },
+  { id: 'shallow', name: '浅海区', diff: 2, unlock: 1, desc: '偶尔会遇到小海兽', boss: 'abyss' },
+  { id: 'mid', name: '中海区', diff: 4, unlock: 2, desc: '需要更好的船只', boss: 'abyss' },
+  { id: 'deep', name: '深海区', diff: 7, unlock: 3, desc: '危险重重', boss: 'abyss' },
+  { id: 'sky', name: '天空海', diff: 10, unlock: 5, desc: '传说中的海域', boss: 'abyss' },
+];
+
+const SHIPS = [
+  { level: 1, name: '初心号', emoji: '🛶', grid: 3 },
+  { level: 2, name: '微风号', emoji: '⛵', grid: 5 },
+  { level: 3, name: '丰收号', emoji: '🚤', grid: 7 },
+  { level: 4, name: '探险号', emoji: '🚢', grid: 9 },
+  { level: 5, name: '极光号', emoji: '🛳️', grid: 12 },
+];
+
+// ========================
+// 品质系统
+// ========================
+const QUALITY = { COMMON: 0, UNCOMMON: 1, RARE: 2, EPIC: 3, LEGENDARY: 4, MYTHIC: 5 };
+const Q_NAMES = ['普通','优质','稀有','史诗','传说','神话'];
+const Q_COLORS = ['#e2e8f0','#4ade80','#3b82f6','#a855f7','#f97316','#facc15'];
+const Q_CLASS = ['q-common','q-uncommon','q-rare','q-epic','q-legendary','q-mythic'];
+function qColor(q) { return Q_COLORS[q]; }
+function qName(q) { return Q_NAMES[q]; }
+function qClass(q) { return Q_CLASS[q]; }
+function qStars(q) { return '⭐'.repeat(q+1); }
+
+// ========================
+// AI制衣关键词映射
+// ========================
+const CRAFT_KEYWORDS = {
+  '连衣裙': {type:'style', result:'dress', fabric:3}, '裙子': {type:'style', result:'dress', fabric:3},
+  '上衣': {type:'style', result:'top', fabric:2}, '衬衫': {type:'style', result:'top', fabric:2},
+  '短裙': {type:'style', result:'skirt', fabric:1.5}, '袜子': {type:'style', result:'stocking', fabric:1},
+  '丝袜': {type:'style', result:'stocking', fabric:1}, '外套': {type:'style', result:'coat', fabric:4},
+  '睡衣': {type:'style', result:'pajamas', fabric:2}, '睡裙': {type:'style', result:'pajamas', fabric:2},
+  '红': {type:'color', dye:'red', amt:2}, '赤': {type:'color', dye:'red', amt:2}, '猩红': {type:'color', dye:'red', amt:2},
+  '蓝': {type:'color', dye:'blue', amt:2}, '黑': {type:'color', dye:'black', amt:1}, '墨': {type:'color', dye:'black', amt:1},
+  '白': {type:'color', dye:'white', amt:1}, '银': {type:'color', dye:'white', amt:1},
+  '紫': {type:'color', dye:'purple', amt:2}, '罗兰': {type:'color', dye:'purple', amt:2},
+  '金': {type:'color', dye:'gold', amt:2}, '黄': {type:'color', dye:'gold', amt:2},
+  '绿': {type:'color', dye:'green', amt:2}, '粉': {type:'color', dye:'pink', amt:2},
+  '简单': {type:'tier', q:0}, '朴素': {type:'tier', q:0}, '基础': {type:'tier', q:0},
+  '可爱': {type:'tier', q:1, acc:['ribbon']}, '日常': {type:'tier', q:1},
+  '性感': {type:'tier', q:2, acc:['silk_thread']}, '紧身': {type:'tier', q:2},
+  '华丽': {type:'tier', q:3, acc:['lace','pearl']}, '繁复': {type:'tier', q:3},
+  '哥特': {type:'tier', q:3, acc:['lace','ribbon','boss_scale']}, '洛丽塔': {type:'tier', q:3, acc:['lace','ribbon','frill']},
+  '传说': {type:'tier', q:4, acc:['dragon_scale','golden_thread']}, '神话': {type:'tier', q:5, acc:['dragon_scale','golden_thread','phoenix_feather']},
+  '蕾丝': {type:'acc', item:'lace', amt:2, q:2}, '花边': {type:'acc', item:'lace', amt:2, q:2},
+  '蝴蝶结': {type:'acc', item:'ribbon', amt:1, q:1}, '丝带': {type:'acc', item:'ribbon', amt:1, q:1},
+  '珍珠': {type:'acc', item:'pearl', amt:3, q:3}, '宝石': {type:'acc', item:'gem', amt:1, q:3},
+  '发光': {type:'acc', item:'glow', amt:2, q:3}, '荧光': {type:'acc', item:'glow', amt:2, q:3},
+  '火焰': {type:'acc', item:'fire_scale', amt:1, q:4}, '羽毛': {type:'acc', item:'feather', amt:3, q:2},
+  '弗洛洛': {type:'preset', style:'哥特洛丽塔', colors:['red','black','white'], q:3, acc:['lace','ribbon']},
+  '女仆': {type:'preset', style:'maid', colors:['black','white'], q:2, acc:['ribbon','lace']},
+  '泳装': {type:'preset', style:'swimsuit', colors:['blue','white'], q:2},
+};
+
+const DYE_INFO = {
+  red: {name:'红色花卉染剂', source:'种植红玫瑰/红罂粟提炼', price:50},
+  blue: {name:'蓝色海藻染剂', source:'中海区采集蓝海藻', price:80},
+  black: {name:'黑色墨鱼汁', source:'近海区钓乌贼/墨鱼', price:60},
+  white: {name:'白色贝壳粉', source:'沙滩采集贝壳', price:30},
+  purple: {name:'紫色曼陀罗染剂', source:'种植紫色曼陀罗（稀有）', price:300},
+  gold: {name:'金色龙血染剂', source:'传说鱼掉落', price:1000},
+  green: {name:'绿色苔藓染剂', source:'雨林采集苔藓', price:40},
+  pink: {name:'樱花花瓣染剂', source:'春季限定采集', price:70},
+};
+
+const MATERIAL_NAMES = {
+  fabric: '丝绸布料', thread: '丝线', lace: '蕾丝边', ribbon: '丝带',
+  pearl: '珍珠扣', gem: '宝石', glow: '夜光海藻', fire_scale: '火鳞碎片',
+  dragon_scale: '龙鳞', golden_thread: '金线', phoenix_feather: '凤凰羽',
+  feather: '羽绒饰', silk_thread: '高级丝线', frill: '荷叶边',
+  boss_scale: '海兽鳞片', fish_scale: '鱼鳞',
+};
+
+const ACC_EMOJI = {
+  lace:'🎀', ribbon:'🎗️', pearl:'⚪', gem:'💎', glow:'✨', fire_scale:'🔥',
+  dragon_scale:'🐉', golden_thread:'🧵', phoenix_feather:'🪶', feather:'🪶',
+  silk_thread:'🧶', frill:'🌸', boss_scale:'🐟',
+};
+
+// ========================
+// NPC数据（含战斗数据）
+// ========================
+const NPCS = {
+  lily: {
+    id: 'lily', name: '莉莉', gender: 'female', emoji: '💐',
+    sexuality: 'bi', shameReaction: 'concern',
+    favor: 5, maxFavor: 200, stage: 0,
+    stageNames: ['陌生', '认识', '友好', '暧昧', '恋人', '订婚', '已婚'],
+    liked: ['flower', 'clothes'], disliked: ['fish_raw'], favoriteItem: 'rose',
+    currentOutfit: '默认连衣裙',
+    schedule: [
+      { start: 6, end: 8, loc: '🏠 家中', act: '浇花' },
+      { start: 8, end: 12, loc: '🏪 花店「露珠亭」', act: '开店营业' },
+      { start: 12, end: 13, loc: '🏛️ 广场', act: '午餐' },
+      { start: 13, end: 18, loc: '🏪 花店「露珠亭」', act: '继续营业' },
+      { start: 18, end: 20, loc: '🌊 码头', act: '散步 ⭐浪漫时段' },
+      { start: 20, end: 22, loc: '🏠 家中', act: '缝纫' },
+      { start: 22, end: 6, loc: '🏠 家中', act: '睡觉 💤' },
+    ],
+    dialogues: {
+      stranger: ["你好，我是花店的莉莉。要买花吗？", "这些向日葵今天刚开的，很漂亮吧？"],
+      acquaintance: ["啊，是你！今天也要出海吗？注意安全哦。", "海恩大叔说你很有天赋呢。"],
+      friendly: ["你回来啦！有没有钓到什么漂亮的鱼？", "我最近在做新的花束，完成后送你一束吧。"],
+      intimate: ["那个...晚上码头那边风景很好，你要去看看吗？（脸红）", "你穿这件衣服很好看...我是说，很适合出海！"],
+      lover: ["你不在的时候，我一直在担心...下次出海带我一起去好不好？", "这个花环是我专门为你编的，戴上它一定会有好运。"],
+      engaged: ["我们的婚礼定在海边吧？我想在日落的时候...", "这枚戒指...我会一辈子珍惜的。"],
+      married: ["亲爱的，今天出海要小心。我会一直在船上等你的。", "欢迎回家...来，我帮你把衣服缝好。"],
+    },
+    giftReactions: {
+      flower: { text: "哇！好漂亮的花！谢谢你！（开心地抱在怀里）", favor: 15 },
+      fish: { text: "谢、谢谢...（虽然不太喜欢生鱼，但你的礼物我很高兴）", favor: 5 },
+      clothes: { text: "这、这是给我做的衣服吗？！我立刻换上！（脸红）", favor: 25 },
+    },
+    // ===== NPC战斗数据 =====
+    combatData: {
+      baseDps: 8,
+      critChance: 0.05,
+      critMultiplier: 2.0,
+      healAmount: 5,
+      healChance: 0.15,
+      baseRepairPercent: 0.20,
+      repairPriority: 'most_damaged',
+      canCombatRepair: false,
+      combatRepairChance: 0,
+      combatRepairAmount: 0,
+      type: 'support',
+      battleStartLines: ["小心！那个海兽冲过来了！", "我、我也会加油的！"],
+      playerShyLines: ["啊！衣服又...！但、但是那个表情...很帅气...（小声）", "没、没关系！坚持住！"],
+      playerSkillLines: ["好、好厉害...那是...什么力量...（脸红）", "加油！我也在支持你！"],
+      victoryLines: ["太、太厉害了！我们赢了！", "我就知道你能做到！"],
+      repairLines: ["真是的...又弄得破破烂烂的...（脸微红）", "下次穿结实一点...虽然我知道说了也没用...", "来，我帮你缝好..."],
+    }
+  }
+};
+
+const REL_CLASSES = ['rel-stranger','rel-acquaintance','rel-friendly','rel-intimate','rel-lover','rel-engaged','rel-married'];
+
+const GIFTS = [
+  { id: 'common_fish', emoji: '🐟', name: '普通鱼', category: 'fish', desc: '钓到的普通鱼' },
+  { id: 'rare_fish', emoji: '🐠', name: '稀有鱼', category: 'fish', desc: '颜色艳丽的稀有品种' },
+  { id: 'rose', emoji: '🌹', name: '红玫瑰', category: 'flower', desc: '代表热情的花' },
+  { id: 'sunflower', emoji: '🌻', name: '向日葵', category: 'flower', desc: '阳光般灿烂' },
+  { id: 'handmade_dress', emoji: '👗', name: '手工连衣裙', category: 'clothes', desc: '你亲手制作的衣服' },
+  { id: 'leather_jacket', emoji: '🧥', name: '皮夹克', category: 'clothes', desc: '酷酷的皮质外套' },
+];
+
+// ========================
+// 每日商店商品池
+// ========================
+const SHOP_POOL = [
+  { id: 'cotton', emoji: '🧶', name: '普通棉布', category: 'fabric', q: 0, price: 50 },
+  { id: 'silk', emoji: '🧵', name: '优质丝绸', category: 'fabric', q: 1, price: 200 },
+  { id: 'magic_silk', emoji: '✨', name: '魔法丝绸', category: 'fabric', q: 2, price: 800 },
+  { id: 'shadow_fabric', emoji: '🌑', name: '暗影布料', category: 'fabric', q: 3, price: 3000 },
+  { id: 'dragon_silk', emoji: '🐉', name: '龙鳞丝绸', category: 'fabric', q: 4, price: 12000 },
+  { id: 'basic_thread', emoji: '🧵', name: '基础丝线', category: 'thread', q: 0, price: 30 },
+  { id: 'silk_thread', emoji: '🧶', name: '高级丝线', category: 'thread', q: 1, price: 150 },
+  { id: 'golden_thread', emoji: '👑', name: '金线', category: 'thread', q: 3, price: 2500 },
+  { id: 'red_dye', emoji: '🧴', name: '红色花卉染剂', category: 'dye', q: 1, price: 80 },
+  { id: 'blue_dye', emoji: '🧴', name: '蓝色海藻染剂', category: 'dye', q: 1, price: 100 },
+  { id: 'black_dye', emoji: '🧴', name: '黑色墨鱼汁', category: 'dye', q: 1, price: 70 },
+  { id: 'purple_dye', emoji: '🧴', name: '紫色曼陀罗染剂', category: 'dye', q: 3, price: 500 },
+  { id: 'gold_dye', emoji: '🧴', name: '金色龙血染剂', category: 'dye', q: 4, price: 5000 },
+  { id: 'lace', emoji: '🎀', name: '蕾丝边', category: 'accessory', q: 2, price: 400 },
+  { id: 'ribbon', emoji: '🎗️', name: '丝带', category: 'accessory', q: 1, price: 60 },
+  { id: 'pearl', emoji: '⚪', name: '深海珍珠', category: 'accessory', q: 3, price: 1500 },
+  { id: 'gem', emoji: '💎', name: '宝石', category: 'accessory', q: 3, price: 2000 },
+  { id: 'glow_seaweed', emoji: '✨', name: '夜光海藻', category: 'accessory', q: 3, price: 1800 },
+  { id: 'fire_scale', emoji: '🔥', name: '火鳞碎片', category: 'fish_material', q: 4, price: 8000 },
+  { id: 'boss_scale', emoji: '🐟', name: '海兽鳞片', category: 'fish_material', q: 3, price: 2500 },
+  { id: 'dragon_scale', emoji: '🐉', name: '龙鳞', category: 'fish_material', q: 5, price: 50000 },
+];
+
+// ========================
+// 状态
+// ========================
+let charData = { gender: 'female', name: '若若', skinTone: 0, hairStyle: 0, hairColor: 0, eyeColor: 0 };
+let selectedCloth = 'underwear';
+let selectedSea = null;
+let player = { dur: {}, shame: 0, activeSkills: [], gold: 500 };
+let boss = { hp: 0, maxHp: 0 };
+let battleState = 'cabin';
+let autoFishing = false;
+let autoFishTimer = null;
+
+// 钓鱼交互系统状态
+let currentFish = null;           // 当前目标鱼对象
+let fishingSubState = FISHING_STATE.IDLE;  // 钓鱼子状态
+let fishingTimers = [];           // 钓鱼相关定时器（用于清理）
+let tension = 0;                  // 线张力 0-100
+let reelCombo = 0;                // 连续收线连击数
+let reelCount = 0;                // 本次总收线次数
+let fishStruggleTimer = null;     // 鱼挣扎定时器
+let turnCount = 0;
+let battleTimer = null;
+let questStep = 0;
+let currentShipLevel = 1;
+let gameHour = 8;
+let currentNPC = null;
+let selectedGift = null;
+
+// ===== 婚姻与船员系统 =====
+let spouseId = '';           // 配偶NPC ID
+let marriageDays = 0;        // 已婚天数
+let activeCrewId = '';       // 当前出海带上的NPC ID
+let crewEquipment = {};      // npc_id -> rod_id (鱼竿)
+let repairUsedThisTrip = false; // 本次出海是否已用过修补
+
+// 背包系统
+let inventory = {
+  'cotton': { count: 5, q: 0 },
+  'silk': { count: 2, q: 1 },
+  'basic_thread': { count: 10, q: 0 },
+  'red_dye': { count: 1, q: 1 },
+  'black_dye': { count: 1, q: 1 },
+  'ribbon': { count: 3, q: 1 },
+  'common_fish': { count: 8, q: 0 },
+  'rare_fish': { count: 2, q: 2 },
+};
+
+// 商店状态
+let shopState = { items: [], refreshCount: 0, refreshCost: 100, day: 1 };
+
+// 当前配方
+let currentRecipe = null;
+
+const canvas = document.getElementById('charCanvas');
+const ctx = canvas.getContext('2d');
+const previewCharImg = document.getElementById('previewCharImg');
+
+// ========================
+// 创角
+// ========================
+function initCreation() {
+  const skinBox = document.getElementById('skinColors');
+  skinBox.innerHTML = SKIN_TONES.map((c,i) => `<div class="color-dot ${i===0?'selected':''}" style="background:${c}" onclick="setSkin(${i},this)"></div>`).join('');
+  const hairBox = document.getElementById('hairColors');
+  hairBox.innerHTML = HAIR_COLORS.map((c,i) => `<div class="color-dot ${i===0?'selected':''}" style="background:${c}" onclick="setHairColor(${i},this)"></div>`).join('');
+  const eyeBox = document.getElementById('eyeColors');
+  eyeBox.innerHTML = EYE_COLORS.map((c,i) => `<div class="color-dot ${i===0?'selected':''}" style="background:${c}" onclick="setEyeColor(${i},this)"></div>`).join('');
+  renderKeywordTags();
+  drawPreview();
+  animatePreview();
+}
+function setGender(g) {
+  charData.gender = 'female';
+  charData.hairStyle = 0; updateHairLabel(); drawPreview();
+}
+function setSkin(idx, el) { charData.skinTone = idx; selectDot(el); drawPreview(); }
+function setHairColor(idx, el) { charData.hairColor = idx; selectDot(el); drawPreview(); }
+function setEyeColor(idx, el) { charData.eyeColor = idx; selectDot(el); drawPreview(); }
+function selectDot(el) { el.parentElement.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected')); el.classList.add('selected'); }
+function changeHair(dir) {
+  const max = HAIR_STYLES_F.length;
+  charData.hairStyle = (charData.hairStyle + dir + max) % max;
+  updateHairLabel(); drawPreview();
+}
+function updateHairLabel() {
+  document.getElementById('hairLabel').textContent = HAIR_STYLES_F[charData.hairStyle];
+}
+function randomizeChar() {
+  charData.skinTone = randInt(0, SKIN_TONES.length-1);
+  charData.hairStyle = randInt(0, HAIR_STYLES_F.length-1);
+  charData.hairColor = randInt(0, HAIR_COLORS.length-1);
+  charData.eyeColor = randInt(0, EYE_COLORS.length-1);
+  updateHairLabel();
+  document.getElementById('playerName').value = '若若';
+  drawPreview();
+}
+
+let previewTime = 0;
+function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
+function shadeC(rgb,p){return[Math.max(0,Math.min(255,rgb[0]+Math.round(rgb[0]*p/100))),Math.max(0,Math.min(255,rgb[1]+Math.round(rgb[1]*p/100))),Math.max(0,Math.min(255,rgb[2]+Math.round(rgb[2]*p/100)))];}
+function cs(rgb,a){return a!==undefined?`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`:`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;}
+function drawCharacterPreview(c,w,h,t){
+  const g=charData.gender,skin=hexToRgb(SKIN_TONES[charData.skinTone]||SKIN_TONES[0]),hair=hexToRgb(HAIR_COLORS[charData.hairColor]||HAIR_COLORS[0]),eye=hexToRgb(EYE_COLORS[charData.eyeColor]||EYE_COLORS[0]);
+  const sd=shadeC(skin,-20),sm=shadeC(skin,-10),sl=shadeC(skin,10),hd=shadeC(hair,-30),hl=shadeC(hair,30),hmd=shadeC(hair,-15);
+  const ed=shadeC(eye,-40),ec=shadeC(eye,15),ew=[255,255,255];
+  const o=[50,45,65]; // 轮廓色
+  const breath=Math.sin(t*2)*2,sc=Math.min(w/64,h/96)*0.8,ox=(w-64*sc)/2,oy=(h-96*sc)/2+breath+15;
+  const blinkCycle=(t*1.2)%3,blink=blinkCycle<0.12?Math.sin(blinkCycle/0.12*Math.PI):0;
+  c.save();c.translate(ox,oy);c.scale(sc,sc);
+  const R=(x,y,w,h,col,al)=>{c.fillStyle=al!==undefined?`rgba(${col[0]},${col[1]},${col[2]},${al})`:cs(col);c.fillRect(x,y,w,h);};
+
+    // ========== 后发（底层长发）==========
+    R(10,10,6,32,hd);R(12,8,4,36,hair);R(14,6,3,40,hmd);
+    R(48,10,6,32,hd);R(48,8,4,36,hair);R(47,6,3,40,hmd);
+    R(8,24,4,28,hd);R(10,22,3,32,hair);
+    R(52,24,4,28,hd);R(51,22,3,32,hair);
+    R(6,40,4,20,hd);R(54,40,4,20,hd);
+
+    // ========== 地面阴影 ==========
+    R(14,90,36,4,[0,0,0],0.12);
+
+    // ========== 腿部（裸腿 + 白丝 + 凉鞋）==========
+    // 大腿（裸腿）
+    R(23,64,9,14,sd);R(24,64,7,14,skin);R(24,64,2,14,sd);R(24,68,2,6,sl);
+    R(32,64,9,14,sd);R(33,64,7,14,skin);R(33,64,2,14,sd);R(37,68,2,6,sl);
+    // 白色透明袜子（小腿到大腿下部，半透明）
+    R(23,76,9,10,[255,245,250],0.85);R(24,76,7,10,[255,255,255],0.4);R(24,78,2,6,[240,220,230],0.5);
+    R(32,76,9,10,[255,245,250],0.85);R(33,76,7,10,[255,255,255],0.4);R(37,78,2,6,[240,220,230],0.5);
+    // 凉鞋
+    R(22,86,10,3,o);R(23,86,8,2,[210,170,130]); // 鞋底
+    R(24,85,2,3,o);R(28,85,2,3,o); // 鞋带扣
+    R(32,86,10,3,o);R(33,86,8,2,[210,170,130]);
+    R(34,85,2,3,o);R(38,85,2,3,o);
+
+    // ========== 白色蕾丝内衣（内层）==========
+    // 下身内裤
+    R(23,52,18,8,o);R(24,53,16,6,[255,250,250]);R(24,54,16,2,[255,220,230]);
+    R(26,56,12,2,[230,190,210]);
+    // 上身bra
+    R(22,38,20,10,o);R(23,39,18,8,[255,250,250]);R(23,39,18,2,[255,255,255]);
+    R(24,44,16,2,[255,220,230]);
+    // 肩带
+    R(23,36,2,8,[230,190,210]);R(39,36,2,8,[230,190,210]);
+
+    // ========== 白色连衣裙（外层）==========
+    // 上身
+    R(20,34,24,18,o);R(21,35,22,16,[255,255,255]);R(21,35,22,3,[245,245,255]);
+    // V领
+    R(30,34,4,8,skin);R(30,34,4,2,o);R(31,35,2,6,[255,250,250]);
+    // 泡泡短袖
+    R(12,36,10,10,o);R(13,37,8,8,[255,255,255]);R(13,37,8,2,[245,245,255]);
+    R(42,36,10,10,o);R(43,37,8,8,[255,255,255]);R(43,37,8,2,[245,245,255]);
+    // 腰部收紧
+    R(22,50,20,4,o);R(23,51,18,2,[230,230,240]);
+    // 裙摆（蓬松）
+    R(18,52,28,16,o);R(19,53,26,14,[255,255,255]);R(19,53,26,3,[245,245,255]);
+    R(20,58,24,2,[255,220,230]); // 裙褶
+    R(18,64,28,4,o);R(19,65,26,2,[255,255,255]);
+    // 裙摆蕾丝花边
+    for(let sx=20;sx<44;sx+=2)R(sx,66,1,1,[255,220,230]);
+
+    // ========== 手臂 ==========
+    R(13,38,8,20,o);R(14,39,6,18,skin);R(14,39,2,18,sd);R(15,44,2,6,sl);
+    R(43,38,8,20,o);R(44,39,6,18,skin);R(44,39,2,18,sd);R(47,44,2,6,sl);
+    // 泡泡袖露出的一截手臂
+    R(14,46,4,4,skin);R(44,46,4,4,skin);
+    // 交叉的手
+    R(26,68,12,6,skin);R(26,68,2,6,sd);
+
+    // ========== 脖子 ==========
+    R(29,32,6,6,o);R(30,33,4,4,sd);
+
+    // ========== 精灵耳 ==========
+    R(17,18,4,8,o);R(18,19,3,6,skin);R(18,19,1,6,sd);
+    R(43,18,4,8,o);R(44,19,3,6,skin);R(44,19,1,6,sl);
+
+    // ========== 头部（圆润脸型）==========
+    R(19,10,26,24,o); // 脸轮廓
+    R(20,11,24,22,skin);R(20,11,4,22,sd);R(38,11,6,22,sl);
+    R(22,28,20,6,skin);R(24,30,16,4,skin);R(26,32,12,2,skin);
+    R(22,26,4,4,sd);R(38,26,4,4,sl);
+
+    // ========== 眼睛（大萌眼+眨眼）==========
+    const ey=16;
+    if(blink<0.5){
+      // 左眼
+      R(23,ey,11,9,o); // 眼眶
+      R(24,ey+1,9,2,ed);R(24,ey+1,9,1,o); // 上眼睑
+      R(24,ey+3,9,4,[255,245,250]); // 眼白
+      R(25,ey+3,7,4,eye); // 虹膜
+      R(26,ey+3,5,2,ec); // 高光层
+      R(27,ey+4,3,3,ed); // 瞳孔
+      R(26,ey+3,3,3,ew);R(29,ey+5,2,2,ew); // 高光
+      R(24,ey+7,9,2,eye);R(24,ey+8,9,1,o); // 下眼睑
+      R(22,ey,3,1,o);R(23,ey-1,2,1,o); // 睫毛
+      R(32,ey,3,1,o);
+      // 右眼
+      R(34,ey,11,9,o);
+      R(35,ey+1,9,2,ed);R(35,ey+1,9,1,o);
+      R(35,ey+3,9,4,[255,245,250]);
+      R(36,ey+3,7,4,eye);R(37,ey+3,5,2,ec);
+      R(38,ey+4,3,3,ed);
+      R(37,ey+3,3,3,ew);R(40,ey+5,2,2,ew);
+      R(35,ey+7,9,2,eye);R(35,ey+8,9,1,o);
+      R(33,ey,3,1,o);R(43,ey,3,1,o);
+    }else{
+      // 闭眼
+      R(24,ey+3,9,2,ed);R(35,ey+3,9,2,ed);
+      R(24,ey+5,9,1,o);R(35,ey+5,9,1,o);
+    }
+
+    // 眉毛
+    R(24,13,3,1,hd);R(26,12,4,1,hd);R(30,13,3,1,hd);
+    R(35,13,3,1,hd);R(37,12,4,1,hd);R(41,13,3,1,hd);
+
+    // 嘴
+    R(30,27,4,2,o);R(31,28,2,1,[220,100,120]);
+
+    // 腮红
+    c.globalAlpha=0.35;R(20,22,5,4,[255,160,170]);R(39,22,5,4,[255,160,170]);c.globalAlpha=1;
+
+    // ========== 前发（蓬松层次）==========
+    const hs=charData.hairStyle%5;
+    if(hs===0||hs===2||hs===3){
+      R(16,8,32,10,o);R(17,9,30,8,hair);R(18,10,28,6,hl);
+      R(14,12,4,30,o);R(15,13,3,28,hair);R(15,16,2,24,hd);
+      R(48,12,4,30,o);R(49,13,3,28,hair);R(50,16,2,24,hd);
+      R(12,22,4,32,o);R(13,23,3,30,hair);R(13,26,2,26,hd);
+      R(52,22,4,32,o);R(53,23,3,30,hair);R(54,26,2,26,hd);
+    }else if(hs===1){
+      R(16,8,32,10,o);R(17,9,30,8,hair);
+      R(16,14,4,18,o);R(17,15,3,16,hair);R(17,18,2,12,hd);
+      R(44,14,4,18,o);R(45,15,3,16,hair);R(46,18,2,12,hd);
+    }else{
+      R(16,8,32,10,o);R(17,9,30,8,hair);
+      R(14,12,4,24,o);R(15,13,3,22,hair);R(15,16,2,18,hd);
+      R(46,12,4,24,o);R(47,13,3,22,hair);R(48,16,2,18,hd);
+    }
+    // 头顶
+    R(18,4,28,10,o);R(19,5,26,8,hair);R(20,6,24,6,hl);R(22,7,20,4,hair);R(24,8,16,2,hl);
+    // 刘海
+    R(18,10,28,8,o);R(19,11,26,6,hair);R(20,12,5,4,hl);R(28,12,8,4,hl);R(38,12,6,4,hl);
+    R(21,13,3,3,hmd);R(35,13,3,3,hmd);
+    // 额前碎发
+    R(18,14,4,14,o);R(19,15,3,12,hair);R(19,18,2,10,hd);
+    R(42,14,4,14,o);R(43,15,3,12,hair);R(44,18,2,10,hd);
+    // 头顶高光
+    R(38,0,3,4,o);R(39,1,2,2,hl);
+
+    if(hs===2){
+      R(10,16,6,20,o);R(11,17,4,18,hair);R(11,20,2,16,hd);
+      R(48,16,6,20,o);R(49,17,4,18,hair);R(50,20,2,16,hd);
+    }else if(hs===3){
+      R(44,12,8,28,o);R(45,13,6,26,hair);R(46,16,2,24,hd);
+    }
+
+  c.restore();
+}
+function drawPreview(){
+  if(previewCharImg){
+    previewCharImg.src='char_preview_f.png';
+  }
+}
+function animatePreview() { previewTime += 0.016; drawPreview(); requestAnimationFrame(animatePreview); }
+
+function startGame() {
+  charData.name = document.getElementById('playerName').value || '冒险者';
+  document.getElementById('creationScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('charName').textContent = charData.name;
+  document.getElementById('battleCharName').textContent = charData.name;
+  updateGold();
+  resetPlayer();
+  showScreen('cabin');
+  initQuest();
+  renderSeaSelect();
+  updateTimeDisplay();
+  updateCrewIndicator();
+  drawCharacter();
+  animateCharacter();
+}
+
+// ========================
+// 关键词标签
+// ========================
+function renderKeywordTags() {
+  const tags = ['弗洛洛','哥特','红色','黑色','蕾丝','连衣裙','蝴蝶结','华丽','性感','黑丝','传说'];
+  const box = document.getElementById('keywordTags');
+  if (!box) return;
+  box.innerHTML = tags.map(t => `<span class="keyword-tag" onclick="addKeyword('${t}')">${t}</span>`).join('');
+}
+function addKeyword(kw) {
+  const input = document.getElementById('craftInput');
+  if (!input) return;
+  input.value = input.value ? input.value + ' ' + kw : kw;
+}
+function clearCraftInput() {
+  const input = document.getElementById('craftInput');
+  if (input) input.value = '';
+}
+
+// ========================
+// AI制衣配方生成
+// ========================
+function generateRecipe() {
+  const input = document.getElementById('craftInput').value.trim();
+  if (!input) { alert('请输入衣服描述！'); return; }
+  const parsed = parseCraftInput(input);
+  const quality = Math.min(parsed.quality, 3);
+  const materials = [];
+
+  const fabricQty = Math.ceil(parsed.fabricNeed || 3);
+  materials.push({ id: 'fabric', name: MATERIAL_NAMES.fabric, emoji: '🧵', req: fabricQty, q: quality, hint: '市场购买或种植棉花制作' });
+  materials.push({ id: 'thread', name: MATERIAL_NAMES.thread, emoji: '🧶', req: Math.ceil(fabricQty * 0.7), q: Math.max(quality - 1, 0), hint: '市场购买' });
+
+  for (const dyeColor of parsed.colors) {
+    const dye = DYE_INFO[dyeColor];
+    if (dye) {
+      materials.push({ id: 'dye_' + dyeColor, name: dye.name, emoji: '🧴', req: 2, q: dyeColor === 'purple' || dyeColor === 'gold' ? 3 : 1, hint: dye.source });
+    }
+  }
+  for (const acc of parsed.accessories) {
+    const accQ = acc.q || Math.max(quality - 1, 0);
+    materials.push({ id: acc.item, name: MATERIAL_NAMES[acc.item] || acc.item, emoji: ACC_EMOJI[acc.item] || '✨', req: acc.amt || 1, q: accQ, hint: accQ >= 3 ? '每日商店/BOSS掉落' : '市场购买' });
+  }
+  if (quality >= 3) {
+    materials.push({ id: 'boss_scale', name: MATERIAL_NAMES.boss_scale, emoji: '🐟', req: 1, q: 3, hint: '击败「深渊鲤鱼」掉落' });
+  }
+
+  currentRecipe = { name: parsed.clothName, quality: quality, materials: materials, input: input, preview: parsed.preview };
+  renderRecipe(currentRecipe);
+  addLog(`🧵 AI已生成配方: 「${parsed.clothName}」 (${qName(quality)}品质)`, 'craft');
+}
+
+function parseCraftInput(input) {
+  let fabricNeed = 3, quality = 1, colors = [], accessories = [], clothName = '', preview = 'cloth_custom.png';
+  const inpt = input.toLowerCase();
+  for (const [kw, data] of Object.entries(CRAFT_KEYWORDS)) {
+    if (input.includes(kw)) {
+      switch (data.type) {
+        case 'style': fabricNeed = data.fabric || 3; if (!clothName) clothName = kw; break;
+        case 'color': if (!colors.includes(data.dye)) colors.push(data.dye); break;
+        case 'tier': quality = Math.max(quality, data.q); if (data.acc) { for (const a of data.acc) accessories.push({ item: a, amt: 1, q: 2 }); } break;
+        case 'acc': accessories.push({ item: data.item, amt: data.amt, q: data.q }); break;
+        case 'preset': quality = Math.max(quality, data.q); colors = [...new Set([...colors, ...data.colors])]; if (data.acc) { for (const a of data.acc) accessories.push({ item: a, amt: 1, q: 2 }); } if (!clothName) clothName = data.style + '风格' + (input.includes('连衣裙')?'连衣裙':'衣服'); break;
+      }
+    }
+  }
+  if (!clothName) clothName = '定制' + (input.includes('连衣裙')?'连衣裙':'衣服');
+  if (colors.length === 0) colors.push('white');
+  // 推断预览图
+  if (inpt.includes('哥特')) preview = 'cloth_gothic.png';
+  else if (inpt.includes('洛丽塔')) preview = 'cloth_lolita.png';
+  else if (inpt.includes('女仆')) preview = 'cloth_maid.png';
+  else if (inpt.includes('泳装') || inpt.includes('泳衣')) preview = 'cloth_swimsuit.png';
+  else if (inpt.includes('弗洛洛')) preview = 'cloth_lolita.png';
+  else if (inpt.includes('睡衣') || inpt.includes('睡裙')) preview = 'cloth_pajamas.png';
+  else if (inpt.includes('连衣裙') || inpt.includes('裙子')) preview = 'cloth_dress.png';
+  return { fabricNeed, quality, colors, accessories, clothName, preview };
+}
+
+function renderRecipe(recipe) {
+  const box = document.getElementById('recipeResult');
+  const q = recipe.quality;
+  const qCol = qColor(q);
+  let matHtml = '';
+  for (const mat of recipe.materials) {
+    const inv = inventory[mat.id];
+    const have = inv ? inv.count : 0;
+    const enough = have >= mat.req;
+    const matCol = qColor(mat.q);
+    matHtml += `
+      <div class="material-row">
+        <div class="mat-quality" style="background:${matCol}; box-shadow: 0 0 4px ${matCol};"></div>
+        <span class="mat-name">${mat.emoji} ${mat.name}</span>
+        <span class="mat-amount" style="color:${enough?'#4ade80':'#f87171'};">${have}/${mat.req}</span>
+        <span class="mat-status ${enough?'ok':'missing'}">${enough?'✅':'❌'}</span>
+        <span class="mat-hint">💡 ${mat.hint}</span>
+      </div>
+    `;
+  }
+  const canCraft = recipe.materials.every(m => { const inv = inventory[m.id]; return inv && inv.count >= m.req; });
+  box.innerHTML = `
+    <div class="recipe-card ${qClass(q)}" style="border-color:${qCol}40;">
+      <div class="recipe-header">
+        <span class="recipe-name" style="color:${qCol};">🎀 ${recipe.name}</span>
+        <span class="recipe-quality" style="background:${qCol}20; color:${qCol};">${qStars(q)} ${qName(q)}</span>
+      </div>
+      <div class="recipe-preview" style="border:2px dashed ${qCol}40; padding:8px; text-align:center;"><img src="${recipe.preview || 'cloth_custom.png'}" alt="${recipe.name}" style="width:64px; height:96px; image-rendering:pixelated;"></div>
+      <div class="material-list">${matHtml}</div>
+      <div style="margin-top:12px; text-align:center;">
+        <button class="btn-game btn-primary" onclick="craftRecipe()" ${canCraft?'':'disabled'}>${canCraft?'🔨 开始制作':'材料不足'}</button>
+        <button class="btn-game btn-secondary" onclick="saveRecipe()">💾 保存配方</button>
+      </div>
+    </div>
+  `;
+}
+
+function craftRecipe() {
+  if (!currentRecipe) return;
+  for (const mat of currentRecipe.materials) {
+    if (inventory[mat.id]) {
+      inventory[mat.id].count -= mat.req;
+      if (inventory[mat.id].count <= 0) delete inventory[mat.id];
+    }
+  }
+  const itemId = 'crafted_' + Date.now();
+  inventory[itemId] = { count: 1, q: currentRecipe.quality, isCloth: true, name: currentRecipe.name };
+  addLog(`🎉 制作成功！获得 [${qName(currentRecipe.quality)}] ${currentRecipe.name}！`, 'craft');
+  const box = document.getElementById('recipeResult');
+  box.innerHTML = `
+    <div style="text-align:center; padding:30px;">
+      <div style="font-size:48px; margin-bottom:12px;">🎉</div>
+      <div style="font-size:18px; color:${qColor(currentRecipe.quality)}; margin-bottom:8px;">${currentRecipe.name}</div>
+      <div style="font-size:14px; color:#aaa;">${qName(currentRecipe.quality)}品质衣服制作完成！</div>
+      <div style="margin-top:16px;">
+        <button class="btn-game btn-primary" onclick="openCrafting()">🧵 继续设计</button>
+        <button class="btn-game btn-secondary" onclick="backToCabin()">🏠 返回船舱</button>
+      </div>
+    </div>
+  `;
+}
+function saveRecipe() {
+  if (!currentRecipe) return;
+  addLog(`💾 配方「${currentRecipe.name}」已保存到配方书`, 'craft');
+}
+
+// ========================
+// 背包系统
+// ========================
+function openInventory() {
+  showScreen('inventory');
+  renderInventory();
+}
+function renderInventory() {
+  const grid = document.getElementById('inventoryGrid');
+  const entries = Object.entries(inventory).filter(([id, data]) => data.count > 0);
+  grid.innerHTML = entries.map(([id, data]) => {
+    const itemInfo = SHOP_POOL.find(s => s.id === id);
+    const emoji = itemInfo ? itemInfo.emoji : (data.isCloth ? '👗' : '📦');
+    const name = itemInfo ? itemInfo.name : (data.name || id);
+    const q = data.q || 0;
+    return `
+      <div class="inv-item" onclick="showItemDetail('${id}')">
+        <div class="inv-item-emoji">${emoji}</div>
+        <div class="inv-quality-dot" style="background:${qColor(q)};"></div>
+        <div class="inv-item-count">×${data.count}</div>
+      </div>
+    `;
+  }).join('');
+  if (entries.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#666; padding:20px;">背包是空的</div>';
+  }
+}
+function showItemDetail(id) {
+  const data = inventory[id];
+  if (!data) return;
+  const itemInfo = SHOP_POOL.find(s => s.id === id);
+  const name = itemInfo ? itemInfo.name : (data.name || id);
+  const q = data.q || 0;
+  const detail = document.getElementById('inventoryDetail');
+  detail.innerHTML = `<strong style="color:${qColor(q)};">${name}</strong> (${qName(q)}品质) ×${data.count}<br>${itemInfo ? '类别: ' + itemInfo.category : ''}${data.isCloth ? '<br>👗 这是一件衣服，可以在衣橱中装备' : ''}`;
+}
+
+// ========================
+// 每日商店
+// ========================
+function visitDailyShop() {
+  showScreen('shop');
+  if (shopState.items.length === 0) generateShopItems();
+  renderShop();
+}
+function generateShopItems() {
+  shopState.items = [];
+  const count = randInt(5, 8);
+  for (let i = 0; i < count; i++) {
+    const q = rollShopQuality();
+    const candidates = SHOP_POOL.filter(s => s.q === q);
+    const item = candidates.length > 0 ? candidates[randInt(0, candidates.length - 1)] : SHOP_POOL[randInt(0, SHOP_POOL.length - 1)];
+    shopState.items.push({ ...item, uniqueId: 'shop_' + i });
+  }
+}
+function rollShopQuality() {
+  const r = Math.random();
+  if (r < 0.40) return 0; if (r < 0.70) return 1;
+  if (r < 0.88) return 2; if (r < 0.96) return 3;
+  if (r < 0.99) return 4; return 5;
+}
+function renderShop() {
+  const grid = document.getElementById('shopGrid');
+  document.getElementById('shopRefreshCount').textContent = shopState.refreshCount;
+  document.getElementById('shopRefreshCost').textContent = shopState.refreshCost;
+  document.getElementById('btnShopRefresh').disabled = shopState.refreshCount >= 10;
+  const hasRare = shopState.items.some(i => i.q >= 3);
+  document.getElementById('shopHint').textContent = hasRare ? '✨ 本店今日有稀有商品！不要错过！' : '';
+  grid.innerHTML = shopState.items.map((item, idx) => {
+    const canAfford = player.gold >= item.price;
+    const q = item.q;
+    return `
+      <div class="shop-item" style="border-color:${qColor(q)}30;">
+        <div class="shop-item-emoji">${item.emoji}</div>
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-quality" style="color:${qColor(q)};">${qStars(q)} ${qName(q)}</div>
+        <div class="shop-item-price">💰 ${item.price}G</div>
+        <button class="shop-item-btn" onclick="buyShopItem(${idx})" ${canAfford?'':'disabled'}>${canAfford?'购买':'金币不足'}</button>
+      </div>
+    `;
+  }).join('');
+}
+function buyShopItem(idx) {
+  const item = shopState.items[idx];
+  if (!item || player.gold < item.price) return;
+  player.gold -= item.price;
+  updateGold();
+  if (inventory[item.id]) { inventory[item.id].count += 1; }
+  else { inventory[item.id] = { count: 1, q: item.q }; }
+  addLog(`🏪 购买成功: [${qName(item.q)}] ${item.name} ×1`, 'loot');
+  shopState.items.splice(idx, 1);
+  renderShop();
+}
+function refreshShop() {
+  if (shopState.refreshCount >= 10) return;
+  if (player.gold < shopState.refreshCost) { addLog('💰 金币不足，无法刷新商店', 'system'); return; }
+  player.gold -= shopState.refreshCost;
+  shopState.refreshCost *= 2;
+  shopState.refreshCount++;
+  updateGold();
+  shopState.items = [];
+  const count = randInt(5, 8);
+  for (let i = 0; i < count; i++) {
+    const q = rollShopQualityManual();
+    const candidates = SHOP_POOL.filter(s => s.q === q);
+    const item = candidates.length > 0 ? candidates[randInt(0, candidates.length - 1)] : SHOP_POOL[randInt(0, SHOP_POOL.length - 1)];
+    shopState.items.push({ ...item, uniqueId: 'shop_refreshed_' + i });
+  }
+  addLog(`🔄 花费金币刷新商店！(${shopState.refreshCount}/10)`, 'system');
+  renderShop();
+}
+function rollShopQualityManual() {
+  const r = Math.random();
+  if (r < 0.30) return 0; if (r < 0.55) return 1;
+  if (r < 0.78) return 2; if (r < 0.93) return 3;
+  if (r < 0.985) return 4; return 5;
+}
+
+// ========================
+// 画面切换
+// ========================
+var CABIN;
+function showScreen(screen) {
+  battleState = screen;
+  const screens = ['shipCabinPanel', 'wardrobePanel', 'craftingPanel', 'inventoryPanel',
+                   'seaSelectPanel', 'sailingPanel', 'battlePanel', 'cityPanel',
+                   'npcPanel', 'giftPanel', 'shopPanel', 'characterPanel'];
+  screens.forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
+  const show = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); };
+  if (screen === 'cabin') { show('shipCabinPanel'); renderCabin(); }
+  else if (typeof CABIN !== 'undefined') { CABIN.running = false; }
+  if (screen === 'wardrobe') show('wardrobePanel');
+  if (screen === 'crafting') show('craftingPanel');
+  if (screen === 'inventory') show('inventoryPanel');
+  if (screen === 'seaselect') show('seaSelectPanel');
+  if (screen === 'sailing') show('sailingPanel');
+  if (screen === 'fishing' || screen === 'battling' || screen === 'ended') show('battlePanel');
+  if (screen === 'city') show('cityPanel');
+  if (screen === 'npc') show('npcPanel');
+  if (screen === 'gift') show('giftPanel');
+  if (screen === 'shop') show('shopPanel');
+  if (screen === 'character') { show('characterPanel'); renderCharacterPanel(); }
+
+  const phaseMap = {
+    cabin:'当前: 在船上', wardrobe:'当前: 配置装备', crafting:'当前: 制衣',
+    inventory:'当前: 查看背包', seaselect:'当前: 选择海域', sailing:'当前: 航行中',
+    fishing:'当前: 钓鱼中', battling:'当前: 战斗中', ended:'当前: 战斗结束',
+    city:'当前: 在城里', npc:'当前: 与NPC互动', gift:'当前: 选择礼物', shop:'当前: 每日商店',
+    character:'当前: 查看人物'
+  };
+  document.getElementById('gamePhase').textContent = phaseMap[screen] || screen;
+}
+
+function openCrafting() {
+  showScreen('crafting');
+  renderKeywordTags();
+  addLog('🧵 打开制衣台...', 'craft');
+}
+
+// ========================
+// 人物界面
+// ========================
+const CHAR_TEMPLATES = [
+  { id: '01', name: '粉兔少女', file: 'assets/char_template_01.jpg' },
+  { id: '02', name: '粉星公主', file: 'assets/char_template_02.jpg' },
+  { id: '03', name: '暗紫大小姐', file: 'assets/char_template_03.jpg' },
+  { id: '04', name: '银灰魔女', file: 'assets/char_template_04.jpg' },
+  { id: '05', name: '雪铃巫女', file: 'assets/char_template_05.jpg' },
+  { id: '06', name: '粉发JK', file: 'assets/char_template_06.jpg' },
+  { id: '07', name: '制服少女', file: 'assets/char_template_07.jpg' },
+  { id: '08', name: '爱丽丝', file: 'assets/char_template_08.jpg' },
+];
+let currentTemplateIndex = 0;
+
+function openCharacter() {
+  showScreen('character');
+}
+
+function renderCharacterPanel() {
+  // 渲染模板缩略图
+  const grid = document.getElementById('charTemplateGrid');
+  if (grid && grid.children.length === 0) {
+    grid.innerHTML = CHAR_TEMPLATES.map((t, i) =>
+      `<div class="char-template-thumb ${i === currentTemplateIndex ? 'active' : ''}" data-index="${i}" onclick="switchTemplate(${i})">
+        <img src="${t.file}" alt="${t.name}" loading="lazy">
+      </div>`
+    ).join('');
+  } else if (grid) {
+    Array.from(grid.children).forEach((el, i) => {
+      el.classList.toggle('active', i === currentTemplateIndex);
+    });
+  }
+
+  // 更新立绘
+  const illust = document.getElementById('charIllust');
+  if (illust) illust.src = CHAR_TEMPLATES[currentTemplateIndex].file;
+
+  // 绑定角色数据
+  document.getElementById('profileCharName').textContent = charData.name || '冒险者';
+  document.getElementById('profileGender').textContent = '♀ 女性';
+  document.getElementById('profileAtk').textContent = player.attack || 20;
+  document.getElementById('profileDef').textContent = player.defense || 15;
+  document.getElementById('profileMaxHp').textContent = (player.maxDurability || 100) + ' / ' + (player.maxDurability || 100);
+  document.getElementById('profileShyCap').textContent = '100';
+  document.getElementById('profileFish').textContent = player.fishingPower || 10;
+
+  const cloth = player.cloth || { name: '新手布衣', durability: [100,100,100], defense: 15, attack: 20 };
+  document.getElementById('profileEquip').textContent = '👗 ' + cloth.name;
+  document.getElementById('profileEquipStat').textContent = `耐久 ${cloth.durability.join('/')} | 防御 +${cloth.defense} | 攻击 +${cloth.attack}`;
+
+  let spouse = null;
+  for (const key in NPCS) { if (NPCS[key].id === player.spouseId) { spouse = NPCS[key]; break; } }
+  if (spouse) {
+    document.getElementById('profileSpouse').textContent = '♀ ' + spouse.name;
+    const stages = ['陌生','认识','友好','暧昧','恋人','订婚','已婚'];
+    document.getElementById('profileSpouseStat').textContent = stages[spouse.stage] + ' | 婚姻 ' + (player.marriageDays || 0) + ' 天';
+  } else {
+    document.getElementById('profileSpouse').textContent = '--';
+    document.getElementById('profileSpouseStat').textContent = '暂无';
+  }
+
+  let crew = null;
+  for (const key in NPCS) { if (NPCS[key].id === player.activeCrewId) { crew = NPCS[key]; break; } }
+  if (crew) {
+    document.getElementById('profileCrew').textContent = '♀ ' + crew.name;
+    document.getElementById('profileCrewStat').textContent = 'DPS: ' + (crew.combatData?.baseDps || '--') + ' | 修补: ' + (crew.combatData?.baseRepair || '--') + '%';
+  } else {
+    document.getElementById('profileCrew').textContent = '--';
+    document.getElementById('profileCrewStat').textContent = '暂无';
+  }
+}
+
+function switchTemplate(idx) {
+  currentTemplateIndex = idx;
+  const illust = document.getElementById('charIllust');
+  if (illust) illust.src = CHAR_TEMPLATES[idx].file;
+  const grid = document.getElementById('charTemplateGrid');
+  if (grid) {
+    Array.from(grid.children).forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
+}
+
+// ========================
+// 时间系统
+// ========================
+function updateTimeDisplay() {
+  const h = String(gameHour).padStart(2, '0');
+  document.getElementById('timeDisplay').textContent = `${h}:00`;
+  const ct = document.getElementById('cityTime');
+  if (ct) ct.textContent = `${h}:00`;
+}
+function advanceTime() {
+  gameHour = (gameHour + 2) % 24;
+  updateTimeDisplay();
+  addLog(`⏰ 时间推进到 ${String(gameHour).padStart(2,'0')}:00`, 'system');
+}
+
+// ===== 船舱像素地图系统 =====
+CABIN = {
+  canvas: null, ctx: null,
+  width: 480, height: 320, tileSize: 16,
+  running: false, animTime: 0,
+  player: { x: 240, y: 180, w: 16, h: 16, speed: 2.5, facing: 'down' },
+  targetX: undefined, targetY: undefined,
+  keys: {},
+  furniture: [
+    { id: 'bed', x: 32, y: 32, w: 48, h: 56, label: 'bed', color: '#6B4226', interactRadius: 50 },
+    { id: 'wardrobe', x: 400, y: 32, w: 48, h: 56, label: 'wardrobe', color: '#5C3A1E', interactRadius: 50 },
+    { id: 'crafting', x: 180, y: 240, w: 80, h: 48, label: 'crafting', color: '#4A5D23', interactRadius: 55 },
+    { id: 'door', x: 448, y: 140, w: 16, h: 56, label: 'door', color: '#3D2B1F', interactRadius: 45 },
+  ],
+  walls: [
+    { x: 0, y: 0, w: 480, h: 16 },
+    { x: 0, y: 0, w: 16, h: 320 },
+    { x: 464, y: 0, w: 16, h: 320 },
+    { x: 0, y: 304, w: 480, h: 16 },
+  ]
+};
+
+function rectsOverlap(x1, y1, w1, h1, x2, y2, w2, h2) {
+  return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
+
+function initCabinMap() {
+  CABIN.canvas = document.getElementById('cabinMap');
+  CABIN.ctx = CABIN.canvas.getContext('2d');
+  window.addEventListener('keydown', cabinKeyDown);
+  window.addEventListener('keyup', cabinKeyUp);
+  CABIN.canvas.addEventListener('click', cabinCanvasClick);
+}
+
+function cabinKeyDown(e) {
+  CABIN.keys[e.key] = true;
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    tryInteractCabin();
+  }
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
+function cabinKeyUp(e) {
+  CABIN.keys[e.key] = false;
+}
+
+function cabinCanvasClick(e) {
+  const rect = CABIN.canvas.getBoundingClientRect();
+  const scaleX = CABIN.canvas.width / rect.width;
+  const scaleY = CABIN.canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  for (const f of CABIN.furniture) {
+    if (mx >= f.x && mx <= f.x + f.w && my >= f.y && my <= f.y + f.h) {
+      if (isNearFurniture(f)) {
+        interactWithFurniture(f.id);
+      } else {
+        CABIN.targetX = f.x + f.w / 2;
+        CABIN.targetY = f.y + f.h + 16;
+      }
+      return;
+    }
+  }
+
+  CABIN.targetX = Math.max(24, Math.min(456, mx));
+  CABIN.targetY = Math.max(24, Math.min(296, my));
+}
+
+function drawCabinFloor(ctx, w, h) {
+  const ts = CABIN.tileSize;
+  for (let y = 0; y < h; y += ts) {
+    for (let x = 0; x < w; x += ts) {
+      const color = ((x / ts + y / ts) % 2 === 0) ? '#2a1f15' : '#241a10';
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, ts, ts);
+      ctx.fillStyle = '#1a120a';
+      ctx.fillRect(x, y + ts - 2, ts, 1);
+      ctx.fillRect(x + ts - 2, y, 1, ts);
+    }
+  }
+}
+
+function drawCabinWalls(ctx) {
+  ctx.fillStyle = '#3d2b1f';
+  for (const wall of CABIN.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+  }
+  ctx.fillStyle = '#5a4030';
+  for (const wall of CABIN.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, 2);
+    ctx.fillRect(wall.x, wall.y, 2, wall.h);
+  }
+}
+
+function drawFurniturePixel(ctx, f) {
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(f.x + 3, f.y + 3, f.w, f.h);
+  ctx.fillStyle = f.color;
+  ctx.fillRect(f.x, f.y, f.w, f.h);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(f.x, f.y, f.w, 2);
+  ctx.fillRect(f.x, f.y, 2, f.h);
+
+  if (f.id === 'bed') {
+    ctx.fillStyle = '#ddd';
+    ctx.fillRect(f.x + 4, f.y + 6, 14, 10);
+    ctx.fillStyle = '#7B68EE';
+    ctx.fillRect(f.x + 4, f.y + 18, 40, 34);
+    ctx.fillStyle = '#9370DB';
+    ctx.fillRect(f.x + 4, f.y + 26, 40, 2);
+    ctx.fillRect(f.x + 4, f.y + 34, 40, 2);
+    ctx.fillStyle = '#6A5ACD';
+    ctx.fillRect(f.x + 4, f.y + 42, 40, 4);
+  } else if (f.id === 'wardrobe') {
+    ctx.fillStyle = '#4a2e15';
+    ctx.fillRect(f.x + 4, f.y + 4, 18, f.h - 8);
+    ctx.fillRect(f.x + 26, f.y + 4, 18, f.h - 8);
+    ctx.fillStyle = '#C0A060';
+    ctx.fillRect(f.x + 16, f.y + f.h / 2 - 4, 3, 8);
+    ctx.fillRect(f.x + 30, f.y + f.h / 2 - 4, 3, 8);
+    ctx.fillStyle = '#5C3A1E';
+    ctx.fillRect(f.x, f.y, f.w, 4);
+  } else if (f.id === 'crafting') {
+    ctx.fillStyle = '#6B4226';
+    ctx.fillRect(f.x, f.y + 8, f.w, 14);
+    ctx.fillStyle = '#5C3A1E';
+    ctx.fillRect(f.x + 6, f.y + 22, 6, f.h - 22);
+    ctx.fillRect(f.x + f.w - 12, f.y + 22, 6, f.h - 22);
+    ctx.fillStyle = '#C0C0C0';
+    ctx.fillRect(f.x + 22, f.y + 4, 14, 4);
+    ctx.fillRect(f.x + 50, f.y + 6, 10, 6);
+    ctx.fillStyle = '#FFB6C1';
+    ctx.fillRect(f.x + 30, f.y + 10, 16, 8);
+  } else if (f.id === 'door') {
+    ctx.fillStyle = '#2a1f15';
+    ctx.fillRect(f.x + 2, f.y + 2, f.w - 4, f.h - 4);
+    ctx.fillStyle = '#5C4033';
+    ctx.fillRect(f.x + 4, f.y + 4, f.w - 8, f.h - 8);
+    ctx.fillStyle = '#C0A060';
+    ctx.fillRect(f.x + 8, f.y + f.h / 2, 3, 3);
+    ctx.fillStyle = '#4a6fa5';
+    ctx.fillRect(f.x + 6, f.y + 10, f.w - 12, 14);
+  }
+
+  if (isNearFurniture(f)) {
+    ctx.strokeStyle = 'rgba(255,255,100,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(f.x - 2, f.y - 2, f.w + 4, f.h + 4);
+  }
+}
+
+function getCabinPlayerSprite() {
+  if (!player.dur) return SPRITES['f_q'] || SPRITES['f'];
+  const cloth = CLOTHES[selectedCloth];
+  const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+  const curTotal = (player.dur.top || 0) + (player.dur.bottom || 0) + (player.dur.legs || 0);
+  const brokenRatio = 1 - (curTotal / maxTotal);
+  let key = 'f_q';
+  if (brokenRatio > 0.85) {
+    key = 'f_q_stage5';
+  } else if (brokenRatio > 0.70) {
+    key = 'f_q_stage4';
+  } else if (brokenRatio > 0.50) {
+    key = 'f_q_stage3';
+  } else if (brokenRatio > 0.30) {
+    key = 'f_q_stage2';
+  } else if (brokenRatio > 0.15) {
+    key = 'f_q_stage1';
+  } else {
+    key = 'f_q_full';
+  }
+  return SPRITES[key] || SPRITES['f_q'] || SPRITES['f'];
+}
+
+function drawCabinPlayer(ctx) {
+  const p = CABIN.player;
+  const sprite = getCabinPlayerSprite();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(p.x - 8, p.y + 8, 16, 4);
+  if (sprite && sprite.complete) {
+    const scale = 0.4;
+    const sw = 64 * scale;
+    const sh = 96 * scale;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sprite, p.x - sw / 2, p.y - sh + 8, sw, sh);
+  } else {
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 5, p.y - 12, 10, 10);
+    ctx.fillStyle = (CLOTHES[selectedCloth] && CLOTHES[selectedCloth].color) || '#fff';
+    ctx.fillRect(p.x - 6, p.y - 2, 12, 8);
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 2, p.y + 6, 4, 4);
+  }
+}
+
+function checkCabinCollision(x, y) {
+  const pw = CABIN.player.w;
+  const ph = CABIN.player.h;
+  const px = x - pw / 2;
+  const py = y - ph / 2;
+  for (const wall of CABIN.walls) {
+    if (rectsOverlap(px, py, pw, ph, wall.x, wall.y, wall.w, wall.h)) return true;
+  }
+  for (const f of CABIN.furniture) {
+    if (f.id === 'door') continue;
+    if (rectsOverlap(px, py, pw, ph, f.x, f.y, f.w, f.h)) return true;
+  }
+  return false;
+}
+
+function updateCabinPlayer() {
+  const p = CABIN.player;
+  let dx = 0, dy = 0;
+  if (CABIN.keys['w'] || CABIN.keys['ArrowUp']) dy -= p.speed;
+  if (CABIN.keys['s'] || CABIN.keys['ArrowDown']) dy += p.speed;
+  if (CABIN.keys['a'] || CABIN.keys['ArrowLeft']) dx -= p.speed;
+  if (CABIN.keys['d'] || CABIN.keys['ArrowRight']) dx += p.speed;
+  if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
+
+  if (CABIN.targetX !== undefined) {
+    const tx = CABIN.targetX - p.x;
+    const ty = CABIN.targetY - p.y;
+    const dist = Math.sqrt(tx * tx + ty * ty);
+    if (dist > 4) { dx = (tx / dist) * p.speed; dy = (ty / dist) * p.speed; }
+    else { CABIN.targetX = undefined; CABIN.targetY = undefined; }
+  }
+
+  const newX = p.x + dx;
+  if (!checkCabinCollision(newX, p.y)) p.x = newX;
+  const newY = p.y + dy;
+  if (!checkCabinCollision(p.x, newY)) p.y = newY;
+
+  if (dy < 0) p.facing = 'up';
+  if (dy > 0) p.facing = 'down';
+  if (dx < 0) p.facing = 'left';
+  if (dx > 0) p.facing = 'right';
+
+  p.x = Math.max(24, Math.min(456, p.x));
+  p.y = Math.max(24, Math.min(296, p.y));
+}
+
+function isNearFurniture(f) {
+  const fx = f.x + f.w / 2;
+  const fy = f.y + f.h / 2;
+  const dist = Math.sqrt((CABIN.player.x - fx) ** 2 + (CABIN.player.y - fy) ** 2);
+  return dist < f.interactRadius;
+}
+
+function getNearFurniture() {
+  for (const f of CABIN.furniture) {
+    if (isNearFurniture(f)) return f;
+  }
+  return null;
+}
+
+function drawInteractionHint(ctx) {
+  const f = getNearFurniture();
+  const hintEl = document.getElementById('cabinInteractHint');
+  if (f) {
+    let action = '';
+    switch (f.id) {
+      case 'bed': action = '💤 Rest [SPACE]'; break;
+      case 'wardrobe': action = '👗 Wardrobe [SPACE]'; break;
+      case 'crafting': action = '🧵 Crafting [SPACE]'; break;
+      case 'door': action = '🚪 Leave Ship [SPACE]'; break;
+    }
+    hintEl.textContent = action;
+    const fx = f.x + f.w / 2;
+    const fy = f.y - 14;
+    const bounce = Math.sin(CABIN.animTime * 4) * 3;
+    ctx.fillStyle = 'rgba(255,255,100,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(fx, fy + bounce);
+    ctx.lineTo(fx - 5, fy - 7 + bounce);
+    ctx.lineTo(fx + 5, fy - 7 + bounce);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    hintEl.textContent = '';
+  }
+}
+
+function tryInteractCabin() {
+  const f = getNearFurniture();
+  if (f) interactWithFurniture(f.id);
+}
+
+function interactWithFurniture(id) {
+  if (id === 'bed') {
+    addLog('💤 You rested on the bed.', 'system');
+    const cloth = CLOTHES[selectedCloth];
+    for (const part of ['top', 'bottom', 'legs']) {
+      const max = cloth.maxDur[part];
+      player.dur[part] = Math.min(max, (player.dur[part] || 0) + 5);
+    }
+    updateCabinCharPanel();
+  } else if (id === 'wardrobe') {
+    CABIN.running = false;
+    openWardrobe();
+  } else if (id === 'crafting') {
+    CABIN.running = false;
+    openCrafting();
+  } else if (id === 'door') {
+    CABIN.running = false;
+    goToDeck();
+  }
+}
+
+function updateCabinCharPanel() {
+  document.getElementById('cabinCharName').textContent = charData.name || 'Player';
+  const cloth = CLOTHES[selectedCloth];
+  const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+  const curTotal = (player.dur.top || 0) + (player.dur.bottom || 0) + (player.dur.legs || 0);
+  const hpPct = Math.round((curTotal / maxTotal) * 100);
+
+  document.getElementById('cabinHpText').textContent = curTotal + ' / ' + maxTotal;
+  document.getElementById('cabinHpBar').style.width = hpPct + '%';
+  document.getElementById('cabinShyText').textContent = player.shame + ' / 100';
+  document.getElementById('cabinShyBar').style.width = player.shame + '%';
+  document.getElementById('cabinAtk').textContent = cloth.attack;
+  document.getElementById('cabinDef').textContent = cloth.defense;
+  document.getElementById('cabinClothName').textContent = cloth.name;
+  document.getElementById('cabinGold').textContent = player.gold;
+
+  const cvs = document.getElementById('cabinCharCanvas');
+  if (cvs) {
+    const c = cvs.getContext('2d');
+    c.clearRect(0, 0, cvs.width, cvs.height);
+    if (typeof drawCharacterOnContext === 'function') {
+      drawCharacterOnContext(c, cvs.width, cvs.height, Date.now() / 1000, true);
+    }
+  }
+}
+
+function renderCabinFrame(ts) {
+  if (!CABIN.running) return;
+  CABIN.animTime = ts / 1000;
+  const ctx = CABIN.ctx;
+  const w = CABIN.width;
+  const h = CABIN.height;
+  ctx.clearRect(0, 0, w, h);
+  drawCabinFloor(ctx, w, h);
+  drawCabinWalls(ctx);
+
+  const items = [
+    ...CABIN.furniture.map(f => ({ type: 'furniture', y: f.y + f.h / 2, data: f })),
+    { type: 'player', y: CABIN.player.y, draw: () => drawCabinPlayer(ctx) }
+  ];
+  items.sort((a, b) => a.y - b.y);
+  for (const item of items) {
+    if (item.type === 'furniture') drawFurniturePixel(ctx, item.data);
+    else item.draw();
+  }
+
+  drawInteractionHint(ctx);
+  updateCabinPlayer();
+  requestAnimationFrame(renderCabinFrame);
+}
+
+// ========================
+// 船舱
+// ========================
+function renderCabin() {
+  const ship = SHIPS[currentShipLevel - 1];
+  document.getElementById('cabinShipName').textContent = ship.name;
+  document.getElementById('shipName').textContent = ship.name;
+  if (!CABIN.canvas) initCabinMap();
+  CABIN.running = true;
+  CABIN.player.x = 240;
+  CABIN.player.y = 180;
+  CABIN.targetX = undefined;
+  CABIN.targetY = undefined;
+  updateCabinCharPanel();
+  requestAnimationFrame(renderCabinFrame);
+}
+function clickCabinSlot(id) {
+  if (id === 'wardrobe') openWardrobe();
+  if (id === 'crafting') openCrafting();
+  if (id === 'bed') addLog('💤 你在床上休息了一会儿。', 'system');
+}
+function openWardrobe() {
+  showScreen('wardrobe');
+  addLog('👗 打开船上衣橱...', 'system');
+  renderCrewConfig();
+}
+function closeWardrobe() {
+  showScreen('cabin');
+  addLog(`✅ 已配置: ${CLOTHES[selectedCloth].name}${activeCrewId ? ' + ' + NPCS[activeCrewId].name + '同行' : ''}`, 'system');
+  if (questStep === 0) { questStep = 1; showQuest('去甲板选择海域，出海钓鱼！'); }
+}
+function goToDeck() {
+  showScreen('seaselect');
+  if (questStep === 1) { questStep = 2; showQuest('选择「近海区」，开始你的第一次出海！'); }
+}
+function backToCabin() {
+  showScreen('cabin');
+}
+
+// ========================
+// 船员配置系统
+// ========================
+function renderCrewConfig() {
+  const panel = document.getElementById('crewConfigPanel');
+  const text = document.getElementById('crewConfigText');
+  const btns = document.getElementById('crewConfigBtns');
+
+  if (!spouseId) {
+    panel.classList.remove('active');
+    text.innerHTML = '尚未结婚，无法配置船员<br><span style="font-size:11px;color:#888;">与NPC恋爱→订婚→结婚后，配偶会成为专属船员</span>';
+    btns.innerHTML = '';
+    return;
+  }
+
+  const npc = NPCS[spouseId];
+  const cd = npc.combatData;
+  const dps = calculateCrewDps(npc);
+  const repair = calculateCrewRepair(npc);
+
+  panel.classList.add('active');
+  text.innerHTML = `
+    <span style="color:#fff;font-weight:bold;">${npc.name}</span> <span style="font-size:11px;color:#f472b6;">💕 已婚 ${marriageDays}天</span><br>
+    <span style="font-size:12px;color:#7dd3fc;">DPS: ${dps}/回合</span> |
+    <span style="font-size:12px;color:#4ade80;">修补: ${Math.round(repair*100)}%</span> |
+    <span style="font-size:11px;color:#aaa;">婚姻阶段: ${getMarriageStageName()}</span>
+  `;
+
+  if (activeCrewId === spouseId) {
+    btns.innerHTML = `
+      <button class="btn-game btn-secondary" onclick="toggleCrew(false)">❌ 让她/他留守</button>
+    `;
+  } else {
+    btns.innerHTML = `
+      <button class="btn-game btn-romance" onclick="toggleCrew(true)">✅ 带上${npc.name}同行</button>
+    `;
+  }
+}
+
+function toggleCrew(take) {
+  if (take) {
+    activeCrewId = spouseId;
+    addLog(`💕 ${NPCS[spouseId].name} 加入了你的出海队伍！`, 'crew');
+  } else {
+    activeCrewId = '';
+    addLog(`💕 ${NPCS[spouseId].name} 留在船舱里。`, 'crew');
+  }
+  updateCrewIndicator();
+  renderCrewConfig();
+}
+
+function updateCrewIndicator() {
+  const ind = document.getElementById('crewIndicator');
+  const name = document.getElementById('crewName');
+  if (activeCrewId) {
+    ind.classList.remove('hidden');
+    name.textContent = NPCS[activeCrewId].name + ' 同行中';
+  } else {
+    ind.classList.add('hidden');
+  }
+}
+
+function calculateCrewDps(npc) {
+  const cd = npc.combatData;
+  let mult = 1.0;
+  if (marriageDays >= 180) mult = 2.0;
+  else if (marriageDays >= 90) mult = 1.5;
+  else if (marriageDays >= 30) mult = 1.2;
+  return Math.floor(cd.baseDps * mult);
+}
+
+function calculateCrewRepair(npc) {
+  const cd = npc.combatData;
+  let mult = 1.0;
+  if (marriageDays >= 180) mult = 2.0;
+  else if (marriageDays >= 90) mult = 1.6;
+  else if (marriageDays >= 30) mult = 1.3;
+  return Math.min(cd.baseRepairPercent * mult, 0.5);
+}
+
+function getMarriageStageName() {
+  if (marriageDays >= 180) return '灵魂伴侣';
+  if (marriageDays >= 90) return '心有灵犀';
+  if (marriageDays >= 30) return '默契';
+  return '新婚';
+}
+
+// ========================
+// 海域选择
+// ========================
+function renderSeaSelect() {
+  const grid = document.getElementById('seaGrid');
+  grid.innerHTML = SEAS.map(sea => {
+    const locked = sea.unlock > currentShipLevel;
+    return `
+      <div class="sea-card ${locked?'locked':''} ${selectedSea===sea.id?'selected':''}" onclick="selectSea('${sea.id}')">
+        <h4>${sea.name}</h4>
+        <p>${sea.desc}</p>
+        <div class="sea-difficulty">难度: ${'⭐'.repeat(sea.diff)}${sea.unlock>currentShipLevel?' (需要'+sea.unlock+'级船)':''}</div>
+      </div>
+    `;
+  }).join('');
+}
+function selectSea(id) {
+  const sea = SEAS.find(s => s.id === id);
+  if (sea.unlock > currentShipLevel) return;
+  selectedSea = id;
+  renderSeaSelect();
+  document.getElementById('btnSail').disabled = false;
+}
+function startSailing() {
+  if (!selectedSea) return;
+  const sea = SEAS.find(s => s.id === selectedSea);
+  showScreen('sailing');
+  document.getElementById('sailingShipEmoji').textContent = SHIPS[currentShipLevel-1].emoji;
+  document.getElementById('sailingText').textContent = '正在出海...';
+  document.getElementById('sailingSub').textContent = `目标: ${sea.name}${activeCrewId ? ' | 💕 ' + NPCS[activeCrewId].name + ' 同行' : ''}`;
+  document.getElementById('sailingEvent').style.display = 'none';
+
+  // 重置本次出海状态
+  repairUsedThisTrip = false;
+
+  let p = 0;
+  const fill = document.getElementById('sailingProgressFill');
+  fill.style.width = '0%';
+
+  const interval = setInterval(() => {
+    p += 2;
+    fill.style.width = p + '%';
+    if (p === 40 || p === 70) {
+      const events = [
+        { text: '🌬️ 顺风！航行速度加快！', type: 'bonus' },
+        { text: '🐟 发现鱼群！到达后钓鱼效率提升！', type: 'bonus' },
+        { text: '🌩️ 暴风雨来袭！到达后首战的BOSS更强！', type: 'danger' },
+      ];
+      const ev = events[randInt(0, events.length-1)];
+      const evEl = document.getElementById('sailingEvent');
+      evEl.textContent = ev.text;
+      evEl.className = 'sailing-event ' + ev.type;
+      evEl.style.display = 'block';
+    }
+    if (p >= 100) {
+      clearInterval(interval);
+      startFishingAtSea(sea);
+    }
+  }, 50);
+}
+
+// ========================
+// 战斗系统（含NPC船员）
+// ========================
+let crewDamageTotal = 0;
+
+function setBattleBg() {
+  const bg = document.getElementById('battleBgWrap');
+  if (bg) bg.className = 'battle-bg-wrap battle-bg-' + (selectedSea || 'near');
+}
+
+function setFishingSceneMode(isFishing) {
+  const charCanvas = document.getElementById('charCanvas');
+  const charPanel = document.querySelector('.character-panel');
+  if (isFishing) {
+    if (charCanvas) charCanvas.classList.add('fishing-scene');
+    if (charPanel) charPanel.classList.add('fishing-scene');
+  } else {
+    if (charCanvas) charCanvas.classList.remove('fishing-scene');
+    if (charPanel) charPanel.classList.remove('fishing-scene');
+  }
+}
+
+function startFishingAtSea(sea) {
+  setBattleBg();
+  setFishingSceneMode(true);
+  showScreen('fishing');
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  autoFishing = false;
+  currentFish = null;
+  tension = 0;
+  reelCombo = 0;
+  fishingSubState = FISHING_STATE.IDLE;
+  document.getElementById('logBox').innerHTML = `<div class="log-entry log-system">🌊 到达 ${sea.name}！${activeCrewId ? '💕 ' + NPCS[activeCrewId].name + ' 已经准备好了！' : ''}</div>`;
+  setFishingUI('idle', `已到达 ${sea.name}，点击「开始垂钓」`);
+  if (questStep === 2) { questStep = 3; showQuest('点击「开始垂钓」，尝试钓几条鱼！'); }
+}
+
+// ========================
+// 真实钓鱼交互系统
+// ========================
+
+function clearFishingTimers() {
+  fishingTimers.forEach(t => clearTimeout(t));
+  fishingTimers = [];
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  if (autoFishTimer) { clearTimeout(autoFishTimer); autoFishTimer = null; }
+}
+
+function setFishingUI(state, extra) {
+  const statusEl = document.getElementById('fishingStatus');
+  const floatEl = document.getElementById('floatStatus');
+  const fishInfo = document.getElementById('fishInfoPanel');
+  const tensionPanel = document.getElementById('tensionPanel');
+  const btnStart = document.getElementById('btnStartFish');
+  const btnReel = document.getElementById('btnReel');
+  const btnStop = document.getElementById('btnStopFish');
+  const prog = document.getElementById('fishingProgress');
+
+  switch (state) {
+    case 'idle':
+      statusEl.textContent = extra || '等待指令...';
+      floatEl.innerHTML = '';
+      fishInfo.classList.add('hidden');
+      tensionPanel.classList.add('hidden');
+      btnStart.classList.remove('hidden');
+      btnReel.classList.add('hidden');
+      btnStop.classList.add('hidden');
+      prog.classList.add('hidden');
+      break;
+    case 'casting':
+      statusEl.textContent = '🎣 抛竿中...';
+      floatEl.innerHTML = '<span class="float-bob">🎣</span>';
+      fishInfo.classList.add('hidden');
+      tensionPanel.classList.add('hidden');
+      btnStart.classList.add('hidden');
+      btnReel.classList.add('hidden');
+      btnStop.classList.remove('hidden');
+      prog.classList.remove('hidden');
+      break;
+    case 'waiting':
+      statusEl.textContent = '⏳ 等待鱼儿上钩...';
+      floatEl.innerHTML = '<span class="float-bob">🌊</span>';
+      fishInfo.classList.add('hidden');
+      tensionPanel.classList.add('hidden');
+      btnStart.classList.add('hidden');
+      btnReel.classList.add('hidden');
+      btnStop.classList.remove('hidden');
+      prog.classList.add('hidden');
+      break;
+    case 'biting':
+      statusEl.innerHTML = '<span style="color:#facc15; font-weight:bold;">🚨 有鱼咬钩了！快收线！</span>';
+      floatEl.innerHTML = '<span class="float-bite">🌊</span>';
+      fishInfo.classList.remove('hidden');
+      tensionPanel.classList.add('hidden');
+      btnStart.classList.add('hidden');
+      btnReel.classList.remove('hidden');
+      btnStop.classList.add('hidden');
+      prog.classList.add('hidden');
+      break;
+    case 'reeling':
+      statusEl.innerHTML = '<span style="color:#60a5fa; font-weight:bold;">💪 正在拉线！</span>';
+      floatEl.innerHTML = '<span class="float-sunk">🌊</span>';
+      fishInfo.classList.remove('hidden');
+      tensionPanel.classList.remove('hidden');
+      btnStart.classList.add('hidden');
+      btnReel.classList.remove('hidden');
+      btnStop.classList.add('hidden');
+      prog.classList.add('hidden');
+      break;
+    case 'caught':
+      statusEl.innerHTML = `<span style="color:#4ade80; font-weight:bold;">🎉 ${extra}</span>`;
+      floatEl.innerHTML = '🎉';
+      btnReel.classList.add('hidden');
+      btnStop.classList.add('hidden');
+      break;
+    case 'escaped':
+      statusEl.innerHTML = `<span style="color:#f87171; font-weight:bold;">😢 ${extra}</span>`;
+      floatEl.innerHTML = '💨';
+      btnReel.classList.add('hidden');
+      btnStop.classList.add('hidden');
+      break;
+  }
+}
+
+// 根据海域随机选择一条鱼
+function getRandomFish() {
+  const sea = SEAS.find(s => s.id === selectedSea);
+  const diff = sea ? sea.diff : 1;
+  const pool = SEA_FISH_POOL[diff] || SEA_FISH_POOL[1];
+  // 按权重随机选择
+  const totalWeight = pool.reduce((sum, [, w]) => sum + w, 0);
+  let roll = Math.random() * totalWeight;
+  for (const [key, weight] of pool) {
+    roll -= weight;
+    if (roll <= 0) {
+      const template = FISH_TYPES[key];
+      return { ...template, hp: template.maxHp };
+    }
+  }
+  return { ...FISH_TYPES.common_fish, hp: FISH_TYPES.common_fish.maxHp };
+}
+
+function updateFishUI() {
+  if (!currentFish) return;
+  const hpPct = (currentFish.hp / currentFish.maxHp) * 100;
+  document.getElementById('fishHpBar').style.width = hpPct + '%';
+  document.getElementById('fishHpText').textContent = `${Math.max(0, Math.ceil(currentFish.hp))} / ${currentFish.maxHp}`;
+  document.getElementById('fishEmoji').textContent = currentFish.emoji;
+  document.getElementById('fishName').textContent = currentFish.name;
+  document.getElementById('fishRarity').textContent = Q_NAMES[currentFish.q] || '普通';
+  document.getElementById('fishRarity').style.background = (Q_COLORS[currentFish.q] || '#e2e8f0') + '33';
+  document.getElementById('fishRarity').style.color = Q_COLORS[currentFish.q] || '#e2e8f0';
+}
+
+function updateTensionUI() {
+  const bar = document.getElementById('tensionBar');
+  const text = document.getElementById('tensionValue');
+  const warn = document.getElementById('tensionWarning');
+  bar.style.width = tension + '%';
+  text.textContent = Math.round(tension) + '%';
+  bar.classList.remove('danger', 'critical');
+  warn.style.opacity = '0';
+  if (tension >= 80) {
+    bar.classList.add('critical');
+    warn.style.opacity = '1';
+  } else if (tension >= 60) {
+    bar.classList.add('danger');
+  }
+}
+
+// ===== 开始垂钓 =====
+function startFishing() {
+  if (battleState !== 'fishing') return;
+  autoFishing = true;
+  clearFishingTimers();
+  castRod();
+}
+
+// 抛竿
+function castRod() {
+  fishingSubState = FISHING_STATE.CASTING;
+  setFishingUI('casting');
+  const fill = document.getElementById('fishingProgressFill');
+  fill.style.width = '0%';
+  let p = 0;
+  const interval = setInterval(() => {
+    p += 4;
+    fill.style.width = p + '%';
+    if (p >= 100) {
+      clearInterval(interval);
+      document.getElementById('fishingProgress').classList.add('hidden');
+      waitForBite();
+    }
+  }, 80);
+}
+
+// 等待鱼咬钩
+function waitForBite() {
+  fishingSubState = FISHING_STATE.WAITING;
+  setFishingUI('waiting');
+  // 随机等待 3-10 秒
+  const waitTime = 3000 + Math.random() * 7000;
+  const t = setTimeout(() => {
+    if (!autoFishing || battleState !== 'fishing') return;
+    onFishBite();
+  }, waitTime);
+  fishingTimers.push(t);
+}
+
+// 鱼咬钩了！
+function onFishBite() {
+  // 判定：70%普通鱼，30%遭遇BOSS
+  const sea = SEAS.find(s => s.id === selectedSea);
+  const bossChance = sea ? Math.min(sea.diff * 0.04, 0.35) : 0.1;
+  if (Math.random() < bossChance) {
+    // 遭遇BOSS
+    autoFishing = false;
+    clearFishingTimers();
+    addLog('🚨 有巨大的东西咬钩了！是海兽！', 'system');
+    startBattle();
+    return;
+  }
+
+  // 选择目标鱼
+  currentFish = getRandomFish();
+  fishingSubState = FISHING_STATE.BITING;
+  updateFishUI();
+  setFishingUI('biting');
+  addLog(`🌊 浮标下沉了！有${currentFish.name}咬钩了！`, 'system');
+
+  // 咬钩窗口期：必须在 escapeTime 内点击收线，否则鱼跑了
+  const t = setTimeout(() => {
+    if (fishingSubState === FISHING_STATE.BITING) {
+      onFishEscaped('反应太慢，鱼脱钩了！');
+    }
+  }, currentFish.escapeTime);
+  fishingTimers.push(t);
+}
+
+// 玩家点击收线
+function doReel() {
+  if (fishingSubState === FISHING_STATE.BITING) {
+    // 从咬钩进入拉线阶段
+    fishingSubState = FISHING_STATE.REELING;
+    setFishingUI('reeling');
+    tension = 10;
+    reelCombo = 0;
+    reelCount = 0;
+    updateTensionUI();
+    addLog(`💪 开始拉线！${currentFish.name} 正在挣扎...`, 'system');
+    startFishStruggle();
+    return;
+  }
+  if (fishingSubState !== FISHING_STATE.REELING || !currentFish) return;
+
+  // 收线效果
+  reelCount++;
+  reelCombo++;
+
+  // 计算伤害：基础伤害 + 连击加成
+  const baseDmg = 5 + Math.random() * 5;
+  const comboBonus = Math.min(reelCombo * 0.5, 5);
+  const totalDmg = baseDmg + comboBonus;
+  currentFish.hp -= totalDmg;
+
+  // 线张力增加
+  tension += 8 + Math.random() * 6;
+  if (reelCombo > 3) tension += 3; // 连击过快增加张力
+
+  updateFishUI();
+  updateTensionUI();
+
+  // 检查线是否断了
+  if (tension >= 100) {
+    onFishEscaped('线断了！鱼跑了！');
+    return;
+  }
+
+  // 检查是否钓到了
+  if (currentFish.hp <= 0) {
+    onFishCaught();
+    return;
+  }
+
+  // 收线提示
+  const msgs = ['收线！', '拉！', '再来！', '稳住！', '用力！'];
+  const msg = msgs[randInt(0, msgs.length - 1)];
+  addLog(`🎣 ${msg} (-${Math.round(totalDmg)} HP) 连击x${reelCombo}`, 'system');
+}
+
+// 鱼的挣扎机制
+function startFishStruggle() {
+  if (fishStruggleTimer) clearInterval(fishStruggleTimer);
+  let struggleTick = 0;
+  fishStruggleTimer = setInterval(() => {
+    if (fishingSubState !== FISHING_STATE.REELING || !currentFish) {
+      clearInterval(fishStruggleTimer);
+      fishStruggleTimer = null;
+      return;
+    }
+    struggleTick++;
+
+    // === 1. 鱼体力随时间自然流失（挣扎消耗体力）===
+    const fatigueDmg = 1 + Math.random() * 2; // 每tick流失1-3点
+    currentFish.hp -= fatigueDmg;
+    if (currentFish.hp <= 0) {
+      onFishCaught();
+      return;
+    }
+
+    // === 2. 鱼挣扎：恢复HP + 增加线张力 ===
+    // 挣扎率随时间递减（鱼越挣扎越累）
+    const decayedStruggleRate = currentFish.struggleRate * Math.max(0.3, 1 - struggleTick * 0.02);
+    if (Math.random() < decayedStruggleRate) {
+      const recover = 1 + Math.random() * 3; // 恢复量降低
+      currentFish.hp = Math.min(currentFish.maxHp, currentFish.hp + recover);
+      tension += 4 + Math.random() * 6;
+      updateFishUI();
+      updateTensionUI();
+      addLog(`😤 ${currentFish.name} 猛地挣扎！(+${Math.round(recover)} HP)`, 'danger');
+
+      if (tension >= 100) {
+        onFishEscaped('线被扯断了！');
+        return;
+      }
+    }
+
+    // === 3. 线张力随时间自动流失（动态回弹）===
+    // 张力越高回弹越快
+    let tensionDecay = 2;
+    if (tension > 80) tensionDecay = 6;
+    else if (tension > 60) tensionDecay = 5;
+    else if (tension > 40) tensionDecay = 4;
+    else if (tension > 20) tensionDecay = 3;
+    tension = Math.max(0, tension - tensionDecay);
+    updateTensionUI();
+
+    // === 4. 天赋：自动收线 ===
+    if (player.talents && player.talents.autoReel) {
+      doReel();
+    }
+  }, 800);
+}
+
+// 成功钓到
+function onFishCaught() {
+  fishingSubState = FISHING_STATE.CAUGHT;
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+
+  const fish = currentFish;
+  if (inventory[fish.id]) inventory[fish.id].count++;
+  else inventory[fish.id] = { count: 1, q: fish.q };
+
+  // 连击奖励
+  const bonusExp = reelCombo >= 5 ? ` (连击x${reelCombo} 额外奖励!)` : '';
+  addLog(`${fish.emoji} 成功钓到了 ${fish.name}！${bonusExp}`, 'loot');
+  updateGold();
+  setFishingUI('caught', `钓到了 ${fish.name}！`);
+
+  // 短暂停顿后自动开始下一次
+  const t = setTimeout(() => {
+    if (autoFishing && battleState === 'fishing') {
+      currentFish = null;
+      tension = 0;
+      reelCombo = 0;
+      castRod();
+    }
+  }, 2000);
+  fishingTimers.push(t);
+}
+
+// 鱼跑了
+function onFishEscaped(reason) {
+  fishingSubState = FISHING_STATE.ESCAPED;
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+
+  addLog(`💨 ${reason}`, 'danger');
+  setFishingUI('escaped', reason);
+
+  // 短暂停顿后自动开始下一次
+  const t = setTimeout(() => {
+    if (autoFishing && battleState === 'fishing') {
+      currentFish = null;
+      tension = 0;
+      reelCombo = 0;
+      castRod();
+    }
+  }, 2000);
+  fishingTimers.push(t);
+}
+
+// 停止垂钓
+function stopAutoFishing() {
+  autoFishing = false;
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  currentFish = null;
+  tension = 0;
+  reelCombo = 0;
+  fishingSubState = FISHING_STATE.IDLE;
+  setFishingUI('idle', '已停止垂钓');
+}
+
+function endFishingSafe() {
+  battleState = 'fishing';
+  if (!autoFishing) {
+    setFishingUI('idle', '点击「开始垂钓」');
+  }
+}
+
+function startBattle() {
+  setBattleBg();
+  setFishingSceneMode(true);
+  battleState = 'battling';
+  crewDamageTotal = 0;
+  const bossKey = (selectedSea === 'near' && questStep >= 4) ? 'tutorial' : 'abyss';
+  const bossTemplate = BOSSES[bossKey];
+  boss = { hp: bossTemplate.maxHp, maxHp: bossTemplate.maxHp, ...bossTemplate };
+
+  document.getElementById('fishingStatus').textContent = '⚔️ 遭遇 ' + boss.name + '！';
+  document.getElementById('bossNameDisplay').textContent = '🐟 ' + boss.name;
+  document.getElementById('bossDesc').textContent = `防御: ${boss.defense} | 攻击: ${boss.attack}`;
+  const clothInfo = CLOTHES[selectedCloth];
+  document.getElementById('battleClothName').textContent = clothInfo.name;
+  const bp = document.getElementById('battleClothPreview');
+  if (bp && clothInfo.preview) { bp.src = clothInfo.preview; bp.style.display = 'inline-block'; }
+
+  // 显示NPC船员面板
+  const crewPanel = document.getElementById('battleCrewPanel');
+  if (activeCrewId) {
+    crewPanel.classList.remove('hidden');
+    const npc = NPCS[activeCrewId];
+    document.getElementById('battleCrewName').textContent = npc.name;
+    document.getElementById('battleCrewDps').textContent = `DPS: ${calculateCrewDps(npc)}/回合`;
+    document.getElementById('battleCrewTotal').textContent = '累计伤害: 0';
+
+    // NPC战斗开始台词
+    const line = npc.combatData.battleStartLines[randInt(0, npc.combatData.battleStartLines.length - 1)];
+    addLog(`💕 ${npc.name}: "${line}"`, 'crew');
+  } else {
+    crewPanel.classList.add('hidden');
+  }
+
+  addLog('═══════════════════════════════', 'system');
+  addLog('🚨 遭遇海兽：' + boss.name + '！', 'system');
+  addLog('当前装备：' + CLOTHES[selectedCloth].name + '（出海前配置，战斗中不可更换）', 'system');
+  if (activeCrewId) addLog(`💕 ${NPCS[activeCrewId].name} 已参战，提供DPS支援！`, 'crew');
+
+  turnCount = 0;
+  nextTurn();
+}
+
+function nextTurn() {
+  if (battleState !== 'battling') return;
+  turnCount++;
+
+  setTimeout(() => {
+    if (battleState !== 'battling') return;
+    bossAttack();
+    updateShy();
+    updateUI();
+    updateDurabilityUI();
+    drawCharacter();
+
+    setTimeout(() => {
+      if (battleState !== 'battling') return;
+
+      // 主角攻击
+      playerAttack();
+
+      // NPC船员攻击
+      if (activeCrewId) {
+        crewAttack();
+      }
+
+      updateUI();
+      if (activeCrewId) {
+        document.getElementById('battleCrewTotal').textContent = '累计伤害: ' + crewDamageTotal;
+      }
+
+      if (boss.hp <= 0) {
+        endBattle(true);
+      } else {
+        battleTimer = setTimeout(nextTurn, 1500);
+      }
+    }, 600);
+  }, 300);
+}
+
+function bossAttack() {
+  const parts = ['top', 'bottom', 'legs'];
+  const target = parts[Math.floor(Math.random() * parts.length)];
+  const partNames = { top: '上衣', bottom: '裙子', legs: '袜子' };
+  const baseWear = randInt(20, 50);
+  const defense = CLOTHES[selectedCloth].defense;
+  const actualWear = Math.max(baseWear - defense, 5);
+  const before = player.dur[target];
+  player.dur[target] = Math.max(0, player.dur[target] - actualWear);
+  const realDamage = before - player.dur[target];
+
+  addLog(`第${turnCount}回合：海兽冲撞！${partNames[target]} 受到 ${realDamage} 点磨损！（剩余 ${player.dur[target]}）`, 'wear');
+  canvas.classList.add('shaking');
+  setTimeout(() => canvas.classList.remove('shaking'), 300);
+}
+
+function playerAttack() {
+  const cloth = CLOTHES[selectedCloth];
+  let dmg = cloth.attack;
+  let multiplier = 1.0;
+  let ignoreDef = 0;
+  let skillNames = [];
+
+  for (const skill of SKILLS) {
+    if (player.shame >= skill.threshold && !player.activeSkills.includes(skill.name)) {
+      player.activeSkills.push(skill.name);
+    }
+  }
+  for (const skillName of player.activeSkills) {
+    const skill = SKILLS.find(s => s.name === skillName);
+    if (!skill) continue;
+    if (skill.type === 'dmg') multiplier += skill.value;
+    if (skill.type === 'ignore') ignoreDef += skill.value;
+    skillNames.push(skill.name);
+  }
+
+  const effectiveDef = Math.floor(boss.defense * (1 - ignoreDef));
+  dmg = Math.max(Math.floor(dmg * multiplier) - effectiveDef, 1);
+  boss.hp = Math.max(0, boss.hp - dmg);
+
+  if (skillNames.length > 0) {
+    addLog(`【${skillNames.join(' + ')}】发动！造成 ${dmg} 点伤害！`, 'skill');
+  } else {
+    addLog(`反击！造成 ${dmg} 点伤害。`, 'damage');
+  }
+
+  // NPC台词：主角触发技能时
+  if (activeCrewId && skillNames.length > 0) {
+    const npc = NPCS[activeCrewId];
+    const line = npc.combatData.playerSkillLines[randInt(0, npc.combatData.playerSkillLines.length - 1)];
+    addLog(`💕 ${npc.name}: "${line}"`, 'crew');
+  }
+}
+
+function crewAttack() {
+  const npc = NPCS[activeCrewId];
+  const cd = npc.combatData;
+  let dps = calculateCrewDps(npc);
+
+  // 暴击判定
+  const isCrit = Math.random() < cd.critChance;
+  if (isCrit) {
+    dps = Math.floor(dps * cd.critMultiplier);
+    addLog(`💕 ${npc.name} 攻击！暴击！造成 ${dps} 点伤害！`, 'crew');
+  } else {
+    addLog(`💕 ${npc.name} 攻击！造成 ${dps} 点伤害。`, 'crew');
+  }
+
+  boss.hp = Math.max(0, boss.hp - dps);
+  crewDamageTotal += dps;
+
+  // 治疗（Support型）
+  if (cd.healAmount > 0 && Math.random() < cd.healChance) {
+    // 原型简化：治疗在战后体现为修补
+  }
+
+  // 台词：主角爆衣时
+  if (player.shame >= 30 && Math.random() < 0.3) {
+    const line = npc.combatData.playerShyLines[randInt(0, npc.combatData.playerShyLines.length - 1)];
+    addLog(`💕 ${npc.name}: "${line}"`, 'crew');
+  }
+}
+
+function updateShy() {
+  const cloth = CLOTHES[selectedCloth];
+  let total = 0;
+  for (const part of ['top', 'bottom', 'legs']) {
+    const max = cloth.maxDur[part];
+    const cur = player.dur[part];
+    const ratio = 1.0 - (cur / max);
+    total += Math.floor(ratio * 33);
+  }
+  const oldShy = player.shame;
+  player.shame = Math.min(total, 100);
+  if (player.shame !== oldShy) addLog(`😳 害羞度: ${oldShy} → ${player.shame}`, 'system');
+  for (const skill of SKILLS) {
+    if (player.shame >= skill.threshold && !player.activeSkills.includes(skill.name)) {
+      addLog(`★ 解锁害羞技能：${skill.name}！${skill.desc}`, 'skill');
+    }
+  }
+}
+
+function endBattle(victory) {
+  battleState = 'ended';
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  autoFishing = false;
+  document.getElementById('btnStartFish').classList.add('hidden');
+  document.getElementById('btnReel').classList.add('hidden');
+  document.getElementById('btnStopFish').classList.add('hidden');
+  document.getElementById('btnReturn').classList.remove('hidden');
+
+  if (victory) {
+    addLog('═══════════════════════════════', 'system');
+    addLog('🎉 胜利！击败了 ' + boss.name + '！', 'loot');
+    const goldGain = randInt(50, 120);
+    player.gold += goldGain;
+    updateGold();
+    addLog(`💰 获得金币 x${goldGain}`, 'loot');
+
+    if (Math.random() < 0.5) {
+      addLog('🐟 获得稀有鱼 x1', 'loot');
+      if (inventory['rare_fish']) inventory['rare_fish'].count++;
+      else inventory['rare_fish'] = { count: 1, q: 2 };
+    }
+    if (Math.random() < 0.3) {
+      addLog('🐟 获得海兽鳞片 x1（紫色材料）', 'loot');
+      if (inventory['boss_scale']) inventory['boss_scale'].count++;
+      else inventory['boss_scale'] = { count: 1, q: 3 };
+    }
+
+    // NPC船员胜利台词
+    if (activeCrewId) {
+      const npc = NPCS[activeCrewId];
+      const line = npc.combatData.victoryLines[randInt(0, npc.combatData.victoryLines.length - 1)];
+      addLog(`💕 ${npc.name}: "${line}"`, 'crew');
+    }
+
+    document.getElementById('fishingStatus').textContent = '✅ 战斗胜利！';
+    if (questStep === 4) { questStep = 5; showQuest('胜利了！点击「返航」回到船上。'); }
+
+    // 战后NPC修补
+    if (activeCrewId) {
+      showRepairOverlay();
+    }
+  }
+}
+
+// ========================
+// 战后修补覆盖层
+// ========================
+function showRepairOverlay() {
+  const npc = NPCS[activeCrewId];
+  const cd = npc.combatData;
+  const repairPct = calculateCrewRepair(npc);
+
+  const overlay = document.getElementById('repairOverlay');
+  overlay.classList.remove('hidden');
+
+  document.getElementById('repairEmoji').textContent = '🪡';
+  document.getElementById('repairTitle').textContent = '✨ 战斗胜利！';
+  document.getElementById('repairNpcName').textContent = `💕 ${npc.name} 正在帮你修补衣服...`;
+
+  // 随机台词
+  const line = cd.repairLines[randInt(0, cd.repairLines.length - 1)];
+  document.getElementById('repairLines').innerHTML = `<div style="font-style:italic; color:#ddd; margin:8px 0;">"${line}"</div>`;
+
+  // 修补条
+  const cloth = CLOTHES[selectedCloth];
+  const parts = [
+    { key: 'top', label: '上衣' },
+    { key: 'bottom', label: '裙子' },
+    { key: 'legs', label: '袜子' }
+  ];
+
+  let barsHtml = '<div style="margin:12px 0; text-align:left;">';
+  for (const p of parts) {
+    const max = cloth.maxDur[p.key];
+    const before = player.dur[p.key];
+    const add = Math.floor(max * repairPct);
+    const after = Math.min(before + add, max);
+    const beforePct = (before / max) * 100;
+    const afterPct = (after / max) * 100;
+    barsHtml += `
+      <div style="margin:6px 0;">
+        <div style="font-size:12px; color:#aaa; margin-bottom:2px;">${p.label}: ${before} → ${after} (+${add})</div>
+        <div class="repair-bar-bg">
+          <div class="repair-bar-fill" style="width:${beforePct}%; opacity:0.5; position:absolute;"></div>
+          <div class="repair-bar-fill" style="width:${afterPct}%;"></div>
+        </div>
+      </div>
+    `;
+    player.dur[p.key] = after;
+  }
+  barsHtml += '</div>';
+
+  // 额外修补说明
+  if (repairUsedThisTrip) {
+    barsHtml += '<div style="font-size:11px; color:#facc15; margin-top:6px;">⚠️ 本次出海的免费修补已用完，下次需要消耗材料</div>';
+  } else {
+    repairUsedThisTrip = true;
+    barsHtml += '<div style="font-size:11px; color:#4ade80; margin-top:6px;">🧵 本次出海免费修补已使用（1/1）</div>';
+  }
+
+  document.getElementById('repairBars').innerHTML = barsHtml;
+  updateDurabilityUI();
+}
+
+function closeRepairOverlay() {
+  document.getElementById('repairOverlay').classList.add('hidden');
+}
+
+function returnToShipAfterBattle() {
+  closeRepairOverlay();
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  setFishingSceneMode(false);
+  autoFishing = false;
+  currentFish = null;
+  tension = 0;
+  showScreen('cabin');
+  // 返航时保留衣服耐久度和害羞度，不重置
+  player.activeSkills = [];
+  boss = { hp: 0, maxHp: 0 };
+  document.getElementById('logBox').innerHTML = '<div class="log-entry log-system">已返航回到船上。</div>';
+  document.getElementById('fishingProgress').classList.add('hidden');
+  renderCabin();
+  if (questStep === 5) { questStep = 6; showQuest('试试AI制衣台，设计一件衣服！'); }
+}
+
+function updateGold() {
+  document.getElementById('goldDisplay').textContent = player.gold;
+}
+
+function updateUI() {
+  if (boss.maxHp > 0) {
+    const hpPct = (boss.hp / boss.maxHp) * 100;
+    document.getElementById('bossHpBar').style.width = hpPct + '%';
+    document.getElementById('bossHpText').textContent = `HP: ${boss.hp} / ${boss.maxHp}`;
+  }
+  document.getElementById('shyValue').textContent = `${player.shame} / 100`;
+  document.getElementById('shyBar').style.width = player.shame + '%';
+
+  const skillBox = document.getElementById('activeSkills');
+  if (player.activeSkills.length === 0) {
+    skillBox.innerHTML = '<span style="font-size:11px; color:#666;">暂无激活技能</span>';
+  } else {
+    skillBox.innerHTML = player.activeSkills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+  }
+}
+
+function updateDurabilityUI() {
+  const cloth = CLOTHES[selectedCloth];
+  const parts = [{ key: 'top', label: '上衣' }, { key: 'bottom', label: '裙子' }, { key: 'legs', label: '袜子' }];
+  let html = '<div style="font-size:12px; color:#aaa; margin-bottom:6px;">👕 装备耐久</div>';
+  for (const p of parts) {
+    const max = cloth.maxDur[p.key];
+    const cur = player.dur[p.key];
+    const pct = (cur / max) * 100;
+    let color = '#4ade80';
+    if (pct <= 25) color = '#ef4444';
+    else if (pct <= 50) color = '#f97316';
+    else if (pct <= 75) color = '#eab308';
+    html += `
+      <div class="dur-part">
+        <span class="dur-label">${p.label}</span>
+        <div class="dur-bar-bg"><div class="dur-bar-fill" style="width:${pct}%; background:${color}"></div></div>
+        <span class="dur-value">${cur}/${max}</span>
+      </div>`;
+  }
+  document.getElementById('durabilityDisplay').innerHTML = html;
+}
+
+function addLog(text, type) {
+  const box = document.getElementById('logBox');
+  if (!box) return;
+  const div = document.createElement('div');
+  div.className = 'log-entry log-' + type;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ========================
+// 城市与NPC系统
+// ========================
+function enterCity() {
+  showScreen('city');
+  addLog('🏘️ 你进入了宁静港湾村。', 'system');
+}
+function returnToShip() {
+  showScreen('cabin');
+  addLog('🚢 返回船上。', 'system');
+}
+function backToCity() {
+  showScreen('city');
+}
+
+function visitNPC(npcId) {
+  const npc = NPCS[npcId];
+  const currentLoc = getNPCLocation(npc);
+  const canMeet = currentLoc.loc.includes('花店') || currentLoc.loc.includes('码头') || currentLoc.loc.includes('广场') || currentLoc.loc.includes('酒馆') || currentLoc.loc.includes('市场');
+
+  if (!canMeet) {
+    addLog(`${npc.name} 现在${currentLoc.loc}，${currentLoc.act}，不方便打扰...`, 'system');
+    return;
+  }
+
+  currentNPC = npc;
+  showScreen('npc');
+  renderNPCPanel(npc);
+}
+
+function getNPCLocation(npc) {
+  for (const slot of npc.schedule) {
+    let start = slot.start, end = slot.end;
+    if (end < start) { if (gameHour >= start || gameHour < end) return slot; }
+    else { if (gameHour >= start && gameHour < end) return slot; }
+  }
+  return npc.schedule[0];
+}
+
+function renderNPCPanel(npc) {
+  const loc = getNPCLocation(npc);
+  const canRomance = isRomanceable(npc);
+  const stageName = npc.stageNames[npc.stage];
+  const favorPct = (npc.favor / npc.maxFavor) * 100;
+  const relClass = REL_CLASSES[npc.stage] || 'rel-stranger';
+
+  let html = `
+    <div class="npc-header">
+      <div class="npc-avatar">${npc.emoji}</div>
+      <div class="npc-info">
+        <h3>${npc.name} <span style="font-size:11px;color:#888;">(♀ 性向: ${npc.sexuality})</span></h3>
+        <p>当前位置: ${loc.loc} | ${loc.act}</p>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="favor-bar-bg"><div class="favor-bar-fill" style="width:${favorPct}%"></div></div>
+          <span style="font-size:11px;color:#f472b6;">${npc.favor}/${npc.maxFavor}</span>
+        </div>
+        <span class="relationship-badge ${relClass}">💕 ${stageName}</span>
+        ${canRomance ? '' : '<span style="font-size:11px;color:#888;margin-left:8px;">（与你不来电）</span>'}
+      </div>
+    </div>
+    <div style="background:rgba(0,0,0,0.2); border-radius:10px; padding:12px; margin-bottom:12px;">
+      <div style="font-size:13px; color:#aaa; margin-bottom:8px;">📅 ${npc.name}的今日行程</div>
+  `;
+
+  for (const slot of npc.schedule) {
+    let start = slot.start, end = slot.end;
+    let isCurrent = false;
+    if (end < start) isCurrent = (gameHour >= start || gameHour < end);
+    else isCurrent = (gameHour >= start && gameHour < end);
+    const timeStr = `${String(start).padStart(2,'0')}:00 - ${String(end).padStart(2,'0')}:00`;
+    html += `
+      <div class="schedule-row ${isCurrent?'current':''}">
+        <span class="schedule-time">${timeStr}</span>
+        <span class="schedule-loc">${slot.loc}</span>
+        <span class="schedule-activity">${slot.act}</span>
+      </div>
+    `;
+  }
+  html += '</div>';
+
+  // 对话选择：根据阶段
+  let dialogueKey = Object.keys(npc.dialogues)[Math.min(npc.stage, Object.keys(npc.dialogues).length-1)];
+  const dialogues = npc.dialogues[dialogueKey];
+  const dialogueText = dialogues ? dialogues[randInt(0, dialogues.length-1)] : '...';
+  html += `<div class="npc-bubble" style="margin-bottom:14px;"><span class="npc-name-tag">${npc.name}:</span>${dialogueText}</div>`;
+
+  // 互动按钮
+  html += '<div style="display:flex; gap:8px; flex-wrap:wrap;">';
+  html += `<button class="btn-game btn-secondary" onclick="talkAgain('${npc.id}')">💬 聊天</button>`;
+  if (npc.stage >= 1) html += `<button class="btn-game btn-primary" onclick="openGiftPanel('${npc.id}')">🎁 送礼</button>`;
+  if (canRomance && npc.stage >= 2 && npc.stage < 6) html += `<button class="btn-game btn-selected" onclick="inviteNPC('${npc.id}')">❤️ 邀约出海</button>`;
+  // 告白/求婚/结婚后按钮
+  if (canRomance && npc.stage === 4) html += `<button class="btn-game btn-romance" onclick="proposeNPC('${npc.id}')">💍 求婚</button>`;
+  if (canRomance && npc.stage === 5) html += `<button class="btn-game btn-romance" onclick="marryNPC('${npc.id}')">💒 结婚</button>`;
+  if (npc.stage === 6) {
+    html += `<button class="btn-game btn-romance" onclick="marriedInteraction('${npc.id}')">💕 配偶互动</button>`;
+  }
+  html += '</div>';
+
+  // 如果是配偶，显示船员信息
+  if (spouseId === npc.id) {
+    const cd = npc.combatData;
+    html += `
+      <div style="margin-top:14px; padding:10px; background:rgba(236,72,153,0.08); border-radius:10px; border:1px solid rgba(236,72,153,0.2);">
+        <div style="font-size:13px; color:#f9a8d4; margin-bottom:6px;">💕 配偶船员信息</div>
+        <div style="font-size:12px; color:#7dd3fc;">DPS: ${calculateCrewDps(npc)}/回合</div>
+        <div style="font-size:12px; color:#4ade80;">修补: ${Math.round(calculateCrewRepair(npc)*100)}%</div>
+        <div style="font-size:11px; color:#aaa;">婚姻阶段: ${getMarriageStageName()} | 已婚 ${marriageDays} 天</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('npcContent').innerHTML = html;
+}
+
+function isRomanceable(npc) {
+  switch (npc.sexuality) {
+    case 'hetero': return false;
+    case 'homo': return npc.gender === 'female';
+    case 'bi': case 'pan': case 'player_only': return true;
+  }
+  return false;
+}
+
+function talkAgain(npcId) {
+  const npc = NPCS[npcId];
+  const dialogueKey = Object.keys(npc.dialogues)[Math.min(npc.stage, Object.keys(npc.dialogues).length-1)];
+  const dialogues = npc.dialogues[dialogueKey];
+  const dialogueText = dialogues ? dialogues[randInt(0, dialogues.length-1)] : '...';
+  if (npc.stage >= 1) {
+    npc.favor = Math.min(npc.favor + 2, npc.maxFavor);
+    checkStageUp(npc);
+  }
+  renderNPCPanel(npc);
+  addLog(`${npc.name}: "${dialogueText}"`, 'npc');
+  if (npc.stage >= 1) addLog(`💕 与${npc.name}聊天，好感度 +2`, 'favor');
+}
+
+function checkStageUp(npc) {
+  const thresholds = [10, 30, 60, 90, 120, 150];
+  for (let i = npc.stage + 1; i < thresholds.length; i++) {
+    if (npc.favor >= thresholds[i]) {
+      const oldStage = npc.stage;
+      npc.stage = i;
+      addLog(`✨ ${npc.name}的关系阶段提升了！${npc.stageNames[oldStage]} → ${npc.stageNames[i]}`, 'favor');
+      if (i === 4) addLog(`🎉 ${npc.name}接受了你的告白！你们成为了恋人！`, 'favor');
+      if (i === 5) addLog(`💍 ${npc.name}答应了你的求婚！你们订婚了！`, 'favor');
+      if (i === 6) {
+        addLog(`💒 恭喜！你和${npc.name}结婚了！${npc.name}成为了你的专属船员！`, 'favor');
+        spouseId = npc.id;
+        activeCrewId = npc.id;
+        marriageDays = 0;
+        updateCrewIndicator();
+      }
+    }
+  }
+}
+
+function inviteNPC(npcId) {
+  const npc = NPCS[npcId];
+  addLog(`❤️ 你邀请${npc.name}一起出海...`, 'npc');
+  addLog(`${npc.name}: "好呀！我准备好啦！"`, 'npc');
+  npc.favor = Math.min(npc.favor + 10, npc.maxFavor);
+  checkStageUp(npc);
+}
+
+function proposeNPC(npcId) {
+  const npc = NPCS[npcId];
+  if (npc.stage !== 4) return;
+  npc.favor = Math.min(npc.favor + 20, npc.maxFavor);
+  checkStageUp(npc);
+}
+
+function marryNPC(npcId) {
+  const npc = NPCS[npcId];
+  if (npc.stage !== 5) return;
+  npc.favor = Math.min(npc.favor + 30, npc.maxFavor);
+  checkStageUp(npc);
+}
+
+function marriedInteraction(npcId) {
+  const npc = NPCS[npcId];
+  // 模拟婚后日常互动
+  marriageDays += 1; // 简化：每次互动+1天
+  const lines = [
+    `${npc.name}为你准备了午餐。"多吃点，下午还要出海呢。"`,
+    `${npc.name}在缝补旧衣服。"这件给你改小一点，穿着更舒服。"`,
+    `${npc.name}靠在窗边看着海。"有你在，这片海就不寂寞了。"`,
+  ];
+  const line = lines[randInt(0, lines.length - 1)];
+  addLog(`💕 ${line}`, 'npc');
+  addLog(`📅 和${npc.name}的婚姻又过了一天（累计${marriageDays}天）。船员能力提升了！`, 'favor');
+  renderNPCPanel(npc);
+}
+
+// ========================
+// 送礼
+// ========================
+function openGiftPanel(npcId) {
+  currentNPC = NPCS[npcId];
+  showScreen('gift');
+  selectedGift = null;
+  renderGiftGrid();
+  document.getElementById('giftPreview').style.display = 'none';
+  document.getElementById('btnGiveGift').disabled = true;
+}
+
+function renderGiftGrid() {
+  const grid = document.getElementById('giftGrid');
+  grid.innerHTML = GIFTS.map(g => `
+    <div class="gift-item ${selectedGift===g.id?'selected':''}" onclick="selectGift('${g.id}')" style="${selectedGift===g.id?'border-color:#ec4899; background:rgba(236,72,153,0.1);':''}padding:10px;border-radius:10px;border:2px solid transparent;cursor:pointer;text-align:center;background:rgba(0,0,0,0.15);">
+      <div style="font-size:28px; margin-bottom:4px;">${g.emoji}</div>
+      <div style="font-size:12px; color:#fff;">${g.name}</div>
+      <div style="font-size:10px; color:#888;">${g.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectGift(giftId) {
+  selectedGift = giftId;
+  renderGiftGrid();
+  const gift = GIFTS.find(g => g.id === giftId);
+  const npc = currentNPC;
+
+  let favorBonus = 5;
+  let reactionText = "谢谢你的礼物！（微笑）";
+
+  if (npc.giftReactions && npc.giftReactions[gift.category]) {
+    const reaction = npc.giftReactions[gift.category];
+    favorBonus = reaction.favor;
+    reactionText = reaction.text;
+  } else if (npc.liked.includes(gift.category)) {
+    favorBonus = 15;
+    reactionText = `哇！是${gift.name}！我最喜欢这个了！（眼睛发光）`;
+  } else if (npc.disliked.includes(gift.category)) {
+    favorBonus = 2;
+    reactionText = `嗯...谢谢...（虽然不太喜欢，但你的心意我收到了）`;
+  }
+
+  if (npc.favoriteItem === giftId) {
+    favorBonus = 30;
+    reactionText = `这、这是${gift.name}？！你怎么知道我最喜欢的！！（激动得脸红了）`;
+  }
+
+  if (gift.category === 'clothes') {
+    npc.currentOutfit = gift.name;
+    reactionText += `（当场换上${gift.name}，转了一圈展示给你看）`;
+  }
+
+  const preview = document.getElementById('giftPreview');
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div>预计${npc.name}的反应:</div>
+    <div style="margin:8px 0; font-style:italic; color:#ddd;">"${reactionText}"</div>
+    <div style="color:#f472b6;">💕 好感度 +${favorBonus}</div>
+  `;
+  document.getElementById('btnGiveGift').disabled = false;
+}
+
+function giveGift() {
+  if (!selectedGift || !currentNPC) return;
+  const gift = GIFTS.find(g => g.id === selectedGift);
+  const npc = currentNPC;
+
+  let favorBonus = 5;
+  let reactionText = "谢谢你的礼物！";
+
+  if (npc.giftReactions && npc.giftReactions[gift.category]) {
+    const reaction = npc.giftReactions[gift.category];
+    favorBonus = reaction.favor;
+    reactionText = reaction.text;
+  } else if (npc.liked.includes(gift.category)) {
+    favorBonus = 15;
+    reactionText = `哇！是${gift.name}！我最喜欢这个了！`;
+  } else if (npc.disliked.includes(gift.category)) {
+    favorBonus = 2;
+    reactionText = `嗯...谢谢...（不太喜欢但收下了）`;
+  }
+
+  if (npc.favoriteItem === selectedGift) {
+    favorBonus = 30;
+    reactionText = `这、这是${gift.name}？！你怎么知道我最喜欢的！！`;
+  }
+
+  if (gift.category === 'clothes') {
+    npc.currentOutfit = gift.name;
+    reactionText += `（当场换上${gift.name}）`;
+  }
+
+  npc.favor = Math.min(npc.favor + favorBonus, npc.maxFavor);
+  checkStageUp(npc);
+
+  addLog(`🎁 送给${npc.name} ${gift.emoji}${gift.name}`, 'favor');
+  addLog(`${npc.name}: "${reactionText}"`, 'npc');
+  addLog(`💕 ${npc.name}的好感度 +${favorBonus}！（当前: ${npc.favor}/${npc.maxFavor}）`, 'favor');
+
+  closeGiftPanel();
+}
+
+function closeGiftPanel() {
+  if (currentNPC) renderNPCPanel(currentNPC);
+  showScreen('npc');
+}
+
+// ========================
+// 城市建筑
+// ========================
+function visitMarket() {
+  const earnings = randInt(30, 60);
+  player.gold += earnings;
+  updateGold();
+  addLog(`🏪 在市场卖出鱼类，获得 ${earnings} 金币！`, 'loot');
+}
+
+// ========================
+// 通用
+// ========================
+function initQuest() {
+  questStep = 0;
+  // 新手引导提示已移除
+}
+function showQuest(text) {
+  const el = document.getElementById('questHint');
+  el.classList.remove('hidden');
+  document.getElementById('questText').textContent = text;
+}
+function selectCloth(id) {
+  if (battleState !== 'wardrobe') return;
+  selectedCloth = id;
+  document.querySelectorAll('.cloth-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('cloth-' + id).classList.add('selected');
+  resetPlayer();
+  addLog('已选择装备: ' + CLOTHES[id].name, 'system');
+}
+function resetPlayer() {
+  const cloth = CLOTHES[selectedCloth];
+  player.dur = { ...cloth.maxDur };
+  player.shame = 0;
+  player.activeSkills = [];
+}
+function resetBattle() {
+  if (battleTimer) clearTimeout(battleTimer);
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  setFishingSceneMode(false);
+  battleState = 'fishing';
+  autoFishing = false;
+  currentFish = null;
+  tension = 0;
+  reelCombo = 0;
+  fishingSubState = FISHING_STATE.IDLE;
+  resetPlayer();
+  boss = { hp: 0, maxHp: 0 };
+  document.getElementById('bossHpBar').style.width = '100%';
+  document.getElementById('bossHpText').textContent = 'HP: ???';
+  document.getElementById('shyBar').style.width = '0%';
+  document.getElementById('shyValue').textContent = '0 / 100';
+  document.getElementById('activeSkills').innerHTML = '<span style="font-size:11px; color:#666;">暂无激活技能</span>';
+  document.getElementById('logBox').innerHTML = '<div class="log-entry log-system">战斗已重置。</div>';
+  document.getElementById('btnStartFish').classList.remove('hidden');
+  document.getElementById('btnReel').classList.add('hidden');
+  document.getElementById('btnStopFish').classList.add('hidden');
+  document.getElementById('btnReturn').classList.add('hidden');
+  document.getElementById('fishInfoPanel').classList.add('hidden');
+  document.getElementById('tensionPanel').classList.add('hidden');
+  document.getElementById('floatStatus').innerHTML = '';
+  setFishingUI('idle', '等待指令...');
+  document.getElementById('battleCrewPanel').classList.add('hidden');
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// ========================
+// 伪Live2D绘制
+// ========================
+let animTime = 0;
+function drawCharacterOnContext(c, w, h, t, isPreview) {
+  if (!spritesReady) {
+    // Fallback: draw loading text
+    c.fillStyle = '#fff';
+    c.font = '14px sans-serif';
+    c.textAlign = 'center';
+    c.fillText('Loading sprites...', w/2, h/2);
+    return;
+  }
+
+  // Determine sprite based on damage state
+  let spriteKey = 'f';
+
+  if (!isPreview && player.dur) {
+    const cloth = CLOTHES[selectedCloth];
+    const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+    const curTotal = player.dur.top + player.dur.bottom + player.dur.legs;
+    const brokenRatio = 1 - (curTotal / maxTotal);
+    // 5阶段爆衣系统
+    if (brokenRatio > 0.85) {
+      spriteKey = 'f_stage5';      // 90%破损，几乎全裸
+    } else if (brokenRatio > 0.70) {
+      spriteKey = 'f_stage4';      // 70%破损，外衣几乎消失
+    } else if (brokenRatio > 0.50) {
+      spriteKey = 'f_stage3';      // 50%破损，严重磨损
+    } else if (brokenRatio > 0.30) {
+      spriteKey = 'f_stage2';      // 30%破损，中度磨损
+    } else if (brokenRatio > 0.15) {
+      spriteKey = 'f_stage1';      // 15%破损，轻微磨损
+    } else {
+      spriteKey = 'f_full';        // 完好
+    }
+  }
+
+  const sprite = SPRITES[spriteKey] || SPRITES['f'];
+  if (!sprite) return;
+
+  // Breath animation (bob up and down)
+  const breathY = Math.sin(t * 2) * 4;
+  const scale = Math.min(w / 64, h / 96) * 0.75;
+  const bw = 64 * scale;
+  const bh = 96 * scale;
+  const bx = (w - bw) / 2;
+  const by = (h - bh) / 2 + breathY + 20;
+
+  c.imageSmoothingEnabled = false;
+
+  // ===== 小船（钓鱼场景）=====
+  if (!isPreview && (battleState === 'fishing' || battleState === 'battling')) {
+    const boatY = by + bh - 12;
+    const boatW = bw * 1.3;
+    const boatH = bw * 0.22;
+    const boatX = bx + (bw - boatW) / 2;
+
+    // 船身阴影
+    c.fillStyle = 'rgba(0,0,0,0.2)';
+    c.beginPath();
+    c.ellipse(boatX + boatW/2, boatY + boatH + 6, boatW/2, 6, 0, 0, Math.PI*2);
+    c.fill();
+
+    // 船身主体（棕色）
+    c.fillStyle = '#8B6914';
+    c.beginPath();
+    c.moveTo(boatX + boatW * 0.1, boatY);
+    c.lineTo(boatX + boatW * 0.9, boatY);
+    c.quadraticCurveTo(boatX + boatW, boatY + boatH * 0.5, boatX + boatW * 0.9, boatY + boatH);
+    c.lineTo(boatX + boatW * 0.1, boatY + boatH);
+    c.quadraticCurveTo(boatX, boatY + boatH * 0.5, boatX + boatW * 0.1, boatY);
+    c.fill();
+
+    // 船舷（深棕色）
+    c.fillStyle = '#6B4E0A';
+    c.fillRect(boatX + boatW * 0.12, boatY, boatW * 0.76, boatH * 0.35);
+
+    // 船内（稍浅）
+    c.fillStyle = '#A07820';
+    c.beginPath();
+    c.ellipse(boatX + boatW/2, boatY + boatH * 0.55, boatW * 0.32, boatH * 0.35, 0, 0, Math.PI*2);
+    c.fill();
+
+    // 鱼竿（从角色右手伸出）
+    if (battleState === 'fishing') {
+      const rodStartX = bx + bw * 0.85;
+      const rodStartY = by + bh * 0.35;
+      const rodEndX = rodStartX + bw * 0.6;
+      const rodEndY = rodStartY - bw * 0.4;
+
+      c.strokeStyle = '#5C3A1E';
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(rodStartX, rodStartY);
+      c.lineTo(rodEndX, rodEndY);
+      c.stroke();
+
+      // 鱼线（细白线，垂入水中）
+      c.strokeStyle = 'rgba(200,230,255,0.6)';
+      c.lineWidth = 1;
+      c.beginPath();
+      c.moveTo(rodEndX, rodEndY);
+      c.lineTo(rodEndX + 10, rodEndY + bw * 0.5);
+      c.stroke();
+
+      // 浮标
+      c.fillStyle = '#ff4444';
+      c.beginPath();
+      c.arc(rodEndX + 10, rodEndY + bw * 0.5, 4, 0, Math.PI*2);
+      c.fill();
+    }
+
+    // 水面波纹（船周围）
+    c.strokeStyle = 'rgba(200,230,255,0.3)';
+    c.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const wx = boatX + Math.random() * boatW;
+      const wy = boatY + boatH + 10 + Math.random() * 15;
+      const wl = 15 + Math.random() * 25;
+      c.beginPath();
+      c.moveTo(wx, wy);
+      c.lineTo(wx + wl, wy);
+      c.stroke();
+    }
+  }
+
+  c.drawImage(sprite, bx, by, bw, bh);
+
+  // Blink overlay (simulate blinking with semi-transparent rect over eyes)
+  const blink = Math.sin(t * 3) > 0.95;
+  if (blink) {
+    c.fillStyle = 'rgba(255,230,220,0.7)';
+    const eyeW = bw * 0.18;
+    const eyeH = bh * 0.06;
+    const eyeY = by + bh * 0.19;
+    c.fillRect(bx + bw * 0.32, eyeY, eyeW, eyeH);
+    c.fillRect(bx + bw * 0.52, eyeY, eyeW, eyeH);
+  }
+
+  // Blush overlay based on shame
+  if (!isPreview && player.shame > 20) {
+    const blushAlpha = Math.min(player.shame / 100, 0.5);
+    c.fillStyle = `rgba(255, 100, 120, ${blushAlpha})`;
+    const blushR = bw * 0.12;
+    c.beginPath();
+    c.ellipse(bx + bw * 0.22, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.ellipse(bx + bw * 0.78, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  // Damage indicator lines
+  if (!isPreview) {
+    const cloth = CLOTHES[selectedCloth];
+    const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+    const curTotal = player.dur.top + player.dur.bottom + player.dur.legs;
+    const brokenRatio = 1 - (curTotal / maxTotal);
+    if (brokenRatio > 0.2) {
+      c.strokeStyle = '#ef4444';
+      c.lineWidth = 2;
+      c.setLineDash([5, 5]);
+      c.beginPath();
+      c.moveTo(bx + bw * 0.2, by + bh * 0.55);
+      c.lineTo(bx + bw * 0.5, by + bh * 0.65);
+      c.stroke();
+      c.setLineDash([]);
+    }
+  }
+}
+
+function mixColor(c1, c2, ratio) {
+  // 简化颜色混合
+  return ratio > 0.5 ? c2 : c1;
+}
+
+function drawCharacter() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  drawCharacterOnContext(ctx, w, h, animTime, false);
+}
+
+function animateCharacter() {
+  animTime += 0.016;
+  if (battleState === 'battling' || battleState === 'fishing' || battleState === 'ended') {
+    drawCharacter();
+  }
+  requestAnimationFrame(animateCharacter);
+}
+
+// ========================
+// 启动
+// ========================
+initCreation();
+</script>
+</body>
+</html>
