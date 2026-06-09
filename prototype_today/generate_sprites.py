@@ -874,6 +874,153 @@ def draw_fishing_scene(palette):
     return img
 
 
+# ========== 衣服预览图（64x96 像素风）==========
+def draw_cloth_preview(style, primary, secondary):
+    W, H = 64, 96
+    img = create_image(W, H)
+    d = ImageDraw.Draw(img)
+    skin = (255, 220, 200, 255)
+    hair = (200, 180, 160, 255)
+    p = primary
+    s = secondary
+    pd = (max(0,p[0]-40), max(0,p[1]-40), max(0,p[2]-40), 255)
+    pl = (min(255,p[0]+40), min(255,p[1]+40), min(255,p[2]+40), 255)
+
+    # 通用人体基础
+    # 头
+    dr(d, 24, 4, 16, 16, skin)
+    dr(d, 24, 4, 4, 16, (240,200,180,255))  # 阴影
+    # 头发
+    dr(d, 22, 2, 20, 8, hair)
+    dr(d, 20, 6, 4, 12, hair)
+    dr(d, 40, 6, 4, 12, hair)
+    # 眼睛
+    dr(d, 27, 10, 3, 3, (50,50,50,255))
+    dr(d, 34, 10, 3, 3, (50,50,50,255))
+    # 嘴
+    dr(d, 30, 14, 4, 2, (200,120,120,255))
+
+    # 腿部（通用）
+    dr(d, 24, 56, 7, 28, skin)
+    dr(d, 33, 56, 7, 28, skin)
+
+    if style == 'underwear':
+        # 白色内衣
+        dr(d, 22, 20, 20, 12, p)
+        dr(d, 22, 20, 20, 3, pl)   # 蕾丝边
+        dr(d, 24, 32, 16, 10, p)   # 内裤
+        dr(d, 24, 32, 16, 3, pl)
+        # 红色心形装饰
+        dr(d, 29, 24, 6, 4, s)
+        dr(d, 30, 23, 2, 2, s)
+        dr(d, 32, 23, 2, 2, s)
+
+    elif style == 'dress':
+        # 连衣裙
+        dr(d, 22, 20, 20, 14, p)   # 上身
+        dr(d, 22, 20, 20, 3, pl)   # 领口
+        dr(d, 16, 34, 32, 26, p)   # 裙摆
+        dr(d, 16, 34, 32, 3, pl)   # 裙摆边
+        dr(d, 16, 56, 32, 4, pl)   # 裙底蕾丝
+        dr(d, 30, 28, 4, 4, s)     # 腰带扣
+        # 袖子
+        dr(d, 18, 22, 4, 10, p)
+        dr(d, 42, 22, 4, 10, p)
+
+    elif style == 'pajamas':
+        # 轻薄睡衣
+        dr(d, 18, 18, 28, 36, p)   # 睡裙主体
+        dr(d, 18, 18, 28, 4, pl)   # 领口蕾丝
+        dr(d, 18, 50, 28, 4, pl)   # 裙摆蕾丝
+        dr(d, 20, 20, 2, 8, s)     # 肩带
+        dr(d, 42, 20, 2, 8, s)
+        # 波浪裙摆
+        dr(d, 16, 52, 8, 4, p)
+        dr(d, 28, 54, 8, 4, p)
+        dr(d, 40, 52, 8, 4, p)
+
+    elif style == 'gothic':
+        # 哥特：黑色连衣裙 + 红色点缀
+        dr(d, 20, 18, 24, 16, p)   # 上身
+        dr(d, 20, 18, 24, 4, pd)   # 尖领
+        dr(d, 20, 22, 24, 2, s)    # 红色领口线
+        dr(d, 14, 34, 36, 30, p)   # 裙摆
+        dr(d, 14, 34, 36, 4, pd)   # 裙摆阴影
+        dr(d, 14, 60, 36, 4, s)    # 红色裙底
+        # 红色腰带+十字架
+        dr(d, 20, 30, 24, 4, s)
+        dr(d, 30, 26, 4, 8, s)
+        # 黑色长袜
+        dr(d, 24, 56, 7, 18, p)
+        dr(d, 33, 56, 7, 18, p)
+        dr(d, 24, 74, 16, 4, s)    # 红色袜边
+
+    elif style == 'lolita':
+        # 洛丽塔：粉色蓬蓬裙 + 白色蕾丝
+        dr(d, 22, 18, 20, 14, pl)  # 白色上衣
+        dr(d, 22, 18, 20, 3, s)    # 领口蕾丝
+        dr(d, 12, 32, 40, 32, p)   # 粉色蓬蓬裙
+        dr(d, 12, 32, 40, 4, s)    # 白色蕾丝边
+        dr(d, 12, 60, 40, 4, s)    # 裙底蕾丝
+        # 大蝴蝶结
+        dr(d, 28, 22, 8, 6, s)
+        dr(d, 26, 24, 4, 4, s)
+        dr(d, 34, 24, 4, 4, s)
+        # 白色长袜
+        dr(d, 24, 56, 7, 20, pl)
+        dr(d, 33, 56, 7, 20, pl)
+        dr(d, 24, 76, 7, 2, s)
+        dr(d, 33, 76, 7, 2, s)
+        # 粉色鞋子
+        dr(d, 24, 84, 7, 4, p)
+        dr(d, 33, 84, 7, 4, p)
+
+    elif style == 'maid':
+        # 女仆：黑白
+        dr(d, 20, 18, 24, 36, p)   # 黑色连衣裙
+        dr(d, 22, 20, 20, 18, s)   # 白色围裙
+        dr(d, 22, 20, 20, 3, (200,200,200,255))  # 围裙边
+        dr(d, 28, 24, 8, 4, s)     # 围裙蝴蝶结
+        # 白色头饰
+        dr(d, 22, 0, 20, 6, s)
+        dr(d, 24, 2, 4, 4, s)
+        dr(d, 36, 2, 4, 4, s)
+        # 白色袖口
+        dr(d, 18, 22, 4, 4, s)
+        dr(d, 42, 22, 4, 4, s)
+        # 黑色长袜
+        dr(d, 24, 56, 7, 18, p)
+        dr(d, 33, 56, 7, 18, p)
+        # 黑色鞋子
+        dr(d, 24, 84, 7, 4, pd)
+        dr(d, 33, 84, 7, 4, pd)
+
+    elif style == 'swimsuit':
+        # 泳装
+        dr(d, 22, 20, 20, 26, p)   # 连体泳装
+        dr(d, 22, 20, 20, 3, pl)   # 上边高光
+        dr(d, 22, 42, 20, 4, pl)   # 腰边
+        dr(d, 24, 20, 2, 8, s)     # 肩带
+        dr(d, 38, 20, 2, 8, s)
+        # 侧边条纹
+        dr(d, 22, 26, 2, 14, s)
+        dr(d, 40, 26, 2, 14, s)
+
+    else:  # custom / default
+        # 通用紫色渐变连衣裙
+        dr(d, 22, 18, 20, 14, p)
+        dr(d, 22, 18, 20, 3, pl)
+        dr(d, 16, 32, 32, 28, p)
+        dr(d, 16, 32, 32, 4, pl)
+        dr(d, 16, 56, 32, 4, s)
+        dr(d, 30, 26, 4, 4, s)
+        # 袖子
+        dr(d, 18, 20, 4, 10, p)
+        dr(d, 42, 20, 4, 10, p)
+
+    return img
+
+
 def draw_bg_sea():
     """近海区 - 白天/黄昏，温暖蓝绿色调"""
     return draw_fishing_scene({
@@ -967,4 +1114,15 @@ if __name__ == '__main__':
     save(draw_bg_sea2(), 'bg_sea2.png')
     save(draw_bg_sea3(), 'bg_sea3.png')
     save(draw_bg_sea4(), 'bg_sea4.png')
+
+    # 衣服预览图
+    save(draw_cloth_preview('underwear', (255,240,245), (255,182,193)), 'cloth_underwear.png')
+    save(draw_cloth_preview('dress', (103,232,249), (21,94,117)), 'cloth_dress.png')
+    save(draw_cloth_preview('pajamas', (251,207,232), (157,23,77)), 'cloth_pajamas.png')
+    save(draw_cloth_preview('gothic', (30,30,30), (200,50,50)), 'cloth_gothic.png')
+    save(draw_cloth_preview('lolita', (255,180,200), (255,255,255)), 'cloth_lolita.png')
+    save(draw_cloth_preview('maid', (40,40,40), (255,255,255)), 'cloth_maid.png')
+    save(draw_cloth_preview('swimsuit', (60,130,200), (30,70,140)), 'cloth_swimsuit.png')
+    save(draw_cloth_preview('custom', (168,85,247), (236,72,153)), 'cloth_custom.png')
+
     print("\nAll cute sprites generated!")
