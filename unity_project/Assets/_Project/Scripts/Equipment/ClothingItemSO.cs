@@ -4,7 +4,7 @@ namespace BurstFishingKingdom.Equipment
 {
     /// <summary>
     /// 衣服物品 ScriptableObject
-    /// 每件衣服包含3个耐久阶段的Sprite，支持爆衣系统
+    /// 每件衣服包含3个耐久阶段的Sprite
     /// </summary>
     [CreateAssetMenu(fileName = "NewClothing", menuName = "若若的钓鱼王国/衣服")]
     public class ClothingItemSO : ScriptableObject
@@ -26,12 +26,6 @@ namespace BurstFishingKingdom.Equipment
         [Tooltip("完整状态")] public Sprite NormalSprite;
         [Tooltip("轻微破损")] public Sprite DamagedSprite;
         [Tooltip("严重破损")] public Sprite BrokenSprite;
-
-        [Header("爆衣相关")]
-        [Tooltip("是否参与羞耻值计算")] public bool ContributesToShame = true;
-        [Tooltip("羞耻值权重")] public float ShameWeight = 1f;
-        [Tooltip("是否为睡衣(羞耻积累更快)")]
-        public bool IsPajamas = false;
 
         [Header("制衣信息")]
         [Tooltip("AI生成的原料列表")]

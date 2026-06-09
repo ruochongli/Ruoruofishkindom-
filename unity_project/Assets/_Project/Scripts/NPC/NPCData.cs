@@ -99,7 +99,6 @@ namespace BurstFishingKingdom.NPC
         public float CritMultiplier = 2f;
         public float BaseRepairPercent = 0.2f;
         public string[] BattleStartLines;
-        public string[] PlayerShameLines;
         public string[] PlayerSkillLines;
         public string[] VictoryLines;
         public string[] RepairLines;

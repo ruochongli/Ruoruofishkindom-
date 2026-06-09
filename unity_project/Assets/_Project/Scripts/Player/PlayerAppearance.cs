@@ -106,25 +106,5 @@ namespace BurstFishingKingdom.Player
                     break;
             }
         }
-
-        /// <summary>
-        /// 设置爆衣状态 - 隐藏外层服装
-        /// </summary>
-        public void SetDamagedState(Equipment.EquipmentSlot slot, bool isDamaged)
-        {
-            SpriteRenderer renderer = slot switch
-            {
-                Equipment.EquipmentSlot.Top => TopRenderer,
-                Equipment.EquipmentSlot.Bottom => BottomRenderer,
-                Equipment.EquipmentSlot.Socks => SocksRenderer,
-                _ => null
-            };
-            
-            if (renderer != null)
-            {
-                // 可以切换为破损sprite或降低透明度
-                renderer.color = new Color(renderer.color.r, renderer.color.g, renderer.color.b, isDamaged ? 0.3f : 1f);
-            }
-        }
     }
 }

@@ -74,7 +74,6 @@ namespace BurstFishingKingdom.Core
         public int Level;
         public int Exp;
         public int Gold;
-        public int Shame;
         
         // 外观
         public int SkinToneIndex;

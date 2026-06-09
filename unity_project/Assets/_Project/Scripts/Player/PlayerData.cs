@@ -17,8 +17,6 @@ namespace BurstFishingKingdom.Player
         public int CurrentExp = 0;
         public int ExpToNextLevel = 100;
         public int Gold = 500;
-        public int Shame = 0;
-        public int MaxShame = 100;
         
         [Header("外观")]
         public PlayerAppearance Appearance;
@@ -84,11 +82,6 @@ namespace BurstFishingKingdom.Player
             Debug.Log($"[PlayerData] 升级！当前等级: {Level}");
         }
 
-        public void SetShame(int value)
-        {
-            Shame = Mathf.Clamp(value, 0, MaxShame);
-        }
-
         /// <summary>
         /// 导出存档数据
         /// </summary>
@@ -101,7 +94,6 @@ namespace BurstFishingKingdom.Player
                 Level = Level,
                 Exp = CurrentExp,
                 Gold = Gold,
-                Shame = Shame,
                 SkinToneIndex = Appearance?.SkinToneIndex ?? 0,
                 HairStyleIndex = Appearance?.HairStyleIndex ?? 0,
                 HairColorIndex = Appearance?.HairColorIndex ?? 0,
@@ -133,7 +125,6 @@ namespace BurstFishingKingdom.Player
             Level = data.Level;
             CurrentExp = data.Exp;
             Gold = data.Gold;
-            Shame = data.Shame;
             SpouseNPCId = data.SpouseId;
             MarriageDays = data.MarriageDays;
             ActiveCrewId = data.ActiveCrewId;

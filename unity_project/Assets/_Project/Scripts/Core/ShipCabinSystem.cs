@@ -24,7 +24,6 @@ namespace BurstFishingKingdom.Core
         [Header("休息配置")]
         public float RestHourCost = 4f;
         public int RestHpRecovery = 50;
-        public int RestShameReduction = 20;
 
         public event Action OnFurnitureChanged;
         public event Action OnRestComplete;
@@ -46,11 +45,8 @@ namespace BurstFishingKingdom.Core
             // 推进时间
             timeManager?.AdvanceHour(Mathf.FloorToInt(RestHourCost));
 
-            // 恢复状态
-            playerData.SetShame(Mathf.Max(0, playerData.Shame - RestShameReduction));
-
             OnRestComplete?.Invoke();
-            Debug.Log("[ShipCabin] 休息完毕，羞耻值下降，精神焕发！");
+            Debug.Log("[ShipCabin] 休息完毕，精神焕发！");
         }
 
         /// <summary>

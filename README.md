@@ -6,35 +6,64 @@
 
 ---
 
+## 🎮 游戏引擎
+
+**Unity 2022.3 LTS** — 唯一活跃引擎。
+
+历史原型（Godot、HTML5）已归档至 `archive/`，Git 历史完整保留，但不再维护。
+
+---
+
 ## 📂 项目结构
 
 ```
 FishingMaiden/
-├── docs/
+├── unity_project/                 # ⭐ Unity 主工程
+│   ├── Assets/_Project/
+│   │   ├── Scripts/               # C# 脚本（Core / Player / Battle / Inventory / Equipment / Crafting / NPC / UI）
+│   │   ├── Scenes/                # 场景（Bootstrap → ShipCabin → City → Sea）
+│   │   ├── Sprites/               # 美术资源
+│   │   │   ├── Backgrounds/       # 场景背景
+│   │   │   ├── Characters/        # 主角精灵图（含爆衣阶段）
+│   │   │   ├── Clothing/          # 服装图标
+│   │   │   ├── NPCs/              # NPC 精灵图
+│   │   │   ├── Bosses/            # BOSS 精灵图
+│   │   │   ├── UI/                # UI 素材（预览图等）
+│   │   │   └── References/        # 参考图 / 角色模板 / 收集图鉴
+│   │   ├── Data/                  # ScriptableObject 数据资产
+│   │   ├── Prefabs/               # 预制体
+│   │   ├── Fonts/                 # TMP 中文字体
+│   │   └── Audio/                 # BGM / 音效
+│   └── SETUP.md                   # Unity 工程配置指南
+│
+├── docs/                          # 游戏设计文档
 │   ├── GDD.md                     # 游戏设计文档
 │   ├── DataSchema.md              # 数据结构
 │   ├── ArtPlan.md                 # 美术规划
+│   ├── AIArtGuide.md              # AI 美术工作流
 │   └── DevLog.md                  # 开发日志
-├── godot_project/                 # Godot 4 工程
-│   ├── project.godot
-│   ├── scripts/
-│   │   ├── game_data.gd
-│   │   ├── battle_manager.gd
-│   │   └── main.gd
-│   ├── scenes/
-│   └── assets/
-├── prototype_today/
-│   └── index.html                 # ⭐ 今天就能玩的完整原型！
+│
+├── reference/                     # 美术参考素材（角色立绘、场景、鱼图鉴等）
+│   └── analysis/                  # 像素图技术分析
+│
+├── tools/                         # 开发工具
+│   ├── comfyui/                   # ComfyUI 安装脚本
+│   └── sprite_generator/          # Python 精灵图生成管线（原 prototype_today 工具脚本）
+│
+├── archive/                       # 🗄️ 归档（历史引擎原型，不再维护）
+│   ├── godot_project/             # Godot 4 早期骨架
+│   ├── prototype_today/           # HTML5 完整原型 + 生成脚本
+│   ├── prototype_v2/              # HTML5 原型 v2
+│   └── prototype_pixel/           # 像素原型
+│
 └── README.md
 ```
 
 ---
 
-## 🚀 今天就能玩的原型！
+## 🚀 核心玩法
 
-**无需安装任何软件**，双击 `prototype_today/index.html` 即可运行。
-
-### 完整流程体验
+### 完整流程
 
 | 步骤 | 内容 |
 |---|---|
@@ -122,33 +151,48 @@ FishingMaiden/
 
 ---
 
-## 🛠️ Godot 工程
+## 🛠️ Unity 工程配置
 
-1. 下载 [Godot 4.2+](https://godotengine.org/)
-2. 导入 `godot_project/project.godot`
-3. 当前为代码骨架，需手动搭建 UI 场景
+详见 [`unity_project/SETUP.md`](unity_project/SETUP.md)。
+
+### 快速开始
+
+1. 打开 **Unity Hub** → **Open** → 选择 `unity_project` 文件夹
+2. Unity 2022.3 LTS 会自动解析 Packages 和 ProjectSettings
+3. 打开 `00_Bootstrap` 场景 → Play
+
+### 调试快捷键（Play Mode）
+
+- `G` — 加 100 金币
+- `E` — 加 50 经验
+- `T` — 推进 1 小时
+- `B` — 直接开始战斗（测试用）
 
 ---
 
-## 📋 接下来做什么
+## 📋 开发路线图
 
-### Week 1：核心闭环
-- [ ] Godot中搭建创角界面
-- [ ] 船舱格子系统+AI制衣台
-- [ ] 背包+品质颜色系统
-- [ ] 城市场景+每日商店
+### Phase 1：核心闭环（当前）
+- [x] Unity 项目骨架 + 场景管理
+- [x] 创角系统（捏脸 + 命名）
+- [x] 船舱格子系统 + AI制衣台
+- [x] 背包 + 品质颜色系统
+- [x] 城市场景 + 每日商店
+- [ ] 完整的钓鱼 + 战斗逻辑
+- [ ] NPC日程 + 对话 + 送礼
 
-### Week 2：战斗+NPC
-- [ ] 完整战斗逻辑
-- [ ] NPC日程+对话+送礼
-- [ ] 好感度UI
+### Phase 2：内容填充
+- [ ] 更多海域和 BOSS
+- [ ] 船只升级系统 UI
+- [ ] 完整的 NPC 对话数据
+- [ ] 音效和背景音乐
 
-### Week 3：制衣闭环
-- [ ] AI配方解析引擎
-- [ ] 材料收集→制作→获得成品
-- [ ] 每日商店自动刷新
+### Phase 3：上线准备
+- [ ] Live2D/Spine 集成（如需动态立绘）
+- [ ] Steam 集成（存档、成就、云同步）
+- [ ] 成就系统
 
 ---
 
 **项目创建日期**：2026-06-08  
-**当前版本**：原型验证期 Day 1 - 含创角+船舱+AI制衣+出海+战斗+NPC恋爱+每日商店
+**当前版本**：Unity 重构期 — 引擎已统一，美术资源已整合
