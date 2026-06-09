@@ -71,157 +71,248 @@ P = {
     'sock_lace':  (255, 200, 215, 255),
 }
 
-# ========== 女性角色（爱丽丝摇篮风）==========
+# ========== 女性角色 V2（精细像素风）==========
 def draw_female_cute(dress_type='full', damaged=False):
     W, H = 64, 96
     img = create_image(W, H)
     d = ImageDraw.Draw(img)
-    sclera = (255, 245, 250)  # 眼白
+    o = P['outline']       # 轮廓
+    sk = P['skin']
+    skl = (255,235,220,255)  # 皮肤亮
+    skd = P['skin_shade']
+    skdd = (220,170,150,255) # 皮肤暗
+    hr = P['hair']
+    hrl = (250,250,255,255)
+    hrm = P['hair_mid']
+    hrd = P['hair_dark']
+    hrdd = (150,150,180,255)
+    ey = P['eye_red']
+    eyd = P['eye_dark']
+    eyc = P['eye_core']
+    ew = P['eye_white']
+    scl = (255,245,250,255)
+    mo = P['mouth']
+    bl = P['blush']
+    cl = P['cloth']
+    cll = (255,255,255,255)
+    cld = P['cloth_dark']
+    la = P['lace']
+    lad = P['lace_dark']
+    ri = P['ribbon']
+    rid = P['ribbon_dark']
 
-    # 阴影
+    # ====== 后发（底层）======
+    dr(d, 12, 8, 4, 38, hrd)
+    dr(d, 14, 6, 3, 42, hr)
+    dr(d, 48, 6, 3, 42, hr)
+    dr(d, 50, 8, 4, 38, hrd)
+    dr(d, 10, 18, 3, 32, hrd)
+    dr(d, 51, 18, 3, 32, hrd)
+    dr(d, 8, 28, 3, 22, hrdd)
+    dr(d, 53, 28, 3, 22, hrdd)
+
+    # ====== 阴影 ======
     dr(d, 16, 90, 32, 4, P['shadow'])
 
     # ====== 腿部 ======
-    dr(d, 24, 64, 7, 22, P['leg'])
-    dr(d, 24, 64, 2, 22, P['leg_dark'])
-    dr(d, 33, 64, 7, 22, P['leg'])
-    dr(d, 33, 64, 2, 22, P['leg_dark'])
+    dr(d, 23, 64, 9, 24, skd)   # 左腿阴影底
+    dr(d, 24, 64, 7, 24, sk)    # 左腿
+    dr(d, 24, 64, 2, 24, skd)
+    dr(d, 24, 72, 2, 8, skl)    # 左腿高光
+    dr(d, 32, 64, 9, 24, skd)   # 右腿阴影底
+    dr(d, 33, 64, 7, 24, sk)    # 右腿
+    dr(d, 33, 64, 2, 24, skd)
+    dr(d, 37, 72, 2, 8, skl)    # 右腿高光
 
-    # 小皮鞋（基础款无袜子）
-    dr(d, 23, 86, 9, 4, P['black'])
-    dr(d, 33, 86, 9, 4, P['black'])
-    dr(d, 26, 85, 2, 2, P['ribbon'])
-    dr(d, 36, 85, 2, 2, P['ribbon'])
+    # 小皮鞋
+    dr(d, 22, 86, 10, 5, o)     # 轮廓
+    dr(d, 23, 87, 8, 3, P['black'])
+    dr(d, 25, 86, 2, 2, ri)
+    dr(d, 32, 86, 10, 5, o)
+    dr(d, 33, 87, 8, 3, P['black'])
+    dr(d, 35, 86, 2, 2, ri)
 
     # ====== 身体 ======
     if dress_type == 'full':
-        dr(d, 22, 38, 20, 14, P['cloth'])
-        dr(d, 22, 38, 20, 3, P['lace'])
-        dr(d, 22, 48, 20, 3, P['lace'])
-        dr(d, 29, 42, 6, 4, P['ribbon'])
-        dr(d, 30, 41, 4, 2, P['ribbon'])
-        dr(d, 31, 40, 2, 2, P['ribbon_dark'])
-        dr(d, 23, 36, 2, 6, P['lace_dark'])
-        dr(d, 39, 36, 2, 6, P['lace_dark'])
-        dr(d, 24, 52, 16, 10, P['cloth'])
-        dr(d, 24, 52, 16, 2, P['lace'])
-        dr(d, 26, 60, 12, 2, P['lace'])
-        for sx in range(26, 38, 2):
-            for sy in range(42, 60, 3):
-                dot(d, sx, sy, (255,255,255,100))
+        # 白色内衣（带轮廓）
+        # 下身
+        dr(d, 21, 50, 22, 16, o)
+        dr(d, 22, 51, 20, 14, cl)
+        dr(d, 22, 51, 20, 3, cll)
+        dr(d, 24, 55, 16, 2, la)
+        dr(d, 26, 60, 12, 2, lad)
+        # 上身
+        dr(d, 21, 36, 22, 16, o)
+        dr(d, 22, 37, 20, 14, cl)
+        dr(d, 22, 37, 20, 3, cll)
+        dr(d, 24, 47, 16, 2, la)
+        # 胸前装饰
+        dr(d, 28, 40, 8, 6, o)
+        dr(d, 29, 41, 6, 4, ri)
+        dr(d, 31, 42, 2, 2, rid)
+        # 肩带
+        dr(d, 22, 36, 3, 10, lad)
+        dr(d, 39, 36, 3, 10, lad)
+        # 蕾丝细节
+        for sx in range(24, 40, 3):
+            for sy in range(42, 58, 4):
+                dot(d, sx, sy, (255,255,255,120))
     elif dress_type == 'damaged':
-        dr(d, 22, 38, 20, 10, P['cloth'])
-        dr(d, 22, 38, 20, 3, P['lace'])
-        dr(d, 24, 52, 14, 8, P['cloth'])
-        dr(d, 24, 52, 14, 2, P['lace'])
-        dr(d, 26, 44, 6, 4, P['skin'])
-        dr(d, 34, 54, 4, 3, P['skin'])
-        dr(d, 25, 43, 2, 2, P['ribbon'])
-        dr(d, 33, 53, 2, 2, P['ribbon'])
-    elif dress_type == 'underwear':
-        dr(d, 22, 38, 20, 14, P['cloth'])
-        dr(d, 22, 38, 20, 3, P['lace'])
-        dr(d, 22, 48, 20, 3, P['lace'])
-        dr(d, 29, 42, 6, 4, P['ribbon'])
-        dr(d, 24, 52, 16, 10, P['cloth'])
-        dr(d, 24, 52, 16, 2, P['lace'])
-        for sx in range(24, 40, 2):
-            for sy in range(38, 62, 2):
-                if (sx+sy) % 4 == 0:
-                    dot(d, sx, sy, (255,255,255,60))
+        dr(d, 21, 36, 22, 14, o)
+        dr(d, 22, 37, 20, 10, cl)
+        dr(d, 22, 37, 20, 3, cll)
+        dr(d, 22, 50, 18, 10, o)
+        dr(d, 23, 51, 16, 8, cl)
+        dr(d, 23, 51, 16, 2, la)
+        dr(d, 25, 42, 6, 6, sk)   # 破损露肤
+        dr(d, 33, 52, 4, 4, sk)
+        dr(d, 26, 43, 2, 2, ri)
+    else:  # underwear
+        dr(d, 21, 36, 22, 30, o)
+        dr(d, 22, 37, 20, 28, cl)
+        dr(d, 22, 37, 20, 3, cll)
+        dr(d, 22, 47, 20, 3, la)
+        dr(d, 24, 52, 16, 14, cl)
+        dr(d, 24, 52, 16, 2, la)
 
     # ====== 手臂 ======
-    dr(d, 14, 38, 6, 20, P['skin'])
-    dr(d, 14, 38, 2, 20, P['skin_shade'])
-    dr(d, 44, 38, 6, 20, P['skin'])
-    dr(d, 44, 38, 2, 20, P['skin_shade'])
-    dr(d, 14, 54, 6, 2, P['lace'])
-    dr(d, 44, 54, 6, 2, P['lace'])
+    # 左臂
+    dr(d, 13, 38, 8, 22, o)
+    dr(d, 14, 39, 6, 20, sk)
+    dr(d, 14, 39, 2, 20, skd)
+    dr(d, 15, 44, 2, 8, skl)
+    if dress_type == 'full':
+        dr(d, 14, 38, 6, 8, cl)
+        dr(d, 14, 38, 6, 2, cll)
+    # 右臂
+    dr(d, 43, 38, 8, 22, o)
+    dr(d, 44, 39, 6, 20, sk)
+    dr(d, 44, 39, 2, 20, skd)
+    dr(d, 47, 44, 2, 8, skl)
+    if dress_type == 'full':
+        dr(d, 44, 38, 6, 8, cl)
+        dr(d, 44, 38, 6, 2, cll)
 
-    # ====== 头部 ======
-    dr(d, 30, 32, 4, 6, P['skin_shade'])
+    # ====== 脖子 ======
+    dr(d, 29, 32, 6, 6, o)
+    dr(d, 30, 33, 4, 4, skd)
 
-    # 脸（椭圆带稍尖下巴）
-    dr(d, 20, 10, 24, 20, P['skin'])
-    dr(d, 20, 10, 4, 20, P['skin_shade'])
-    dr(d, 40, 10, 4, 20, P['skin_mid'])
-    dr(d, 22, 28, 20, 6, P['skin'])
-    dr(d, 24, 30, 16, 4, P['skin'])
-    dr(d, 26, 32, 12, 2, P['skin'])
+    # ====== 头部（圆润脸型）======
+    # 脸轮廓
+    dr(d, 19, 10, 26, 24, o)    # 脸外轮廓
+    dr(d, 20, 11, 24, 22, sk)   # 脸主体
+    dr(d, 20, 11, 4, 22, skd)   # 左阴影
+    dr(d, 38, 11, 6, 22, skl)   # 右亮部
+    dr(d, 22, 28, 20, 6, sk)    # 下巴
+    dr(d, 24, 30, 16, 4, sk)
+    dr(d, 26, 32, 12, 2, sk)
+    dr(d, 22, 26, 4, 4, skd)    # 脸颊阴影
+    dr(d, 38, 26, 4, 4, skl)    # 脸颊高光
 
-    # ====== 眼睛（精细层次）======
-    eye_y = 17
-    # 左眼 9x6
-    dr(d, 24, eye_y, 9, 2, P['eye_dark'])       # 上眼睑
-    dr(d, 24, eye_y+2, 9, 3, sclera)             # 眼白
-    dr(d, 26, eye_y+2, 5, 3, P['eye_red'])       # 虹膜
-    dr(d, 27, eye_y+3, 3, 2, P['eye_dark'])      # 瞳孔
-    dr(d, 28, eye_y+2, 2, 2, P['eye_white'])     # 主高光
-    dr(d, 26, eye_y+2, 1, 1, P['eye_white'])     # 侧高光
-    dr(d, 24, eye_y+5, 9, 1, P['eye_red'])       # 下眼睑
+    # ====== 耳朵 ======
+    dr(d, 17, 18, 4, 8, o)
+    dr(d, 18, 19, 3, 6, sk)
+    dr(d, 18, 19, 1, 6, skd)
+    dr(d, 43, 18, 4, 8, o)
+    dr(d, 44, 19, 3, 6, sk)
+    dr(d, 44, 19, 1, 6, skl)
+
+    # ====== 眼睛（大萌眼）======
+    ey_y = 16
+    # 左眼轮廓
+    dr(d, 23, ey_y, 11, 9, o)
+    # 上眼睑
+    dr(d, 24, ey_y+1, 9, 2, eyd)
+    dr(d, 24, ey_y+1, 9, 1, o)
+    # 眼白
+    dr(d, 24, ey_y+3, 9, 4, scl)
+    # 虹膜
+    dr(d, 25, ey_y+3, 7, 4, ey)
+    dr(d, 26, ey_y+3, 5, 2, eyc)
+    # 瞳孔
+    dr(d, 27, ey_y+4, 3, 3, eyd)
+    # 高光（一大一小）
+    dr(d, 26, ey_y+3, 3, 3, ew)
+    dr(d, 29, ey_y+5, 2, 2, ew)
+    # 下眼睑
+    dr(d, 24, ey_y+7, 9, 2, ey)
+    dr(d, 24, ey_y+8, 9, 1, o)
     # 睫毛
-    dr(d, 23, eye_y-1, 3, 1, P['eye_line'])
-    dr(d, 22, eye_y, 2, 1, P['eye_line'])
-    dr(d, 30, eye_y-1, 2, 1, P['eye_line'])
+    dr(d, 22, ey_y, 3, 1, o)
+    dr(d, 23, ey_y-1, 2, 1, o)
+    dr(d, 32, ey_y, 3, 1, o)
+    dr(d, 32, ey_y-1, 2, 1, o)
 
-    # 右眼 9x6
-    dr(d, 35, eye_y, 9, 2, P['eye_dark'])
-    dr(d, 35, eye_y+2, 9, 3, sclera)
-    dr(d, 37, eye_y+2, 5, 3, P['eye_red'])
-    dr(d, 38, eye_y+3, 3, 2, P['eye_dark'])
-    dr(d, 39, eye_y+2, 2, 2, P['eye_white'])
-    dr(d, 37, eye_y+2, 1, 1, P['eye_white'])
-    dr(d, 35, eye_y+5, 9, 1, P['eye_red'])
-    # 睫毛
-    dr(d, 42, eye_y-1, 3, 1, P['eye_line'])
-    dr(d, 44, eye_y, 2, 1, P['eye_line'])
-    dr(d, 36, eye_y-1, 2, 1, P['eye_line'])
+    # 右眼
+    dr(d, 34, ey_y, 11, 9, o)
+    dr(d, 35, ey_y+1, 9, 2, eyd)
+    dr(d, 35, ey_y+1, 9, 1, o)
+    dr(d, 35, ey_y+3, 9, 4, scl)
+    dr(d, 36, ey_y+3, 7, 4, ey)
+    dr(d, 37, ey_y+3, 5, 2, eyc)
+    dr(d, 38, ey_y+4, 3, 3, eyd)
+    dr(d, 37, ey_y+3, 3, 3, ew)
+    dr(d, 40, ey_y+5, 2, 2, ew)
+    dr(d, 35, ey_y+7, 9, 2, ey)
+    dr(d, 35, ey_y+8, 9, 1, o)
+    dr(d, 33, ey_y, 3, 1, o)
+    dr(d, 33, ey_y-1, 2, 1, o)
+    dr(d, 43, ey_y, 3, 1, o)
+    dr(d, 43, ey_y-1, 2, 1, o)
 
-    # 眉毛
-    dr(d, 25, 14, 7, 1, P['hair_dark'])
-    dr(d, 26, 13, 2, 1, P['hair_dark'])
-    dr(d, 36, 14, 7, 1, P['hair_dark'])
-    dr(d, 38, 13, 2, 1, P['hair_dark'])
+    # ====== 眉毛（细弯）======
+    dr(d, 24, 13, 3, 1, hrd)
+    dr(d, 26, 12, 4, 1, hrd)
+    dr(d, 30, 13, 3, 1, hrd)
+    dr(d, 35, 13, 3, 1, hrd)
+    dr(d, 37, 12, 4, 1, hrd)
+    dr(d, 41, 13, 3, 1, hrd)
 
-    # 嘴（超小微笑）
-    dr(d, 31, 28, 2, 1, P['mouth'])
+    # ====== 嘴（微笑）======
+    dr(d, 30, 27, 4, 2, o)
+    dr(d, 31, 28, 2, 1, mo)
+    dr(d, 30, 27, 1, 1, o)
+    dr(d, 33, 27, 1, 1, o)
 
-    # 腮红（眼睛下方）
-    dr(d, 20, 23, 5, 4, P['blush'])
-    dr(d, 39, 23, 5, 4, P['blush'])
+    # ====== 腮红 ======
+    for x in range(19, 24):
+        for y in range(22, 26):
+            dot(d, x, y, bl)
+    for x in range(40, 45):
+        for y in range(22, 26):
+            dot(d, x, y, bl)
 
-    # ====== 头发 ======
-    dr(d, 16, 8, 32, 10, P['hair'])
-    dr(d, 14, 10, 4, 30, P['hair'])
-    dr(d, 14, 14, 2, 26, P['hair_dark'])
-    dr(d, 48, 10, 4, 30, P['hair'])
-    dr(d, 50, 14, 2, 26, P['hair_dark'])
-    dr(d, 12, 20, 4, 35, P['hair'])
-    dr(d, 12, 24, 2, 28, P['hair_dark'])
-    dr(d, 48, 20, 4, 35, P['hair'])
-    dr(d, 50, 24, 2, 28, P['hair_dark'])
-
-    dr(d, 18, 4, 28, 10, P['hair'])
-    dr(d, 20, 2, 24, 6, P['hair_shine'])
-    dr(d, 22, 3, 20, 4, P['hair'])
-
-    dr(d, 20, 6, 24, 8, P['hair'])
-    dr(d, 22, 8, 6, 5, P['hair_shine'])
-    dr(d, 30, 8, 6, 5, P['hair_shine'])
-    dr(d, 38, 8, 4, 5, P['hair_shine'])
-    dr(d, 20, 10, 24, 2, P['hair_dark'])
-    dr(d, 18, 12, 3, 6, P['hair'])
-    dr(d, 43, 12, 3, 6, P['hair'])
-
-    dr(d, 38, 0, 3, 4, P['hair'])
-    dr(d, 39, 0, 2, 2, P['hair_shine'])
-
-    dr(d, 18, 14, 4, 14, P['hair'])
-    dr(d, 42, 14, 4, 14, P['hair'])
-    dr(d, 18, 18, 2, 10, P['hair_dark'])
-    dr(d, 44, 18, 2, 10, P['hair_dark'])
-
-    # 无头饰 / 无项链（基础款）
+    # ====== 前发（蓬松层次）======
+    # 头顶
+    dr(d, 18, 4, 28, 10, o)
+    dr(d, 19, 5, 26, 8, hr)
+    dr(d, 20, 6, 24, 6, hrl)
+    dr(d, 22, 7, 20, 4, hr)
+    dr(d, 24, 8, 16, 2, hrl)
+    # 刘海
+    dr(d, 18, 10, 28, 8, o)
+    dr(d, 19, 11, 26, 6, hr)
+    dr(d, 20, 12, 5, 4, hrl)
+    dr(d, 28, 12, 8, 4, hrl)
+    dr(d, 38, 12, 6, 4, hrl)
+    dr(d, 21, 13, 3, 3, hrm)
+    dr(d, 35, 13, 3, 3, hrm)
+    # 两侧前发
+    dr(d, 16, 12, 5, 18, o)
+    dr(d, 17, 13, 4, 16, hr)
+    dr(d, 17, 14, 2, 12, hrd)
+    dr(d, 18, 16, 2, 8, hrl)
+    dr(d, 43, 12, 5, 18, o)
+    dr(d, 44, 13, 4, 16, hr)
+    dr(d, 45, 14, 2, 12, hrd)
+    dr(d, 44, 16, 2, 8, hrl)
+    # 更长的发丝
+    dr(d, 14, 22, 4, 16, o)
+    dr(d, 15, 23, 3, 14, hr)
+    dr(d, 15, 25, 2, 10, hrd)
+    dr(d, 47, 22, 4, 16, o)
+    dr(d, 47, 23, 3, 14, hr)
+    dr(d, 48, 25, 2, 10, hrd)
 
     return img
 
@@ -1094,17 +1185,121 @@ def draw_bg_sea4():
     })
 
 
+# ========== 参考图风格转换生成（高质量）==========
+def generate_from_reference(ref_path, out_prefix, hair_map='white'):
+    """基于参考图下采样+颜色映射生成精灵"""
+    import numpy as np
+    ref = Image.open(ref_path).convert('RGB')
+    w, h = ref.size
+    crop = ref.crop((w*0.12, h*0.02, w*0.88, h*0.98))
+    
+    base64 = crop.resize((64, 96), Image.NEAREST)
+    quant64 = base64.quantize(colors=64, method=Image.Quantize.MEDIANCUT)
+    pal = quant64.getpalette()[:64*3]
+    orig_colors = [(pal[i], pal[i+1], pal[i+2]) for i in range(0, len(pal), 3)]
+    
+    indexed = [(i, c, sum(c)/3) for i, c in enumerate(orig_colors)]
+    indexed.sort(key=lambda x: x[2])
+    
+    mapping = {}
+    for idx, (i, c, v) in enumerate(indexed):
+        r, g, b = c
+        mx = max(r,g,b)
+        mn = min(r,g,b)
+        s = (mx-mn)/max(mx,1)*255
+        pct = idx / 63
+        
+        if pct < 0.08:
+            mapping[i] = (42, 38, 52, 255)
+        elif pct < 0.15:
+            mapping[i] = (220, 215, 225, 255)
+        elif pct < 0.25:
+            mapping[i] = (235, 230, 240, 255)
+        elif pct < 0.35:
+            if b > r + 15 and s > 30:
+                mapping[i] = (210, 206, 228, 255) if hair_map == 'white' else (200, 195, 185, 255)
+            else:
+                mapping[i] = (245, 242, 248, 255)
+        elif pct < 0.5:
+            if b > r + 10 and s > 20:
+                mapping[i] = (235, 232, 248, 255) if hair_map == 'white' else (225, 220, 210, 255)
+            elif r > 150 and g > 110 and b > 90 and r > b + 5:
+                mapping[i] = (min(255, r+5), min(255, g+3), min(255, b+3), 255)
+            else:
+                mapping[i] = (250, 248, 252, 255)
+        elif pct < 0.7:
+            if r > 160 and g > 120 and b > 100 and r > b + 5 and s < 100:
+                mapping[i] = (min(255, r+8), min(255, g+5), min(255, b+5), 255)
+            elif r > 140 and g > 100 and b < 120 and s < 130:
+                mapping[i] = (255, 220, 230, 255)
+            elif s > 30:
+                mapping[i] = (248, 246, 255, 255) if hair_map == 'white' else (238, 235, 228, 255)
+            else:
+                mapping[i] = (252, 250, 255, 255)
+        elif pct < 0.88:
+            if r > 180 and g > 140 and b > 120:
+                mapping[i] = (min(255, r+10), min(255, g+8), min(255, b+8), 255)
+            else:
+                mapping[i] = (255, 255, 255, 255) if hair_map == 'white' else (248, 246, 242, 255)
+        else:
+            mapping[i] = (255, 255, 255, 255)
+    
+    def apply_map(quant_img):
+        arr = np.array(quant_img)
+        h, w = arr.shape
+        out = np.zeros((h, w, 4), dtype=np.uint8)
+        for y in range(h):
+            for x in range(w):
+                out[y, x] = mapping[arr[y, x]]
+        return Image.fromarray(out, 'RGBA')
+    
+    out64 = apply_map(quant64)
+    save(out64, f'{out_prefix}.png')
+    
+    # Damaged
+    out64d = np.array(out64)
+    for y in range(96):
+        for x in range(64):
+            if (x*3 + y*7) % 11 == 0:
+                r, g, b, a = out64d[y, x]
+                if r > 210 and g > 210 and b > 220:
+                    out64d[y, x] = (255, 210, 220, a)
+    save(Image.fromarray(out64d, 'RGBA'), f'{out_prefix}_damaged.png')
+    
+    # Broken
+    out64b = np.array(out64)
+    for y in range(96):
+        for x in range(64):
+            if (x*2 + y*5) % 7 == 0:
+                r, g, b, a = out64b[y, x]
+                if r > 200 and g > 200 and b > 210:
+                    out64b[y, x] = (255, 218, 200, a)
+    save(Image.fromarray(out64b, 'RGBA'), f'{out_prefix}_broken.png')
+    
+    # Underwear = same as base (white theme)
+    save(out64, f'{out_prefix}_underwear.png')
+    
+    # Preview at 128x192
+    base128 = crop.resize((128, 192), Image.NEAREST)
+    quant128 = base128.quantize(colors=64, method=Image.Quantize.MEDIANCUT)
+    out128 = apply_map(quant128)
+    gender = 'f' if out_prefix.endswith('_f') else 'm'
+    save(out128, f'char_preview_{gender}.png')
+
+
 if __name__ == '__main__':
-    print("Generating cute pixel art sprites V3...")
-    save(draw_female_cute('full', False), 'sprite_f.png')
-    save(draw_female_cute('full', True), 'sprite_f_damaged.png')
-    save(draw_female_cute('damaged', False), 'sprite_f_broken.png')
-    save(draw_female_cute('underwear', False), 'sprite_f_underwear.png')
-    save(draw_male_cute('full', False), 'sprite_m.png')
-    save(draw_male_cute('full', True), 'sprite_m_damaged.png')
-    save(draw_male_cute('underwear', False), 'sprite_m_underwear.png')
-    save(draw_female_portrait(), 'char_preview_f.png')
-    save(draw_male_portrait(), 'char_preview_m.png')
+    print("Generating high-quality sprites from reference images...")
+    
+    # Female: based on char_template_03 (gothic crossed-arms pose)
+    generate_from_reference('assets/char_template_03.jpg', 'sprite_f', 'white')
+    
+    # Male: based on char_template_07 (school uniform pose)
+    generate_from_reference('assets/char_template_07.jpg', 'sprite_m', 'silver')
+    
+    # NPCs and portraits (keep code-drawn for now)
+    save(draw_npc_lily(), 'sprite_lily.png')
+    save(draw_npc_hein(), 'sprite_hein.png')
+    save(draw_boss(), 'sprite_boss.png')
     save(draw_npc_lily(), 'sprite_lily.png')
     save(draw_npc_hein(), 'sprite_hein.png')
     save(draw_boss(), 'sprite_boss.png')
