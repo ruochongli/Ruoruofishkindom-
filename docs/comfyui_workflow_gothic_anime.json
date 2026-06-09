@@ -1,0 +1,148 @@
+{
+  "last_node_id": 15,
+  "last_link_id": 18,
+  "nodes": [
+    {
+      "id": 4,
+      "type": "CheckpointLoaderSimple",
+      "pos": [20, 20],
+      "size": [320, 100],
+      "inputs": [],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [1], "slot_index": 0},
+        {"name": "CLIP", "type": "CLIP", "links": [3, 5], "slot_index": 1},
+        {"name": "VAE", "type": "VAE", "links": [13], "slot_index": 2}
+      ],
+      "widgets_values": ["Counterfeit-V3.0_fp16.safetensors"],
+      "title": "📦 加载主模型"
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [20, 160],
+      "size": [400, 220],
+      "inputs": [{"name": "clip", "type": "CLIP", "link": 3}],
+      "outputs": [{"name": "CONDITIONING", "type": "CONDITIONING", "links": [4], "slot_index": 0}],
+      "widgets_values": [
+        "masterpiece, best quality, ultra-detailed, 8k uhd,\n1girl, solo, full body,\npale skin, slender, long legs,\nplatinum blonde hair, long wavy hair, side-swept bangs,\ncrimson red eyes, slit pupils, sharp gaze, haughty expression, slight smirk,\nblack military uniform, red cape, high collar, gold trim,\nred ribbon, black thighhighs, red boots,\ngolden crown, vampire fangs,\nroses, thorns, blood moon background,\ndramatic lighting, red rim light, cinematic composition,"
+      ],
+      "title": "✅ 正面提示词 (Positive)"
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [20, 420],
+      "size": [400, 180],
+      "inputs": [{"name": "clip", "type": "CLIP", "link": 5}],
+      "outputs": [{"name": "CONDITIONING", "type": "CONDITIONING", "links": [6], "slot_index": 0}],
+      "widgets_values": [
+        "lowres, bad anatomy, bad hands, text, error, missing fingers,\nextra digit, fewer digits, cropped, worst quality, low quality,\nnormal quality, jpeg artifacts, signature, watermark, username,\nblurry, bad feet, mutation, deformed, extra limbs, extra arms,\nextra legs, malformed limbs, fused fingers, too many fingers,\nlong neck, cross-eyed, mutated hands, polar lowres, bad face,\nout of frame, oversaturated, overexposed,"
+      ],
+      "title": "❌ 负面提示词 (Negative)"
+    },
+    {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [20, 640],
+      "size": [320, 110],
+      "inputs": [],
+      "outputs": [{"name": "LATENT", "type": "LATENT", "links": [2], "slot_index": 0}],
+      "widgets_values": [512, 768, 1],
+      "title": "🖼️ 空白画布 (512×768)"
+    },
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [480, 160],
+      "size": [320, 340],
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 1},
+        {"name": "positive", "type": "CONDITIONING", "link": 4},
+        {"name": "negative", "type": "CONDITIONING", "link": 6},
+        {"name": "latent_image", "type": "LATENT", "link": 2}
+      ],
+      "outputs": [{"name": "LATENT", "type": "LATENT", "links": [12], "slot_index": 0}],
+      "widgets_values": [123456789, "randomize", 30, 7.5, "dpmpp_2m", "karras", 1],
+      "title": "🎲 KSampler (主采样)"
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [860, 160],
+      "size": [220, 50],
+      "inputs": [
+        {"name": "samples", "type": "LATENT", "link": 12},
+        {"name": "vae", "type": "VAE", "link": 13}
+      ],
+      "outputs": [{"name": "IMAGE", "type": "IMAGE", "links": [14], "slot_index": 0}],
+      "title": "🔓 VAE解码"
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [1140, 160],
+      "size": [320, 280],
+      "inputs": [{"name": "images", "type": "IMAGE", "link": 14}],
+      "outputs": [],
+      "widgets_values": ["gothic_anime"],
+      "title": "💾 保存图片"
+    },
+    {
+      "id": 10,
+      "type": "VAELoader",
+      "pos": [20, 800],
+      "size": [320, 60],
+      "inputs": [],
+      "outputs": [{"name": "VAE", "type": "VAE", "links": [], "slot_index": 0}],
+      "widgets_values": ["vae-ft-mse-840000-ema-pruned.safetensors"],
+      "title": "🔧 VAE加载器 (可选外挂)"
+    },
+    {
+      "id": 11,
+      "type": "Note",
+      "pos": [480, 560],
+      "size": [320, 140],
+      "inputs": [],
+      "outputs": [],
+      "widgets_values": [
+        "💡 8GB显存优化提示:\n\n1. 使用 SD1.5 模型 (512×768)\n2. 已设置 --lowvram --fp16-vae\n3. 高清修复用 Upscale 节点\n4. Batch size 保持 1\n\n启动命令:\npython main.py --lowvram --fp16-vae"
+      ],
+      "title": "📋 使用说明",
+      "color": "#223322",
+      "bgcolor": "#112211"
+    },
+    {
+      "id": 12,
+      "type": "Note",
+      "pos": [1140, 480],
+      "size": [320, 100],
+      "inputs": [],
+      "outputs": [],
+      "widgets_values": [
+        "🎨 风格参考:\n克鲁鲁 = 白金发+血红眼+军服+皇冠\n弗洛洛 = 黑长直+暗红眼+哥特裙+角\n水银灯 = 银白发+红瞳无高光+白哥特+翅膀"
+      ],
+      "title": "🎨 风格备忘",
+      "color": "#332222",
+      "bgcolor": "#221111"
+    }
+  ],
+  "links": [
+    [1, 4, 0, 3, 0, "MODEL"],
+    [2, 5, 0, 3, 3, "LATENT"],
+    [3, 4, 1, 6, 0, "CLIP"],
+    [4, 6, 0, 3, 1, "CONDITIONING"],
+    [5, 4, 1, 7, 0, "CLIP"],
+    [6, 7, 0, 3, 2, "CONDITIONING"],
+    [12, 3, 0, 8, 0, "LATENT"],
+    [13, 4, 2, 8, 1, "VAE"],
+    [14, 8, 0, 9, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "workspace_info": {
+      "id": "gothic-anime-portrait-v1"
+    }
+  },
+  "version": 0.4
+}

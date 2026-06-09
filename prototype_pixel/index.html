@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>爆衣钓鱼王国 - 像素原型</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  
+  :root {
+    --bg: #2d1b2e;
+    --panel: #463546;
+    --panel-light: #5a4560;
+    --border: #8b6f8e;
+    --text: #f0e6f5;
+    --text-dim: #b8a4be;
+    --accent: #ff6b9d;
+    --accent2: #c792ea;
+    --gold: #ffd700;
+    --exp: #82aaff;
+    --hp: #ff5370;
+    --green: #c3e88d;
+    --blue: #89ddff;
+    --orange: #f78c6c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Press Start 2P', 'Microsoft YaHei', monospace;
+    font-size: 10px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== 像素按钮 ===== */
+  .pixel-btn {
+    background: var(--panel-light);
+    border: 3px solid var(--border);
+    color: var(--text);
+    padding: 10px 16px;
+    font-family: inherit;
+    font-size: 9px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 4px 4px 0 #1a0f1a;
+    transition: transform 0.05s;
+    text-transform: uppercase;
+  }
+  .pixel-btn:hover { background: var(--border); }
+  .pixel-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #1a0f1a; }
+  .pixel-btn.primary { background: var(--accent); color: #fff; border-color: #ff8fab; }
+  .pixel-btn.primary:hover { background: #ff8fab; }
+  .pixel-btn.gold { background: #b8860b; color: #fff; border-color: #ffd700; }
+
+  /* ===== 像素面板 ===== */
+  .pixel-panel {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 16px;
+    box-shadow: 6px 6px 0 #1a0f1a;
+    position: relative;
+  }
+  .pixel-panel::before {
+    content: ''; position: absolute; top: 4px; left: 4px; right: 4px; height: 2px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* ===== 顶部HUD ===== */
+  .hud-bar {
+    display: flex; gap: 16px; align-items: center;
+    background: var(--panel); border-bottom: 3px solid var(--border);
+    padding: 8px 16px; flex-wrap: wrap;
+  }
+  .hud-item { display: flex; align-items: center; gap: 6px; }
+  .hud-icon { width: 16px; height: 16px; }
+  .hud-gold { color: var(--gold); }
+  .hud-exp { color: var(--exp); }
+  .hud-hp { color: var(--hp); }
+
+  /* ===== 装备格子 ===== */
+  .equip-grid {
+    display: grid; grid-template-columns: repeat(3, 52px); gap: 6px;
+    justify-content: center;
+  }
+  .equip-slot {
+    width: 52px; height: 52px; background: #2d1b2e;
+    border: 3px solid var(--border); position: relative;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.1s;
+  }
+  .equip-slot:hover { border-color: var(--accent); }
+  .equip-slot.occupied { border-color: var(--accent2); background: #3d2b3e; }
+  .equip-slot .slot-label {
+    position: absolute; bottom: 1px; left: 1px; right: 1px;
+    font-size: 6px; text-align: center; color: var(--text-dim);
+    background: rgba(0,0,0,0.5);
+  }
+  .equip-slot .dur-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: #1a0f1a;
+  }
+  .equip-slot .dur-fill { height: 100%; }
+
+  /* ===== 背包格子 ===== */
+  .inv-grid {
+    display: grid; grid-template-columns: repeat(8, 36px); gap: 3px;
+  }
+  .inv-slot {
+    width: 36px; height: 36px; background: #2d1b2e;
+    border: 2px solid var(--border); position: relative;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .inv-slot:hover { border-color: var(--text); }
+  .inv-slot .item-count {
+    position: absolute; bottom: 1px; right: 2px;
+    font-size: 7px; color: var(--text); text-shadow: 1px 1px 0 #000;
+  }
+  .inv-slot .q-dot {
+    position: absolute; top: 2px; left: 2px; width: 5px; height: 5px;
+    border-radius: 0; border: 1px solid #fff;
+  }
+
+  /* ===== 天赋节点 ===== */
+  .talent-tree {
+    display: flex; flex-direction: column; gap: 20px; align-items: center;
+  }
+  .talent-row { display: flex; gap: 24px; align-items: center; }
+  .talent-node {
+    width: 56px; height: 56px; background: var(--panel-light);
+    border: 3px solid var(--border); position: relative;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    transition: all 0.1s;
+  }
+  .talent-node:hover { border-color: var(--accent); transform: scale(1.05); }
+  .talent-node.unlocked { border-color: var(--green); background: #2d3a1e; }
+  .talent-node.maxed { border-color: var(--gold); background: #3a3015; }
+  .talent-node .node-icon { font-size: 16px; }
+  .talent-node .node-lvl { font-size: 7px; color: var(--text-dim); }
+  .talent-connector {
+    width: 16px; height: 3px; background: var(--border);
+  }
+  .talent-connector.active { background: var(--green); }
+
+  /* ===== 场景 ===== */
+  .scene-cabin {
+    width: 100%; height: 200px; background: #4a3728;
+    border: 3px solid var(--border); position: relative; overflow: hidden;
+    image-rendering: pixelated;
+  }
+  .scene-cabin .window {
+    position: absolute; top: 20px; right: 30px;
+    width: 60px; height: 50px; background: #87ceeb;
+    border: 3px solid #5a3a28;
+  }
+  .scene-cabin .floor {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 30px;
+    background: #6b4e3d; border-top: 3px solid #5a3a28;
+  }
+  .scene-furniture {
+    position: absolute; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .scene-furniture:hover { transform: translateY(-4px); }
+
+  /* ===== 战斗场景 ===== */
+  .battle-scene {
+    width: 100%; height: 180px; background: linear-gradient(to bottom, #1a1a3a 0%, #2d1b4e 50%, #1a0f2e 100%);
+    border: 3px solid var(--border); position: relative; overflow: hidden;
+  }
+  .battle-scene .stars {
+    position: absolute; width: 2px; height: 2px; background: #fff;
+    animation: twinkle 2s infinite;
+  }
+  @keyframes twinkle { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* ===== 标签页 ===== */
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tab {
+    background: var(--panel-light); border: 3px solid var(--border);
+    padding: 8px 14px; font-family: inherit; font-size: 9px;
+    color: var(--text-dim); cursor: pointer;
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: #ff8fab; }
+  .tab:hover { color: var(--text); }
+
+  /* ===== 滚动条 ===== */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--panel); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid var(--panel); }
+
+  .hidden { display: none !important; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 860px) {
+    .equip-grid { grid-template-columns: repeat(3, 48px); }
+    .inv-grid { grid-template-columns: repeat(6, 36px); }
+    .hud-bar { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HUD ============ -->
+<div class="hud-bar">
+  <div class="hud-item">👤 <span id="hudName">艾莉</span></div>
+  <div class="hud-item">🚢 <span id="hudShip">初心号</span></div>
+  <div class="hud-item hud-gold">💰 <span id="hudGold">500</span></div>
+  <div class="hud-item hud-exp">⭐ <span id="hudExp">0</span></div>
+  <div class="hud-item hud-hp">❤️ <span id="hudHp">100</span></div>
+  <div class="hud-item">📍 <span id="hudLoc">船舱</span></div>
+  <div style="flex:1"></div>
+  <div class="hud-item" style="font-size:8px; color:var(--text-dim);">
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('char')">👤角色</button>
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('inv')">🎒背包</button>
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('talent')">💎天赋</button>
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('cabin')">🚢船舱</button>
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('city')">🏘️城镇</button>
+    <button class="pixel-btn" style="padding:6px 10px; font-size:7px;" onclick="togglePanel('battle')">⚔️战斗</button>
+  </div>
+</div>
+
+<!-- ============ 角色面板 ============ -->
+<div id="panel-char" class="pixel-panel" style="margin:12px; display:flex; gap:16px; flex-wrap:wrap;">
+  <div style="flex:1; min-width:220px;">
+    <div style="font-size:11px; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">👤 角色</div>
+    <!-- 像素角色预览 Canvas -->
+    <div style="background:#2d1b2e; border:3px solid var(--border); padding:8px; text-align:center;">
+      <canvas id="charCanvas" width="128" height="192" style="image-rendering:pixelated; width:128px; height:192px;"></canvas>
+      <div style="margin-top:6px; font-size:8px; color:var(--text-dim);">Lv.<span id="charLevel">1</span> <span id="charName2">艾莉</span></div>
+    </div>
+    <!-- 属性条 -->
+    <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:40px; font-size:8px;">HP</span>
+        <div style="flex:1; height:10px; background:#1a0f1a; border:2px solid var(--border);">
+          <div style="width:100%; height:100%; background:var(--hp);"></div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:40px; font-size:8px;">EXP</span>
+        <div style="flex:1; height:10px; background:#1a0f1a; border:2px solid var(--border);">
+          <div id="expBar" style="width:0%; height:100%; background:var(--exp); transition:width 0.5s;"></div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:40px; font-size:8px;">羞耻</span>
+        <div style="flex:1; height:10px; background:#1a0f1a; border:2px solid var(--border);">
+          <div id="shameBar" style="width:0%; height:100%; background:var(--accent); transition:width 0.5s;"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 基础属性 -->
+    <div style="margin-top:10px; display:grid; grid-template-columns: repeat(3, 1fr); gap:6px;">
+      <div style="background:#2d1b2e; border:2px solid var(--border); padding:6px; text-align:center;">
+        <div style="font-size:7px; color:var(--text-dim);">攻击</div>
+        <div style="font-size:11px; color:var(--hp);">⚔️ <span id="statAtk">20</span></div>
+      </div>
+      <div style="background:#2d1b2e; border:2px solid var(--border); padding:6px; text-align:center;">
+        <div style="font-size:7px; color:var(--text-dim);">防御</div>
+        <div style="font-size:11px; color:var(--blue);">🛡️ <span id="statDef">15</span></div>
+      </div>
+      <div style="background:#2d1b2e; border:2px solid var(--border); padding:6px; text-align:center;">
+        <div style="font-size:7px; color:var(--text-dim);">魅力</div>
+        <div style="font-size:11px; color:var(--accent);">💕 <span id="statChrm">10</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 装备栏 -->
+  <div style="min-width:180px;">
+    <div style="font-size:11px; color:var(--accent2); margin-bottom:10px; text-transform:uppercase;">🛡️ 装备</div>
+    <div class="equip-grid" id="equipGrid"></div>
+    <div style="margin-top:12px; font-size:8px; color:var(--text-dim); text-align:center;">
+      点击装备槽查看详情
+    </div>
+  </div>
+</div>
+
+<!-- ============ 背包面板 ============ -->
+<div id="panel-inv" class="pixel-panel hidden" style="margin:12px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div style="font-size:11px; color:var(--gold);">🎒 背包</div>
+    <div style="font-size:8px; color:var(--text-dim);"><span id="invCount">0</span>/64</div>
+  </div>
+  <div class="inv-grid" id="invGrid"></div>
+  <div id="invDetail" style="margin-top:12px; min-height:40px; background:#2d1b2e; border:2px solid var(--border); padding:8px; font-size:8px; color:var(--text-dim);">
+    点击物品查看详情
+  </div>
+</div>
+
+<!-- ============ 天赋面板 ============ -->
+<div id="panel-talent" class="pixel-panel hidden" style="margin:12px;">
+  <div style="font-size:11px; color:var(--accent2); margin-bottom:16px; text-transform:uppercase;">💎 天赋树</div>
+  <div class="talent-tree" id="talentTree"></div>
+  <div id="talentDetail" style="margin-top:16px; background:#2d1b2e; border:2px solid var(--border); padding:10px; font-size:8px; color:var(--text-dim); min-height:50px;">
+    点击天赋节点查看详情
+  </div>
+</div>
+
+<!-- ============ 船舱面板 ============ -->
+<div id="panel-cabin" class="pixel-panel hidden" style="margin:12px;">
+  <div style="font-size:11px; color:var(--accent2); margin-bottom:10px; text-transform:uppercase;">🚢 船舱 - 初心号</div>
+  <div class="scene-cabin" id="cabinScene"></div>
+  <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="pixel-btn primary" onclick="alert('打开AI制衣台')">🧵 制衣台</button>
+    <button class="pixel-btn" onclick="alert('打开储物箱')">📦 储物箱</button>
+    <button class="pixel-btn" onclick="alert('出海！')">⚓ 甲板出海</button>
+  </div>
+</div>
+
+<!-- ============ 城镇面板 ============ -->
+<div id="panel-city" class="pixel-panel hidden" style="margin:12px;">
+  <div style="font-size:11px; color:var(--green); margin-bottom:10px; text-transform:uppercase;">🏘️ 宁静港湾村</div>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+    <div class="pixel-btn" style="text-align:center; padding:20px 8px;" onclick="alert('进入花店')">
+      <div style="font-size:24px; margin-bottom:6px;">💐</div>
+      <div>花店</div>
+    </div>
+    <div class="pixel-btn" style="text-align:center; padding:20px 8px;" onclick="alert('进入码头')">
+      <div style="font-size:24px; margin-bottom:6px;">⚓</div>
+      <div>码头</div>
+    </div>
+    <div class="pixel-btn" style="text-align:center; padding:20px 8px;" onclick="alert('进入市场')">
+      <div style="font-size:24px; margin-bottom:6px;">🏪</div>
+      <div>市场</div>
+    </div>
+    <div class="pixel-btn" style="text-align:center; padding:20px 8px;" onclick="alert('进入商店')">
+      <div style="font-size:24px; margin-bottom:6px;">🛒</div>
+      <div>商店</div>
+    </div>
+  </div>
+  <div style="margin-top:12px; font-size:8px; color:var(--text-dim);">当前时间: 08:00 | 季节: 春 | 天气: ☀️晴朗</div>
+</div>
+
+<!-- ============ 战斗面板 ============ -->
+<div id="panel-battle" class="pixel-panel hidden" style="margin:12px;">
+  <div style="font-size:11px; color:var(--hp); margin-bottom:10px; text-transform:uppercase;">⚔️ 战斗</div>
+  <div class="battle-scene" id="battleScene">
+    <div class="stars" style="top:10%; left:20%;"></div>
+    <div class="stars" style="top:30%; left:60%; animation-delay:0.5s;"></div>
+    <div class="stars" style="top:15%; left:80%; animation-delay:1s;"></div>
+    <div class="stars" style="top:50%; left:40%; animation-delay:1.5s;"></div>
+    <!-- 角色 -->
+    <div style="position:absolute; bottom:20px; left:30px;">
+      <canvas id="battleCharCanvas" width="64" height="96" style="width:64px; height:96px; image-rendering:pixelated;"></canvas>
+    </div>
+    <!-- BOSS -->
+    <div style="position:absolute; bottom:20px; right:40px; font-size:48px;">🐉</div>
+    <!-- BOSS血条 -->
+    <div style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:200px;">
+      <div style="font-size:8px; color:var(--hp); margin-bottom:2px; text-align:center;">深渊鲤鱼王 HP: <span id="bossHp">200</span>/200</div>
+      <div style="height:8px; background:#1a0f1a; border:2px solid var(--border);">
+        <div id="bossHpBar" style="width:100%; height:100%; background:var(--hp); transition:width 0.5s;"></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:10px; display:flex; gap:8px;">
+    <button class="pixel-btn primary" onclick="simBattle()">⚔️ 模拟战斗</button>
+    <button class="pixel-btn" onclick="resetBattle()">🔄 重置</button>
+  </div>
+  <div id="battleLog" style="margin-top:10px; background:#2d1b2e; border:2px solid var(--border); padding:8px; font-size:8px; color:var(--text-dim); max-height:100px; overflow-y:auto;">
+    点击「模拟战斗」开始...
+  </div>
+</div>
+
+<script>
+// ========================
+// 像素角色绘制系统
+// ========================
+const PALETTE = {
+  skin: ['#ffe0bd','#ffcd94','#eac086','#8d5524','#c68642','#e0ac69'],
+  hair: ['#2c1b18','#4a3728','#d4a017','#c0392b','#8e44ad','#2980b9','#27ae60','#ecf0f1','#e91e63','#ff9800'],
+  eye: ['#3b82f6','#22c55e','#a855f7','#ef4444','#f59e0b','#14b8a6','#6366f1','#ec4899'],
+  clothes: { top:'#81d4fa', bottom:'#b39ddb', socks:'#f8bbd0', underwear:'#fff' }
+};
+
+let charData = { skin:0, hair:0, hairColor:0, eye:0 };
+let equipped = { underwear:'basic', socks:'knee', bottom:'skirt', top:'shirt', accessory:null, weapon:null };
+let playerStats = { atk:20, def:15, chrm:10, hp:100, maxHp:100, shame:0, exp:0, expNeed:100, level:1 };
+let boss = { hp:200, maxHp:200, def:10, atk:35 };
+
+// 绘制像素角色到Canvas
+function drawPixelCharacter(canvasId, scale=1) {
+  const cvs = document.getElementById(canvasId);
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  ctx.imageSmoothingEnabled = false;
+
+  const skin = PALETTE.skin[charData.skin];
+  const hairColor = PALETTE.hair[charData.hairColor];
+  const eyeColor = PALETTE.eye[charData.eye];
+  const px = 2; // 基础像素大小
+
+  // 身体 (32x48 基础)
+  const cx = cvs.width/2, cy = cvs.height/2 + 20;
+
+  // 绘制函数：画一个像素矩形
+  function rect(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+
+  // === 身体 ===
+  rect(cx-14, cy-10, 28, 38, skin);
+
+  // === 内衣 ===
+  if (equipped.underwear) {
+    rect(cx-12, cy+8, 24, 12, '#fff5f5');
+    rect(cx-8, cy+8, 16, 4, '#ffcdd2');
+  }
+
+  // === 袜子 ===
+  if (equipped.socks) {
+    rect(cx-12, cy+22, 10, 14, PALETTE.clothes.socks);
+    rect(cx+2, cy+22, 10, 14, PALETTE.clothes.socks);
+    // 袜子边缘
+    rect(cx-12, cy+22, 10, 3, '#f48fb1');
+    rect(cx+2, cy+22, 10, 3, '#f48fb1');
+  }
+
+  // === 裙子/下装 ===
+  if (equipped.bottom) {
+    rect(cx-16, cy+14, 32, 18, PALETTE.clothes.bottom);
+    rect(cx-16, cy+14, 32, 3, '#9575cd'); // 腰带
+  }
+
+  // === 上衣 ===
+  if (equipped.top) {
+    rect(cx-16, cy-10, 32, 26, PALETTE.clothes.top);
+    rect(cx-16, cy-10, 32, 4, '#4fc3f7'); // 领口
+    // 袖子
+    rect(cx-22, cy-6, 6, 14, PALETTE.clothes.top);
+    rect(cx+16, cy-6, 6, 14, PALETTE.clothes.top);
+  }
+
+  // === 头部 ===
+  rect(cx-14, cy-38, 28, 26, skin);
+
+  // === 眼睛 ===
+  rect(cx-8, cy-30, 4, 4, eyeColor);
+  rect(cx+4, cy-30, 4, 4, eyeColor);
+  rect(cx-7, cy-29, 2, 2, '#fff'); // 高光
+  rect(cx+5, cy-29, 2, 2, '#fff');
+
+  // === 嘴巴 ===
+  rect(cx-4, cy-20, 8, 2, '#e57373');
+
+  // === 头发 ===
+  // 后发
+  rect(cx-16, cy-40, 32, 10, hairColor);
+  rect(cx-18, cy-34, 4, 16, hairColor);
+  rect(cx+14, cy-34, 4, 16, hairColor);
+  // 刘海
+  rect(cx-14, cy-40, 28, 6, hairColor);
+  rect(cx-10, cy-38, 4, 6, hairColor);
+  rect(cx+6, cy-38, 4, 6, hairColor);
+
+  // === 饰品 ===
+  if (equipped.accessory) {
+    rect(cx-4, cy-44, 8, 4, '#ffd700'); // 头饰
+  }
+
+  // === 武器 ===
+  if (equipped.weapon) {
+    rect(cx+20, cy+10, 3, 24, '#8d6e63'); // 鱼竿杆
+    rect(cx+18, cy+6, 8, 3, '#8d6e63');  // 鱼竿横
+    rect(cx+24, cy-10, 1, 16, '#fff');    // 线
+  }
+}
+
+// ========================
+// 装备系统
+// ========================
+const EQUIPMENT_DATA = {
+  underwear: { id:'underwear', name:'基础内衣', icon:'🩲', def:0, atk:0, dur:50, color:'#fff' },
+  socks: { id:'socks', name:'膝上袜', icon:'🧦', def:2, atk:0, dur:40, color:'#f8bbd0' },
+  knee: { id:'knee', name:'过膝袜', icon:'🧦', def:3, atk:0, dur:35, color:'#ce93d8' },
+  skirt: { id:'skirt', name:'百褶裙', icon:'👗', def:5, atk:0, dur:60, color:'#b39ddb' },
+  shorts: { id:'shorts', name:'热裤', icon:'🩳', def:3, atk:0, dur:30, color:'#90caf9' },
+  shirt: { id:'shirt', name:'水手服', icon:'👔', def:8, atk:5, dur:80, color:'#81d4fa' },
+  coat: { id:'coat', name:'哥特外套', icon:'🧥', def:12, atk:8, dur:70, color:'#5c6bc0' },
+  pajamas: { id:'pajamas', name:'轻薄睡衣', icon:'🌙', def:0, atk:10, dur:20, color:'#f8bbd0' },
+  ribbon: { id:'ribbon', name:'蝴蝶结', icon:'🎀', def:0, atk:0, dur:100, color:'#f48fb1' },
+  crown: { id:'crown', name:'小皇冠', icon:'👑', def:2, atk:0, dur:100, color:'#ffd700' },
+  rod: { id:'rod', name:'初心钓竿', icon:'🎣', def:0, atk:15, dur:100, color:'#8d6e63' },
+};
+
+const EQUIP_SLOTS = [
+  { key:'underwear', label:'内衣', icon:'🩲' },
+  { key:'socks', label:'袜子', icon:'🧦' },
+  { key:'bottom', label:'下装', icon:'👗' },
+  { key:'top', label:'上衣', icon:'👔' },
+  { key:'accessory', label:'饰品', icon:'💍' },
+  { key:'weapon', label:'武器', icon:'🎣' },
+];
+
+function renderEquipGrid() {
+  const grid = document.getElementById('equipGrid');
+  grid.innerHTML = EQUIP_SLOTS.map((slot, idx) => {
+    const itemId = equipped[slot.key];
+    const item = itemId ? EQUIPMENT_DATA[itemId] : null;
+    const hasItem = !!item;
+    return `
+      <div class="equip-slot ${hasItem?'occupied':''}" onclick="cycleEquip('${slot.key}')">
+        <div style="font-size:20px;">${hasItem?item.icon:slot.icon}</div>
+        ${hasItem?`<div class="dur-bar"><div class="dur-fill" style="width:${(item.dur/100)*100}%; background:${item.dur<30?'#ff5370':item.dur<60?'#f78c6c':'#c3e88d'}"></div></div>`:''}
+        <div class="slot-label">${slot.label}</div>
+      </div>
+    `;
+  }).join('');
+  updateStats();
+}
+
+function cycleEquip(slotKey) {
+  // 循环切换该部位的装备（演示用）
+  const cycles = {
+    underwear: ['underwear'],
+    socks: ['socks', 'knee', null],
+    bottom: ['skirt', 'shorts', null],
+    top: ['shirt', 'coat', 'pajamas', null],
+    accessory: [null, 'ribbon', 'crown', null],
+    weapon: [null, 'rod', null]
+  };
+  const list = cycles[slotKey];
+  const current = equipped[slotKey];
+  const idx = list.indexOf(current);
+  const next = list[(idx + 1) % list.length];
+  equipped[slotKey] = next;
+  renderEquipGrid();
+  drawPixelCharacter('charCanvas');
+  drawPixelCharacter('battleCharCanvas');
+}
+
+function updateStats() {
+  let atk = 0, def = 0, chrm = 0;
+  Object.values(equipped).forEach(id => {
+    const item = id ? EQUIPMENT_DATA[id] : null;
+    if (item) { atk += item.atk; def += item.def; }
+  });
+  playerStats.atk = 20 + atk;
+  playerStats.def = 15 + def;
+  document.getElementById('statAtk').textContent = playerStats.atk;
+  document.getElementById('statDef').textContent = playerStats.def;
+  document.getElementById('statChrm').textContent = playerStats.chrm;
+}
+
+// ========================
+// 背包系统
+// ========================
+const INV_ITEMS = [
+  { id:'cotton', icon:'🧶', name:'棉布', q:0, count:5 },
+  { id:'silk', icon:'🧵', name:'丝绸', q:1, count:2 },
+  { id:'thread', icon:'🧵', name:'丝线', q:0, count:10 },
+  { id:'red_dye', icon:'🧴', name:'红染', q:1, count:1 },
+  { id:'fish', icon:'🐟', name:'鱼', q:0, count:8 },
+  { id:'rare_fish', icon:'🐠', name:'稀有鱼', q:2, count:2 },
+  { id:'lace', icon:'🎀', name:'蕾丝', q:2, count:3 },
+  { id:'pearl', icon:'⚪', name:'珍珠', q:3, count:1 },
+];
+
+const Q_COLORS = ['#e2e8f0','#c3e88d','#89ddff','#c792ea','#f78c6c','#ffd700'];
+
+function renderInventory() {
+  const grid = document.getElementById('invGrid');
+  let html = '';
+  let filled = 0;
+  
+  INV_ITEMS.forEach(item => {
+    filled++;
+    html += `
+      <div class="inv-slot" onclick="showItemDetail('${item.id}')">
+        <div style="font-size:16px;">${item.icon}</div>
+        <div class="q-dot" style="background:${Q_COLORS[item.q]};"></div>
+        <div class="item-count">${item.count}</div>
+      </div>
+    `;
+  });
+  
+  // 填充空格
+  for (let i = filled; i < 64; i++) {
+    html += `<div class="inv-slot"></div>`;
+  }
+  
+  grid.innerHTML = html;
+  document.getElementById('invCount').textContent = filled;
+}
+
+function showItemDetail(id) {
+  const item = INV_ITEMS.find(i => i.id === id);
+  if (!item) return;
+  const qNames = ['普通','优质','稀有','史诗','传说','神话'];
+  document.getElementById('invDetail').innerHTML = `
+    <span style="color:${Q_COLORS[item.q]};">${item.icon} ${item.name}</span> (${qNames[item.q]}) ×${item.count}<br>
+    <span style="color:#7a6a7a;">${item.id.includes('fish')?'可出售或食用':'制衣材料'}</span>
+  `;
+}
+
+// ========================
+// 天赋系统
+// ========================
+const TALENTS = [
+  { id:'offline_gold', name:'深海渔夫', icon:'💰', max:5, lvl:0, desc:'挂机每秒获得金币', val:0.1 },
+  { id:'offline_exp', name:'钓鱼直觉', icon:'⭐', max:5, lvl:0, desc:'挂机每秒获得经验', val:0.05 },
+  { id:'combat_dmg', name:'破衣之力', icon:'⚔️', max:3, lvl:0, desc:'爆衣时伤害加成', val:0.1 },
+  { id:'durability', name:'织补技巧', icon:'🧵', max:3, lvl:0, desc:'减少衣服磨损', val:0.1 },
+  { id:'romance', name:'魅力四射', icon:'💕', max:3, lvl:0, desc:'好感度获取加成', val:0.15 },
+  { id:'crew', name:'船长威严', icon:'🚢', max:3, lvl:0, desc:'船员DPS加成', val:0.1 },
+];
+
+function renderTalents() {
+  const tree = document.getElementById('talentTree');
+  tree.innerHTML = `
+    <div class="talent-row">
+      ${renderNode(TALENTS[0])}
+      <div class="talent-connector active"></div>
+      ${renderNode(TALENTS[1])}
+    </div>
+    <div class="talent-row">
+      ${renderNode(TALENTS[2])}
+      <div class="talent-connector"></div>
+      ${renderNode(TALENTS[3])}
+    </div>
+    <div class="talent-row">
+      ${renderNode(TALENTS[4])}
+      <div class="talent-connector"></div>
+      ${renderNode(TALENTS[5])}
+    </div>
+  `;
+}
+
+function renderNode(t) {
+  const cls = t.lvl >= t.max ? 'maxed' : t.lvl > 0 ? 'unlocked' : '';
+  return `
+    <div class="talent-node ${cls}" onclick="clickTalent('${t.id}')">
+      <div class="node-icon">${t.icon}</div>
+      <div class="node-lvl">${t.lvl}/${t.max}</div>
+    </div>
+  `;
+}
+
+function clickTalent(id) {
+  const t = TALENTS.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('talentDetail').innerHTML = `
+    <div style="color:var(--accent2); font-weight:bold; margin-bottom:4px;">${t.icon} ${t.name} Lv.${t.lvl}/${t.max}</div>
+    <div style="margin-bottom:4px;">${t.desc}</div>
+    <div style="color:var(--green);">当前效果: +${(t.val * t.lvl).toFixed(2)}/s</div>
+    <div style="color:var(--gold); margin-top:4px;">升级花费: ${100 * (t.lvl + 1)}G</div>
+  `;
+}
+
+// ========================
+// 船舱场景
+// ========================
+function renderCabin() {
+  const scene = document.getElementById('cabinScene');
+  scene.innerHTML = `
+    <div class="window"></div>
+    <div class="floor"></div>
+    <!-- 衣橱 -->
+    <div class="scene-furniture" style="bottom:35px; left:40px;" onclick="togglePanel('char')">
+      <div style="width:40px; height:50px; background:#8d6e63; border:3px solid #5d4037; position:relative;">
+        <div style="position:absolute; top:8px; left:4px; right:4px; height:20px; background:#6d4c41;"></div>
+        <div style="position:absolute; top:32px; left:50%; width:4px; height:4px; background:#ffd700; transform:translateX(-50%);"></div>
+      </div>
+      <div style="font-size:7px; text-align:center; margin-top:2px; color:var(--text-dim);">衣橱</div>
+    </div>
+    <!-- 制衣台 -->
+    <div class="scene-furniture" style="bottom:35px; left:100px;" onclick="alert('打开AI制衣台')">
+      <div style="width:44px; height:36px; background:#a1887f; border:3px solid #5d4037;">
+        <div style="width:8px; height:8px; background:#81d4fa; border-radius:50%; margin:4px auto;"></div>
+        <div style="width:30px; height:2px; background:#5d4037; margin:2px auto;"></div>
+      </div>
+      <div style="font-size:7px; text-align:center; margin-top:2px; color:var(--text-dim);">制衣台</div>
+    </div>
+    <!-- 床 -->
+    <div class="scene-furniture" style="bottom:35px; right:50px;">
+      <div style="width:50px; height:32px; background:#d1c4e9; border:3px solid #5d4037; position:relative;">
+        <div style="position:absolute; top:-8px; left:4px; right:4px; height:10px; background:#b39ddb; border:2px solid #5d4037;"></div>
+      </div>
+      <div style="font-size:7px; text-align:center; margin-top:2px; color:var(--text-dim);">床</div>
+    </div>
+    <!-- 角色 -->
+    <div style="position:absolute; bottom:40px; left:50%; transform:translateX(-50%);">
+      <canvas id="cabinCharCanvas" width="48" height="72" style="width:48px; height:72px; image-rendering:pixelated;"></canvas>
+    </div>
+  `;
+  drawPixelCharacter('cabinCharCanvas');
+}
+
+// ========================
+// 战斗系统
+// ========================
+function simBattle() {
+  const log = document.getElementById('battleLog');
+  log.innerHTML = '';
+  
+  function add(text) {
+    const div = document.createElement('div');
+    div.style.marginBottom = '3px';
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  
+  add('⚔️ 遭遇深渊鲤鱼王！');
+  add(`装备: ${EQUIPMENT_DATA[equipped.top]?.name || '无'} + ${EQUIPMENT_DATA[equipped.bottom]?.name || '无'}`);
+  
+  let turn = 0;
+  const interval = setInterval(() => {
+    turn++;
+    
+    // BOSS攻击 -> 磨损衣服
+    const parts = ['top','bottom','socks'];
+    const target = parts[Math.floor(Math.random()*parts.length)];
+    const item = equipped[target] ? EQUIPMENT_DATA[equipped[target]] : null;
+    if (item) {
+      item.dur = Math.max(0, item.dur - 20);
+      add(`💔 ${item.name} 磨损 -20 (剩余${item.dur})`);
+      playerStats.shame = Math.min(100, playerStats.shame + 15);
+      document.getElementById('shameBar').style.width = playerStats.shame + '%';
+    }
+    
+    // 玩家攻击
+    let dmg = playerStats.atk;
+    if (playerStats.shame >= 30) { dmg = Math.floor(dmg * 1.4); add('🔥 慌乱反击！'); }
+    if (playerStats.shame >= 60) { dmg = Math.floor(dmg * 1.3); add('🔥 破衣解放！'); }
+    if (playerStats.shame >= 90) { dmg *= 2; add('🔥 极限绽放！'); }
+    dmg = Math.max(dmg - boss.def, 1);
+    boss.hp = Math.max(0, boss.hp - dmg);
+    add(`⚔️ 造成 ${dmg} 伤害！(BOSS HP:${boss.hp})`);
+    document.getElementById('bossHp').textContent = boss.hp;
+    document.getElementById('bossHpBar').style.width = (boss.hp/boss.maxHp*100) + '%';
+    
+    // 绘制战斗角色（带羞耻脸红）
+    drawBattleChar();
+    
+    if (boss.hp <= 0) {
+      clearInterval(interval);
+      add('🎉 胜利！');
+      add('💰 +80金币 ⭐ +30经验');
+      playerStats.exp += 30;
+      if (playerStats.exp >= playerStats.expNeed) {
+        playerStats.level++;
+        playerStats.exp -= playerStats.expNeed;
+        playerStats.expNeed = Math.floor(playerStats.expNeed * 1.5);
+        add(`🆙 升级！Lv.${playerStats.level}`);
+      }
+      updateHUD();
+    }
+    
+    if (turn >= 15) {
+      clearInterval(interval);
+      add('⏱️ 战斗超时');
+    }
+  }, 800);
+}
+
+function drawBattleChar() {
+  const cvs = document.getElementById('battleCharCanvas');
+  const ctx = cvs.getContext('2d');
+  drawPixelCharacter('battleCharCanvas');
+  
+  // 羞耻脸红
+  if (playerStats.shame > 20) {
+    ctx.fillStyle = `rgba(255, 100, 100, ${Math.min(playerStats.shame/100, 0.5)})`;
+    ctx.fillRect(20, 44, 8, 6);
+    ctx.fillRect(36, 44, 8, 6);
+  }
+}
+
+function resetBattle() {
+  boss.hp = boss.maxHp;
+  playerStats.shame = 0;
+  document.getElementById('bossHp').textContent = boss.hp;
+  document.getElementById('bossHpBar').style.width = '100%';
+  document.getElementById('shameBar').style.width = '0%';
+  document.getElementById('battleLog').innerHTML = '点击「模拟战斗」开始...';
+  Object.values(EQUIPMENT_DATA).forEach(i => i.dur = i.id==='pajamas'?20:(i.id==='underwear'?50:80));
+  renderEquipGrid();
+  drawPixelCharacter('charCanvas');
+  drawPixelCharacter('battleCharCanvas');
+}
+
+// ========================
+// HUD更新
+// ========================
+function updateHUD() {
+  document.getElementById('hudGold').textContent = playerStats.gold || 500;
+  document.getElementById('hudExp').textContent = playerStats.exp;
+  document.getElementById('hudHp').textContent = playerStats.hp;
+  document.getElementById('charLevel').textContent = playerStats.level;
+  document.getElementById('expBar').style.width = (playerStats.exp/playerStats.expNeed*100) + '%';
+}
+
+// ========================
+// 面板切换
+// ========================
+function togglePanel(name) {
+  const panels = ['char','inv','talent','cabin','city','battle'];
+  panels.forEach(p => {
+    document.getElementById('panel-'+p).classList.add('hidden');
+  });
+  document.getElementById('panel-'+name).classList.remove('hidden');
+  document.getElementById('hudLoc').textContent = 
+    name==='char'?'角色':name==='inv'?'背包':name==='talent'?'天赋':name==='cabin'?'船舱':name==='city'?'城镇':'战斗';
+}
+
+// ========================
+// 初始化
+// ========================
+function init() {
+  renderEquipGrid();
+  renderInventory();
+  renderTalents();
+  renderCabin();
+  drawPixelCharacter('charCanvas');
+  drawPixelCharacter('battleCharCanvas');
+  updateHUD();
+  updateStats();
+}
+
+init();
+</script>
+</body>
+</html>
