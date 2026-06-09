@@ -6,7 +6,7 @@ namespace BurstFishingKingdom.Equipment
 {
     /// <summary>
     /// 装备管理器
-    /// 管理6个装备槽，处理换装、耐久度
+    /// 管理6个装备槽，处理换装、耐久度、爆衣效果
     /// </summary>
     public class EquipmentManager : MonoBehaviour
     {

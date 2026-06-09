@@ -2,7 +2,7 @@ namespace BurstFishingKingdom.Equipment
 {
     /// <summary>
     /// 装备部位枚举
-    /// 从内衣到外套的分层结构
+    /// 从内衣到外套的分层结构，支持爆衣系统的逐层剥离
     /// </summary>
     public enum EquipmentSlot
     {

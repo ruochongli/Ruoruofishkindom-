@@ -7,7 +7,7 @@ namespace BurstFishingKingdom.Battle
 {
     /// <summary>
     /// 战斗管理器
-    /// 处理放置自动战斗逻辑、装备耐久、NPC船员辅助
+    /// 处理放置自动战斗逻辑、爆衣计算、羞耻技能、NPC船员辅助
     /// </summary>
     public class BattleManager : MonoBehaviour
     {
@@ -31,6 +31,7 @@ namespace BurstFishingKingdom.Battle
         public event Action<bool> OnBattleEnded;
         public event Action<string> OnLogAdded;
         public event Action<int> OnTurnChanged;
+        public event Action<int> OnShameChanged;
         public event Action<Equipment.EquipmentSlot, int> OnDurabilityChanged;
 
         private Coroutine _battleCoroutine;
@@ -138,6 +139,9 @@ namespace BurstFishingKingdom.Battle
             
             int currentDur = _equipmentManager.CurrentDurability[slot];
             AddLog($"海兽冲撞！{item.ItemName} 受到 {actualDamage} 磨损（剩余 {currentDur}）");
+
+            // 更新羞耻值
+            UpdateShame();
         }
 
         private void PlayerAttack()
@@ -146,6 +150,11 @@ namespace BurstFishingKingdom.Battle
             float multiplier = 1f;
             float ignoreDef = 0f;
             List<string> activeSkills = new();
+
+            // 羞耻技能检查
+            if (_playerData.Shame >= 30) { multiplier += 0.4f; activeSkills.Add("慌乱反击"); }
+            if (_playerData.Shame >= 60) { ignoreDef += 0.3f; activeSkills.Add("破衣解放"); }
+            if (_playerData.Shame >= 90) { multiplier += 1.0f; activeSkills.Add("极限绽放"); }
 
             // 天赋加成
             multiplier *= FindObjectOfType<Player.TalentSystem>()?.GetDamageMultiplier() ?? 1f;
@@ -185,14 +194,34 @@ namespace BurstFishingKingdom.Battle
                 AddLog($"💕 {crew.NPCData.Name} 攻击！造成 {dps} 伤害。");
 
             // 随机台词
-            if (UnityEngine.Random.value < 0.3f)
+            if (_playerData.Shame >= 30 && UnityEngine.Random.value < 0.3f)
             {
-                var lines = cd.BattleStartLines;
-                if (lines != null && lines.Length > 0)
-                {
-                    var line = lines[UnityEngine.Random.Range(0, lines.Length)];
-                    AddLog($"💕 {crew.NPCData.Name}: \"{line}\"");
-                }
+                var line = cd.PlayerShameLines[UnityEngine.Random.Range(0, cd.PlayerShameLines.Length)];
+                AddLog($"💕 {crew.NPCData.Name}: \"{line}\"");
+            }
+        }
+
+        private void UpdateShame()
+        {
+            int total = 0;
+            foreach (Equipment.EquipmentSlot slot in Enum.GetValues(typeof(Equipment.EquipmentSlot)))
+            {
+                var item = _equipmentManager.GetEquipped(slot);
+                if (item == null || !item.ContributesToShame) continue;
+                
+                int max = item.MaxDurability;
+                int cur = _equipmentManager.CurrentDurability[slot];
+                float ratio = max > 0 ? 1f - ((float)cur / max) : 0f;
+                total += Mathf.FloorToInt(ratio * 33f * item.ShameWeight);
+            }
+
+            int oldShame = _playerData.Shame;
+            _playerData.SetShame(Mathf.Min(total, _playerData.MaxShame));
+            
+            if (_playerData.Shame != oldShame)
+            {
+                AddLog($"😳 羞耻值: {oldShame} → {_playerData.Shame}");
+                OnShameChanged?.Invoke(_playerData.Shame);
             }
         }
 
@@ -277,6 +306,7 @@ namespace BurstFishingKingdom.Battle
             TurnCount = 0;
             CrewTotalDamage = 0;
             BattleLog.Clear();
+            _playerData.SetShame(0);
         }
     }
 

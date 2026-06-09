@@ -61,14 +61,27 @@ namespace BurstFishingKingdom.Player
                 new Talent
                 {
                     Id = "combat_damage",
-                    Name = "战斗本能",
-                    Description = "在危急时刻爆发出更强的战斗力。",
+                    Name = "破衣之力",
+                    Description = "衣服越破，你的斗志越强。",
                     Icon = null,
                     MaxLevel = 5,
                     CurrentLevel = 0,
                     Category = TalentCategory.Combat,
                     BaseValue = 0f,
                     ValuePerLevel = 0.1f,
+                    UpgradeCost = 200
+                },
+                new Talent
+                {
+                    Id = "shame_resist",
+                    Name = "无畏之心",
+                    Description = "降低羞耻值对你造成的精神压力。",
+                    Icon = null,
+                    MaxLevel = 5,
+                    CurrentLevel = 0,
+                    Category = TalentCategory.Combat,
+                    BaseValue = 0f,
+                    ValuePerLevel = 0.08f,
                     UpgradeCost = 200
                 },
                 new Talent
