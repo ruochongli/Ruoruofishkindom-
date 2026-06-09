@@ -57,6 +57,8 @@
   .top-item .gold { color: #facc15; }
   .top-item .ship-name { color: #67e8f9; }
   .top-item .time-display { color: #f472b6; }
+  .top-item.clickable { cursor: pointer; transition: opacity 0.2s; }
+  .top-item.clickable:hover { opacity: 0.8; }
 
   /* 通用面板 */
   .panel-box { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 12px; }
@@ -70,6 +72,43 @@
   .cabin-slot.occupied { border-style: solid; border-color: rgba(102,126,234,0.5); background: rgba(102,126,234,0.08); }
   .cabin-slot-icon { font-size: 24px; margin-bottom: 4px; }
   .cabin-slot-label { font-size: 11px; color: #aaa; }
+
+  /* 像素地图船舱 */
+  .cabin-map-wrap { display: flex; gap: 16px; flex-wrap: wrap; }
+  .cabin-map-area { flex: 1; min-width: 300px; text-align: center; }
+  #cabinMap { width: 100%; max-width: 480px; border-radius: 12px; image-rendering: pixelated; background: #1a1a2e; display: block; margin: 0 auto; cursor: pointer; border: 2px solid rgba(255,255,255,0.08); }
+  .cabin-interact-hint { text-align: center; margin-top: 8px; font-size: 12px; color: #facc15; min-height: 18px; }
+  .cabin-char-panel { width: 220px; min-width: 200px; background: rgba(255,255,255,0.05); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.1); }
+  .cabin-char-name { font-size: 13px; color: #aaa; margin-bottom: 8px; text-align: center; }
+  #cabinCharCanvas { width: 100%; border-radius: 8px; background: linear-gradient(180deg,#2a2a4a,#1a1a2e); display: block; }
+  .cabin-char-stats { margin-top: 10px; }
+  .cabin-char-info { margin-top: 10px; font-size: 11px; color: #aaa; line-height: 1.7; }
+
+  /* 人物界面 */
+  .char-profile-wrap { display: flex; gap: 20px; flex-wrap: wrap; }
+  .char-profile-left { flex: 1; min-width: 280px; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
+  .char-profile-right { flex: 1; min-width: 300px; }
+  .char-illust-frame { width: 100%; max-width: 360px; aspect-ratio: 744/968; background: linear-gradient(180deg,#2a2a4a,#1a1a2e); border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); position: relative; }
+  .char-illust-img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: auto; transition: transform 0.3s ease; }
+  .char-illust-frame:hover .char-illust-img { transform: scale(1.02); }
+  .char-template-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; width: 100%; max-width: 360px; }
+  .char-template-thumb { width: 100%; aspect-ratio: 744/968; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; opacity: 0.6; transition: all 0.2s; }
+  .char-template-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .char-template-thumb:hover { opacity: 1; transform: translateY(-2px); }
+  .char-template-thumb.active { border-color: #f472b6; opacity: 1; box-shadow: 0 0 12px rgba(244,114,182,0.3); }
+  .char-info-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+  .char-info-name { font-size: 24px; font-weight: bold; color: #fff; margin-bottom: 8px; text-align: center; }
+  .char-info-meta { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .char-info-tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
+  .char-info-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 12px 0; }
+  .char-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .char-stat-row:last-child { border-bottom: none; }
+  .char-stat-row span:first-child { color: #aaa; }
+  .char-stat-row span:last-child { color: #fff; font-weight: bold; }
+  .char-equip-row { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+  .char-equip-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .char-equip-name { font-size: 14px; color: #fff; font-weight: bold; }
+  .char-equip-stat { font-size: 11px; color: #aaa; margin-top: 2px; }
 
   /* 衣服选择 */
   .clothes-selector { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -379,6 +418,7 @@
       <div class="top-item">🕐 <span class="time-display" id="timeDisplay">08:00</span></div>
       <div class="top-item">💰 <span class="gold" id="goldDisplay">0</span></div>
       <div class="top-item hidden" id="crewIndicator">💕 <span id="crewName" style="color:#f472b6;"></span></div>
+      <div class="top-item clickable" onclick="openCharacter()" title="查看人物档案">🎭 人物</div>
     </div>
     <div class="top-item" id="gamePhase">当前: 在船上</div>
   </div>
@@ -391,16 +431,36 @@
   <!-- ========== 船舱界面 ========== -->
   <div class="panel-box" id="shipCabinPanel">
     <div class="panel-title">
-      <span>🚢 船舱内部 — <span id="cabinShipName">初心号</span></span>
-      <span style="font-size:12px;color:#aaa;">点击设施使用</span>
+      <span>🚢 <span id="cabinShipName">初心号</span></span>
+      <span style="font-size:12px;color:#aaa;" id="cabinHint">WASD / ⬆⬇⬅➡ Move | SPACE Interact</span>
     </div>
-    <div class="cabin-grid" id="cabinGrid"></div>
-    <div style="margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <button class="btn-game btn-primary" onclick="openWardrobe()">👗 打开衣橱</button>
-      <button class="btn-game btn-primary" onclick="openCrafting()">🧵 AI制衣台</button>
-      <button class="btn-game btn-secondary" onclick="openInventory()">🎒 背包</button>
-      <button class="btn-game btn-secondary" onclick="goToDeck()">🌊 去甲板（出海）</button>
-      <button class="btn-game btn-secondary" onclick="enterCity()">🏘️ 进城</button>
+    <div class="cabin-map-wrap">
+      <div class="cabin-map-area">
+        <canvas id="cabinMap" width="480" height="320"></canvas>
+        <div class="cabin-interact-hint" id="cabinInteractHint"></div>
+      </div>
+      <div class="cabin-char-panel" id="cabinCharPanel">
+        <div class="cabin-char-name">👤 <span id="cabinCharName">--</span></div>
+        <canvas id="cabinCharCanvas" width="200" height="180"></canvas>
+        <div class="cabin-char-stats">
+          <div class="bar-label"><span>❤️ Durability</span><span id="cabinHpText">--</span></div>
+          <div class="shame-bar-bg"><div class="shame-bar-fill" id="cabinHpBar" style="width:0%; background:linear-gradient(90deg,#f87171,#ef4444);"></div></div>
+        </div>
+        <div class="cabin-char-stats">
+          <div class="bar-label"><span>😳 Shame</span><span id="cabinShameText">--</span></div>
+          <div class="shame-bar-bg"><div class="shame-bar-fill" id="cabinShameBar"></div></div>
+        </div>
+        <div class="cabin-char-info">
+          <div>⚔️ ATK: <span id="cabinAtk">--</span></div>
+          <div>🛡️ DEF: <span id="cabinDef">--</span></div>
+          <div>👗 <span id="cabinClothName">--</span></div>
+          <div>💰 <span id="cabinGold" style="color:#facc15;">--</span> G</div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="openInventory()">🎒 Bag</button>
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="enterCity()">🏘️ City</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -442,9 +502,9 @@
     </div>
   </div>
 
-  <!-- ========== AI制衣台 ========== -->
+  <!-- ========== 制衣台 ========== -->
   <div class="panel-box hidden" id="craftingPanel">
-    <div class="panel-title">🧵 AI智能制衣台</div>
+    <div class="panel-title">🧵 制衣台</div>
     <div class="craft-input-area">
       <div style="font-size:13px;color:#aaa;margin-bottom:8px;">📝 描述你想要的衣服（支持关键词组合）：</div>
       <textarea id="craftInput" placeholder="例如：鸣潮弗洛洛风格的红色哥特连衣裙，带蕾丝和蝴蝶结"></textarea>
@@ -583,6 +643,57 @@
             <button class="btn-game btn-secondary hidden" id="btnReturn" onclick="returnToShipAfterBattle()">🚢 返航</button>
             <button class="btn-game btn-secondary" id="btnReset" onclick="resetBattle()">🔄 重置</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 人物界面 ========== -->
+  <div class="panel-box hidden" id="characterPanel">
+    <div class="panel-title">
+      <span>🎭 人物档案</span>
+      <span style="font-size:12px;color:#aaa;">点击模板切换立绘</span>
+    </div>
+    <div class="char-profile-wrap">
+      <div class="char-profile-left">
+        <div class="char-illust-frame">
+          <img id="charIllust" src="assets/char_template_01.jpg" alt="角色立绘" class="char-illust-img">
+        </div>
+        <div class="char-template-grid" id="charTemplateGrid"></div>
+      </div>
+      <div class="char-profile-right">
+        <div class="char-info-card">
+          <div class="char-info-name" id="profileCharName">艾莉</div>
+          <div class="char-info-meta">
+            <span class="char-info-tag" id="profileGender">♀ 女性</span>
+            <span class="char-info-tag" id="profileLevel">Lv.1</span>
+            <span class="char-info-tag" id="profileTitle">见习钓师</span>
+          </div>
+          <div class="char-info-divider"></div>
+          <div class="char-stat-row"><span>⚔️ 攻击力</span><span id="profileAtk">20</span></div>
+          <div class="char-stat-row"><span>🛡️ 防御力</span><span id="profileDef">15</span></div>
+          <div class="char-stat-row"><span>❤️ 最大耐久</span><span id="profileMaxHp">100</span></div>
+          <div class="char-stat-row"><span>😳 羞耻阈值</span><span id="profileShameCap">100</span></div>
+          <div class="char-stat-row"><span>🎣 钓鱼力</span><span id="profileFish">10</span></div>
+          <div class="char-info-divider"></div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">当前装备</div>
+            <div class="char-equip-name" id="profileEquip">👗 新手布衣</div>
+            <div class="char-equip-stat" id="profileEquipStat">耐久 100/100/100 | 防御 +15 | 攻击 +20</div>
+          </div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">配偶</div>
+            <div class="char-equip-name" id="profileSpouse">--</div>
+            <div class="char-equip-stat" id="profileSpouseStat">暂无</div>
+          </div>
+          <div class="char-equip-row">
+            <div class="char-equip-label">船员</div>
+            <div class="char-equip-name" id="profileCrew">--</div>
+            <div class="char-equip-stat" id="profileCrewStat">暂无</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
+          <button class="btn-game btn-secondary" onclick="showScreen('cabin')">⬅️ 返回船舱</button>
         </div>
       </div>
     </div>
@@ -980,10 +1091,80 @@ function randomizeChar() {
 }
 
 let previewTime = 0;
-function drawPreview() {
-  const w = previewCanvas.width, h = previewCanvas.height;
+function hexToRgb(h){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
+function shadeC(rgb,p){return[Math.max(0,Math.min(255,rgb[0]+Math.round(rgb[0]*p/100))),Math.max(0,Math.min(255,rgb[1]+Math.round(rgb[1]*p/100))),Math.max(0,Math.min(255,rgb[2]+Math.round(rgb[2]*p/100)))];}
+function cs(rgb,a){return a!==undefined?`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`:`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;}
+function drawCharacterPreview(c,w,h,t){
+  const g=charData.gender,skin=hexToRgb(SKIN_TONES[charData.skinTone]||SKIN_TONES[0]),hair=hexToRgb(HAIR_COLORS[charData.hairColor]||HAIR_COLORS[0]),eye=hexToRgb(EYE_COLORS[charData.eyeColor]||EYE_COLORS[0]);
+  const sd=shadeC(skin,-15),sm=shadeC(skin,-8),hd=shadeC(hair,-25),hl=shadeC(hair,20),ed=shadeC(eye,-30),ec=shadeC(eye,10);
+  const by=Math.sin(t*2)*3,sc=Math.min(w/64,h/96)*0.75,ox=(w-64*sc)/2,oy=(h-96*sc)/2+by+20;
+  c.save();c.translate(ox,oy);c.scale(sc,sc);
+  const R=(x,y,w,h,col,al)=>{c.fillStyle=al!==undefined?`rgba(${col[0]},${col[1]},${col[2]},${al})`:cs(col);c.fillRect(x,y,w,h);};
+  R(16,90,32,4,[0,0,0],0.15);
+  if(g==='female'){
+    R(24,64,7,22,skin);R(24,64,2,22,sd);R(33,64,7,22,skin);R(33,64,2,22,sd);
+    R(24,72,7,14,[255,240,245]);R(24,72,2,14,[235,220,230]);R(23,72,9,3,[255,200,215]);
+    R(33,72,7,14,[255,240,245]);R(33,72,2,14,[235,220,230]);R(32,72,9,3,[255,200,215]);
+    R(23,86,9,4,[30,28,40]);R(33,86,9,4,[30,28,40]);R(26,85,2,2,[220,60,90]);R(36,85,2,2,[220,60,90]);
+    R(22,38,20,14,[255,250,250]);R(22,38,20,3,[255,220,230]);R(22,48,20,3,[255,220,230]);
+    R(29,42,6,4,[220,60,90]);R(30,41,4,2,[220,60,90]);R(31,40,2,2,[180,40,60]);
+    R(23,36,2,6,[230,190,210]);R(39,36,2,6,[230,190,210]);
+    R(24,52,16,10,[255,250,250]);R(24,52,16,2,[255,220,230]);R(26,60,12,2,[255,220,230]);
+    R(14,38,6,20,skin);R(14,38,2,20,sd);R(44,38,6,20,skin);R(44,38,2,20,sd);
+    R(14,54,6,2,[255,220,230]);R(44,54,6,2,[255,220,230]);
+    R(30,32,4,6,sd);
+    R(20,10,24,20,skin);R(20,10,4,20,sd);R(40,10,4,20,sm);
+    R(22,28,20,6,skin);R(24,30,16,4,skin);R(26,32,12,2,skin);
+    const ey=17;
+    const scl=(x,y,w,h)=>R(x,y,w,h,[255,245,250]);
+    R(24,ey,9,2,ed);scl(24,ey+2,9,3);R(26,ey+2,5,3,eye);R(27,ey+3,3,2,ed);R(28,ey+2,2,2,[255,255,255]);R(26,ey+2,1,1,[255,255,255]);R(24,ey+5,9,1,eye);
+    R(23,ey-1,3,1,[50,45,65]);R(22,ey,2,1,[50,45,65]);R(30,ey-1,2,1,[50,45,65]);
+    R(35,ey,9,2,ed);scl(35,ey+2,9,3);R(37,ey+2,5,3,eye);R(38,ey+3,3,2,ed);R(39,ey+2,2,2,[255,255,255]);R(37,ey+2,1,1,[255,255,255]);R(35,ey+5,9,1,eye);
+    R(42,ey-1,3,1,[50,45,65]);R(44,ey,2,1,[50,45,65]);R(36,ey-1,2,1,[50,45,65]);
+    R(25,14,7,1,hd);R(26,13,2,1,hd);R(36,14,7,1,hd);R(38,13,2,1,hd);
+    R(31,28,2,1,[220,100,120]);
+    c.globalAlpha=0.55;R(20,23,5,4,[255,160,170]);R(39,23,5,4,[255,160,170]);c.globalAlpha=1;
+    const hs=charData.hairStyle%5;
+    if(hs===0||hs===2||hs===3){R(16,8,32,10,hair);R(14,10,4,30,hair);R(14,14,2,26,hd);R(48,10,4,30,hair);R(50,14,2,26,hd);R(12,20,4,35,hair);R(12,24,2,28,hd);R(48,20,4,35,hair);R(50,24,2,28,hd);}
+    else if(hs===1){R(16,8,32,10,hair);R(16,12,4,18,hair);R(16,16,2,12,hd);R(44,12,4,18,hair);R(46,16,2,12,hd);}
+    else{R(16,8,32,10,hair);R(14,10,4,24,hair);R(14,14,2,18,hd);R(46,10,4,24,hair);R(48,14,2,18,hd);}
+    R(18,4,28,10,hair);R(20,2,24,6,hl);R(22,3,20,4,hair);
+    R(20,6,24,8,hair);R(22,8,6,5,hl);R(30,8,6,5,hl);R(38,8,4,5,hl);R(20,10,24,2,hd);R(18,12,3,6,hair);R(43,12,3,6,hair);
+    R(38,0,3,4,hair);R(39,0,2,2,hl);
+    R(18,14,4,14,hair);R(42,14,4,14,hair);R(18,18,2,10,hd);R(44,18,2,10,hd);
+    if(hs===2){R(10,16,6,20,hair);R(10,16,2,20,hd);R(48,16,6,20,hair);R(48,16,2,20,hd);R(10,20,4,4,[220,60,90]);R(50,20,4,4,[220,60,90]);}
+    else if(hs===3){R(44,12,8,28,hair);R(46,14,2,24,hd);R(48,18,4,4,[220,60,90]);}
+    R(28,2,8,4,[30,28,40]);R(26,1,4,4,[30,28,40]);R(34,1,4,4,[30,28,40]);R(30,2,4,3,[220,60,90]);R(31,1,2,2,[255,215,100]);
+  }else{
+    R(24,60,7,24,skin);R(24,60,2,24,sd);R(33,60,7,24,skin);R(33,60,2,24,sd);
+    R(24,58,16,12,[255,250,250]);R(24,58,16,2,[255,220,230]);R(26,66,12,3,[255,220,230]);
+    R(23,86,9,4,[30,28,40]);R(33,86,9,4,[30,28,40]);
+    R(22,36,20,14,[255,250,250]);R(22,36,20,3,[255,220,230]);R(22,46,20,3,[255,220,230]);
+    R(28,40,8,4,[220,60,90]);R(22,36,2,10,[230,190,210]);R(40,36,2,10,[230,190,210]);
+    R(14,36,6,22,skin);R(14,36,2,22,sd);R(44,36,6,22,skin);R(44,36,2,22,sd);
+    R(14,36,6,6,[255,250,250]);R(44,36,6,6,[255,250,250]);
+    R(30,30,4,6,sd);
+    R(22,8,20,22,skin);R(22,8,4,22,sd);R(38,8,4,22,sm);R(24,28,16,4,skin);
+    const sclm=(x,y,w,h)=>R(x,y,w,h,[255,245,250]);
+    R(25,17,8,2,ed);sclm(25,19,8,3);R(27,19,4,3,eye);R(28,20,2,2,ed);R(29,19,1,1,[255,255,255]);R(25,22,8,1,eye);
+    R(35,17,8,2,ed);sclm(35,19,8,3);R(37,19,4,3,eye);R(38,20,2,2,ed);R(39,19,1,1,[255,255,255]);R(35,22,8,1,eye);
+    R(24,16,3,1,[50,45,65]);R(23,17,2,1,[50,45,65]);R(32,16,2,1,[50,45,65]);R(38,16,3,1,[50,45,65]);R(41,17,2,1,[50,45,65]);R(36,16,2,1,[50,45,65]);
+    R(24,14,8,1,hd);R(25,13,3,1,hd);R(36,14,8,1,hd);R(38,13,3,1,hd);
+    R(31,27,2,1,[220,100,120]);
+    c.globalAlpha=0.5;R(20,22,5,4,[255,160,170]);R(39,22,5,4,[255,160,170]);c.globalAlpha=1;
+    const mh=charData.hairStyle%4;
+    if(mh===0){R(20,2,24,10,hair);R(18,6,5,18,hair);R(41,6,5,18,hair);R(16,10,4,14,hair);R(44,10,4,14,hair);R(22,4,20,6,hl);R(24,6,4,4,hd);R(36,6,4,4,hd);R(38,0,3,3,hl);}
+    else if(mh===1){R(18,2,28,10,hair);R(16,6,5,22,hair);R(43,6,5,22,hair);R(14,12,4,16,hd);R(46,12,4,16,hd);R(20,4,24,6,hl);R(22,6,4,4,hd);R(38,6,4,4,hd);R(40,0,3,3,hl);}
+    else if(mh===2){R(20,2,24,10,hair);R(18,4,6,8,hl);R(40,4,6,8,hl);R(16,6,4,6,hair);R(44,6,4,6,hair);R(22,0,4,4,hl);R(36,0,4,4,hl);R(30,0,4,6,hl);}
+    else{R(20,2,24,10,hair);R(18,6,5,18,hair);R(41,6,5,18,hair);R(16,10,4,12,hd);R(44,10,4,12,hd);R(22,4,20,6,hl);}
+  }
+  R(28,34,8,1,[255,215,100]);R(31,35,2,2,[220,60,90]);
+  c.restore();
+}
+function drawPreview(){
+  const w=previewCanvas.width,h=previewCanvas.height;
   pCtx.clearRect(0,0,w,h);
-  drawCharacterOnContext(pCtx, w, h, previewTime, true);
+  drawCharacterPreview(pCtx,w,h,previewTime);
 }
 function animatePreview() { previewTime += 0.016; drawPreview(); requestAnimationFrame(animatePreview); }
 
@@ -997,7 +1178,6 @@ function startGame() {
   resetPlayer();
   showScreen('cabin');
   initQuest();
-  renderCabin();
   renderSeaSelect();
   updateTimeDisplay();
   updateCrewIndicator();
@@ -1262,14 +1442,16 @@ function rollShopQualityManual() {
 // ========================
 // 画面切换
 // ========================
+var CABIN;
 function showScreen(screen) {
   battleState = screen;
   const screens = ['shipCabinPanel', 'wardrobePanel', 'craftingPanel', 'inventoryPanel',
                    'seaSelectPanel', 'sailingPanel', 'battlePanel', 'cityPanel',
-                   'npcPanel', 'giftPanel', 'shopPanel'];
+                   'npcPanel', 'giftPanel', 'shopPanel', 'characterPanel'];
   screens.forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
   const show = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); };
-  if (screen === 'cabin') show('shipCabinPanel');
+  if (screen === 'cabin') { show('shipCabinPanel'); renderCabin(); }
+  else if (typeof CABIN !== 'undefined') { CABIN.running = false; }
   if (screen === 'wardrobe') show('wardrobePanel');
   if (screen === 'crafting') show('craftingPanel');
   if (screen === 'inventory') show('inventoryPanel');
@@ -1280,12 +1462,14 @@ function showScreen(screen) {
   if (screen === 'npc') show('npcPanel');
   if (screen === 'gift') show('giftPanel');
   if (screen === 'shop') show('shopPanel');
+  if (screen === 'character') { show('characterPanel'); renderCharacterPanel(); }
 
   const phaseMap = {
-    cabin:'当前: 在船上', wardrobe:'当前: 配置装备', crafting:'当前: AI制衣',
+    cabin:'当前: 在船上', wardrobe:'当前: 配置装备', crafting:'当前: 制衣',
     inventory:'当前: 查看背包', seaselect:'当前: 选择海域', sailing:'当前: 航行中',
     fishing:'当前: 钓鱼中', battling:'当前: 战斗中', ended:'当前: 战斗结束',
-    city:'当前: 在城里', npc:'当前: 与NPC互动', gift:'当前: 选择礼物', shop:'当前: 每日商店'
+    city:'当前: 在城里', npc:'当前: 与NPC互动', gift:'当前: 选择礼物', shop:'当前: 每日商店',
+    character:'当前: 查看人物'
   };
   document.getElementById('gamePhase').textContent = phaseMap[screen] || screen;
 }
@@ -1293,7 +1477,92 @@ function showScreen(screen) {
 function openCrafting() {
   showScreen('crafting');
   renderKeywordTags();
-  addLog('🧵 打开AI智能制衣台...', 'craft');
+  addLog('🧵 打开制衣台...', 'craft');
+}
+
+// ========================
+// 人物界面
+// ========================
+const CHAR_TEMPLATES = [
+  { id: '01', name: '粉兔少女', file: 'assets/char_template_01.jpg' },
+  { id: '02', name: '粉星公主', file: 'assets/char_template_02.jpg' },
+  { id: '03', name: '暗紫大小姐', file: 'assets/char_template_03.jpg' },
+  { id: '04', name: '银灰魔女', file: 'assets/char_template_04.jpg' },
+  { id: '05', name: '雪铃巫女', file: 'assets/char_template_05.jpg' },
+  { id: '06', name: '粉发JK', file: 'assets/char_template_06.jpg' },
+  { id: '07', name: '制服少女', file: 'assets/char_template_07.jpg' },
+  { id: '08', name: '爱丽丝', file: 'assets/char_template_08.jpg' },
+];
+let currentTemplateIndex = 0;
+
+function openCharacter() {
+  showScreen('character');
+}
+
+function renderCharacterPanel() {
+  // 渲染模板缩略图
+  const grid = document.getElementById('charTemplateGrid');
+  if (grid && grid.children.length === 0) {
+    grid.innerHTML = CHAR_TEMPLATES.map((t, i) =>
+      `<div class="char-template-thumb ${i === currentTemplateIndex ? 'active' : ''}" data-index="${i}" onclick="switchTemplate(${i})">
+        <img src="${t.file}" alt="${t.name}" loading="lazy">
+      </div>`
+    ).join('');
+  } else if (grid) {
+    Array.from(grid.children).forEach((el, i) => {
+      el.classList.toggle('active', i === currentTemplateIndex);
+    });
+  }
+
+  // 更新立绘
+  const illust = document.getElementById('charIllust');
+  if (illust) illust.src = CHAR_TEMPLATES[currentTemplateIndex].file;
+
+  // 绑定角色数据
+  document.getElementById('profileCharName').textContent = charData.name || '冒险者';
+  document.getElementById('profileGender').textContent = charData.gender === 'female' ? '♀ 女性' : '♂ 男性';
+  document.getElementById('profileAtk').textContent = player.attack || 20;
+  document.getElementById('profileDef').textContent = player.defense || 15;
+  document.getElementById('profileMaxHp').textContent = (player.maxDurability || 100) + ' / ' + (player.maxDurability || 100);
+  document.getElementById('profileShameCap').textContent = '100';
+  document.getElementById('profileFish').textContent = player.fishingPower || 10;
+
+  const cloth = player.cloth || { name: '新手布衣', durability: [100,100,100], defense: 15, attack: 20 };
+  document.getElementById('profileEquip').textContent = '👗 ' + cloth.name;
+  document.getElementById('profileEquipStat').textContent = `耐久 ${cloth.durability.join('/')} | 防御 +${cloth.defense} | 攻击 +${cloth.attack}`;
+
+  let spouse = null;
+  for (const key in NPCS) { if (NPCS[key].id === player.spouseId) { spouse = NPCS[key]; break; } }
+  if (spouse) {
+    document.getElementById('profileSpouse').textContent = (spouse.gender === 'female' ? '♀ ' : '♂ ') + spouse.name;
+    const stages = ['陌生','认识','友好','暧昧','恋人','订婚','已婚'];
+    document.getElementById('profileSpouseStat').textContent = stages[spouse.stage] + ' | 婚姻 ' + (player.marriageDays || 0) + ' 天';
+  } else {
+    document.getElementById('profileSpouse').textContent = '--';
+    document.getElementById('profileSpouseStat').textContent = '暂无';
+  }
+
+  let crew = null;
+  for (const key in NPCS) { if (NPCS[key].id === player.activeCrewId) { crew = NPCS[key]; break; } }
+  if (crew) {
+    document.getElementById('profileCrew').textContent = (crew.gender === 'female' ? '♀ ' : '♂ ') + crew.name;
+    document.getElementById('profileCrewStat').textContent = 'DPS: ' + (crew.combatData?.baseDps || '--') + ' | 修补: ' + (crew.combatData?.baseRepair || '--') + '%';
+  } else {
+    document.getElementById('profileCrew').textContent = '--';
+    document.getElementById('profileCrewStat').textContent = '暂无';
+  }
+}
+
+function switchTemplate(idx) {
+  currentTemplateIndex = idx;
+  const illust = document.getElementById('charIllust');
+  if (illust) illust.src = CHAR_TEMPLATES[idx].file;
+  const grid = document.getElementById('charTemplateGrid');
+  if (grid) {
+    Array.from(grid.children).forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+    });
+  }
 }
 
 // ========================
@@ -1311,6 +1580,360 @@ function advanceTime() {
   addLog(`⏰ 时间推进到 ${String(gameHour).padStart(2,'0')}:00`, 'system');
 }
 
+// ===== 船舱像素地图系统 =====
+CABIN = {
+  canvas: null, ctx: null,
+  width: 480, height: 320, tileSize: 16,
+  running: false, animTime: 0,
+  player: { x: 240, y: 180, w: 16, h: 16, speed: 2.5, facing: 'down' },
+  targetX: undefined, targetY: undefined,
+  keys: {},
+  furniture: [
+    { id: 'bed', x: 32, y: 32, w: 48, h: 56, label: 'bed', color: '#6B4226', interactRadius: 50 },
+    { id: 'wardrobe', x: 400, y: 32, w: 48, h: 56, label: 'wardrobe', color: '#5C3A1E', interactRadius: 50 },
+    { id: 'crafting', x: 180, y: 240, w: 80, h: 48, label: 'crafting', color: '#4A5D23', interactRadius: 55 },
+    { id: 'door', x: 448, y: 140, w: 16, h: 56, label: 'door', color: '#3D2B1F', interactRadius: 45 },
+  ],
+  walls: [
+    { x: 0, y: 0, w: 480, h: 16 },
+    { x: 0, y: 0, w: 16, h: 320 },
+    { x: 464, y: 0, w: 16, h: 320 },
+    { x: 0, y: 304, w: 480, h: 16 },
+  ]
+};
+
+function rectsOverlap(x1, y1, w1, h1, x2, y2, w2, h2) {
+  return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+}
+
+function initCabinMap() {
+  CABIN.canvas = document.getElementById('cabinMap');
+  CABIN.ctx = CABIN.canvas.getContext('2d');
+  window.addEventListener('keydown', cabinKeyDown);
+  window.addEventListener('keyup', cabinKeyUp);
+  CABIN.canvas.addEventListener('click', cabinCanvasClick);
+}
+
+function cabinKeyDown(e) {
+  CABIN.keys[e.key] = true;
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    tryInteractCabin();
+  }
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
+function cabinKeyUp(e) {
+  CABIN.keys[e.key] = false;
+}
+
+function cabinCanvasClick(e) {
+  const rect = CABIN.canvas.getBoundingClientRect();
+  const scaleX = CABIN.canvas.width / rect.width;
+  const scaleY = CABIN.canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  for (const f of CABIN.furniture) {
+    if (mx >= f.x && mx <= f.x + f.w && my >= f.y && my <= f.y + f.h) {
+      if (isNearFurniture(f)) {
+        interactWithFurniture(f.id);
+      } else {
+        CABIN.targetX = f.x + f.w / 2;
+        CABIN.targetY = f.y + f.h + 16;
+      }
+      return;
+    }
+  }
+
+  CABIN.targetX = Math.max(24, Math.min(456, mx));
+  CABIN.targetY = Math.max(24, Math.min(296, my));
+}
+
+function drawCabinFloor(ctx, w, h) {
+  const ts = CABIN.tileSize;
+  for (let y = 0; y < h; y += ts) {
+    for (let x = 0; x < w; x += ts) {
+      const color = ((x / ts + y / ts) % 2 === 0) ? '#2a1f15' : '#241a10';
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, ts, ts);
+      ctx.fillStyle = '#1a120a';
+      ctx.fillRect(x, y + ts - 2, ts, 1);
+      ctx.fillRect(x + ts - 2, y, 1, ts);
+    }
+  }
+}
+
+function drawCabinWalls(ctx) {
+  ctx.fillStyle = '#3d2b1f';
+  for (const wall of CABIN.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+  }
+  ctx.fillStyle = '#5a4030';
+  for (const wall of CABIN.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, 2);
+    ctx.fillRect(wall.x, wall.y, 2, wall.h);
+  }
+}
+
+function drawFurniturePixel(ctx, f) {
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(f.x + 3, f.y + 3, f.w, f.h);
+  ctx.fillStyle = f.color;
+  ctx.fillRect(f.x, f.y, f.w, f.h);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.fillRect(f.x, f.y, f.w, 2);
+  ctx.fillRect(f.x, f.y, 2, f.h);
+
+  if (f.id === 'bed') {
+    ctx.fillStyle = '#ddd';
+    ctx.fillRect(f.x + 4, f.y + 6, 14, 10);
+    ctx.fillStyle = '#7B68EE';
+    ctx.fillRect(f.x + 4, f.y + 18, 40, 34);
+    ctx.fillStyle = '#9370DB';
+    ctx.fillRect(f.x + 4, f.y + 26, 40, 2);
+    ctx.fillRect(f.x + 4, f.y + 34, 40, 2);
+    ctx.fillStyle = '#6A5ACD';
+    ctx.fillRect(f.x + 4, f.y + 42, 40, 4);
+  } else if (f.id === 'wardrobe') {
+    ctx.fillStyle = '#4a2e15';
+    ctx.fillRect(f.x + 4, f.y + 4, 18, f.h - 8);
+    ctx.fillRect(f.x + 26, f.y + 4, 18, f.h - 8);
+    ctx.fillStyle = '#C0A060';
+    ctx.fillRect(f.x + 16, f.y + f.h / 2 - 4, 3, 8);
+    ctx.fillRect(f.x + 30, f.y + f.h / 2 - 4, 3, 8);
+    ctx.fillStyle = '#5C3A1E';
+    ctx.fillRect(f.x, f.y, f.w, 4);
+  } else if (f.id === 'crafting') {
+    ctx.fillStyle = '#6B4226';
+    ctx.fillRect(f.x, f.y + 8, f.w, 14);
+    ctx.fillStyle = '#5C3A1E';
+    ctx.fillRect(f.x + 6, f.y + 22, 6, f.h - 22);
+    ctx.fillRect(f.x + f.w - 12, f.y + 22, 6, f.h - 22);
+    ctx.fillStyle = '#C0C0C0';
+    ctx.fillRect(f.x + 22, f.y + 4, 14, 4);
+    ctx.fillRect(f.x + 50, f.y + 6, 10, 6);
+    ctx.fillStyle = '#FFB6C1';
+    ctx.fillRect(f.x + 30, f.y + 10, 16, 8);
+  } else if (f.id === 'door') {
+    ctx.fillStyle = '#2a1f15';
+    ctx.fillRect(f.x + 2, f.y + 2, f.w - 4, f.h - 4);
+    ctx.fillStyle = '#5C4033';
+    ctx.fillRect(f.x + 4, f.y + 4, f.w - 8, f.h - 8);
+    ctx.fillStyle = '#C0A060';
+    ctx.fillRect(f.x + 8, f.y + f.h / 2, 3, 3);
+    ctx.fillStyle = '#4a6fa5';
+    ctx.fillRect(f.x + 6, f.y + 10, f.w - 12, 14);
+  }
+
+  if (isNearFurniture(f)) {
+    ctx.strokeStyle = 'rgba(255,255,100,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(f.x - 2, f.y - 2, f.w + 4, f.h + 4);
+  }
+}
+
+function getCabinPlayerSprite() {
+  const gender = charData.gender === 'female' ? 'f' : 'm';
+  if (!player.dur) return SPRITES[gender];
+  const cloth = CLOTHES[selectedCloth];
+  const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+  const curTotal = (player.dur.top || 0) + (player.dur.bottom || 0) + (player.dur.legs || 0);
+  const brokenRatio = 1 - (curTotal / maxTotal);
+  let key = gender;
+  if (brokenRatio > 0.6) key = gender + '_underwear';
+  else if (brokenRatio > 0.3) key = gender + '_broken';
+  else if (brokenRatio > 0.1) key = gender + '_damaged';
+  return SPRITES[key] || SPRITES[gender];
+}
+
+function drawCabinPlayer(ctx) {
+  const p = CABIN.player;
+  const sprite = getCabinPlayerSprite();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(p.x - 8, p.y + 8, 16, 4);
+  if (sprite && sprite.complete) {
+    const scale = 0.4;
+    const sw = 64 * scale;
+    const sh = 96 * scale;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sprite, p.x - sw / 2, p.y - sh + 8, sw, sh);
+  } else {
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 5, p.y - 12, 10, 10);
+    ctx.fillStyle = (CLOTHES[selectedCloth] && CLOTHES[selectedCloth].color) || '#fff';
+    ctx.fillRect(p.x - 6, p.y - 2, 12, 8);
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 2, p.y + 6, 4, 4);
+  }
+}
+
+function checkCabinCollision(x, y) {
+  const pw = CABIN.player.w;
+  const ph = CABIN.player.h;
+  const px = x - pw / 2;
+  const py = y - ph / 2;
+  for (const wall of CABIN.walls) {
+    if (rectsOverlap(px, py, pw, ph, wall.x, wall.y, wall.w, wall.h)) return true;
+  }
+  for (const f of CABIN.furniture) {
+    if (f.id === 'door') continue;
+    if (rectsOverlap(px, py, pw, ph, f.x, f.y, f.w, f.h)) return true;
+  }
+  return false;
+}
+
+function updateCabinPlayer() {
+  const p = CABIN.player;
+  let dx = 0, dy = 0;
+  if (CABIN.keys['w'] || CABIN.keys['ArrowUp']) dy -= p.speed;
+  if (CABIN.keys['s'] || CABIN.keys['ArrowDown']) dy += p.speed;
+  if (CABIN.keys['a'] || CABIN.keys['ArrowLeft']) dx -= p.speed;
+  if (CABIN.keys['d'] || CABIN.keys['ArrowRight']) dx += p.speed;
+  if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
+
+  if (CABIN.targetX !== undefined) {
+    const tx = CABIN.targetX - p.x;
+    const ty = CABIN.targetY - p.y;
+    const dist = Math.sqrt(tx * tx + ty * ty);
+    if (dist > 4) { dx = (tx / dist) * p.speed; dy = (ty / dist) * p.speed; }
+    else { CABIN.targetX = undefined; CABIN.targetY = undefined; }
+  }
+
+  const newX = p.x + dx;
+  if (!checkCabinCollision(newX, p.y)) p.x = newX;
+  const newY = p.y + dy;
+  if (!checkCabinCollision(p.x, newY)) p.y = newY;
+
+  if (dy < 0) p.facing = 'up';
+  if (dy > 0) p.facing = 'down';
+  if (dx < 0) p.facing = 'left';
+  if (dx > 0) p.facing = 'right';
+
+  p.x = Math.max(24, Math.min(456, p.x));
+  p.y = Math.max(24, Math.min(296, p.y));
+}
+
+function isNearFurniture(f) {
+  const fx = f.x + f.w / 2;
+  const fy = f.y + f.h / 2;
+  const dist = Math.sqrt((CABIN.player.x - fx) ** 2 + (CABIN.player.y - fy) ** 2);
+  return dist < f.interactRadius;
+}
+
+function getNearFurniture() {
+  for (const f of CABIN.furniture) {
+    if (isNearFurniture(f)) return f;
+  }
+  return null;
+}
+
+function drawInteractionHint(ctx) {
+  const f = getNearFurniture();
+  const hintEl = document.getElementById('cabinInteractHint');
+  if (f) {
+    let action = '';
+    switch (f.id) {
+      case 'bed': action = '💤 Rest [SPACE]'; break;
+      case 'wardrobe': action = '👗 Wardrobe [SPACE]'; break;
+      case 'crafting': action = '🧵 Crafting [SPACE]'; break;
+      case 'door': action = '🚪 Leave Ship [SPACE]'; break;
+    }
+    hintEl.textContent = action;
+    const fx = f.x + f.w / 2;
+    const fy = f.y - 14;
+    const bounce = Math.sin(CABIN.animTime * 4) * 3;
+    ctx.fillStyle = 'rgba(255,255,100,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(fx, fy + bounce);
+    ctx.lineTo(fx - 5, fy - 7 + bounce);
+    ctx.lineTo(fx + 5, fy - 7 + bounce);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    hintEl.textContent = '';
+  }
+}
+
+function tryInteractCabin() {
+  const f = getNearFurniture();
+  if (f) interactWithFurniture(f.id);
+}
+
+function interactWithFurniture(id) {
+  if (id === 'bed') {
+    addLog('💤 You rested on the bed.', 'system');
+    const cloth = CLOTHES[selectedCloth];
+    for (const part of ['top', 'bottom', 'legs']) {
+      const max = cloth.maxDur[part];
+      player.dur[part] = Math.min(max, (player.dur[part] || 0) + 5);
+    }
+    updateCabinCharPanel();
+  } else if (id === 'wardrobe') {
+    CABIN.running = false;
+    openWardrobe();
+  } else if (id === 'crafting') {
+    CABIN.running = false;
+    openCrafting();
+  } else if (id === 'door') {
+    CABIN.running = false;
+    goToDeck();
+  }
+}
+
+function updateCabinCharPanel() {
+  document.getElementById('cabinCharName').textContent = charData.name || 'Player';
+  const cloth = CLOTHES[selectedCloth];
+  const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
+  const curTotal = (player.dur.top || 0) + (player.dur.bottom || 0) + (player.dur.legs || 0);
+  const hpPct = Math.round((curTotal / maxTotal) * 100);
+
+  document.getElementById('cabinHpText').textContent = curTotal + ' / ' + maxTotal;
+  document.getElementById('cabinHpBar').style.width = hpPct + '%';
+  document.getElementById('cabinShameText').textContent = player.shame + ' / 100';
+  document.getElementById('cabinShameBar').style.width = player.shame + '%';
+  document.getElementById('cabinAtk').textContent = cloth.attack;
+  document.getElementById('cabinDef').textContent = cloth.defense;
+  document.getElementById('cabinClothName').textContent = cloth.name;
+  document.getElementById('cabinGold').textContent = player.gold;
+
+  const cvs = document.getElementById('cabinCharCanvas');
+  if (cvs) {
+    const c = cvs.getContext('2d');
+    c.clearRect(0, 0, cvs.width, cvs.height);
+    if (typeof drawCharacterOnContext === 'function') {
+      drawCharacterOnContext(c, cvs.width, cvs.height, Date.now() / 1000, true);
+    }
+  }
+}
+
+function renderCabinFrame(ts) {
+  if (!CABIN.running) return;
+  CABIN.animTime = ts / 1000;
+  const ctx = CABIN.ctx;
+  const w = CABIN.width;
+  const h = CABIN.height;
+  ctx.clearRect(0, 0, w, h);
+  drawCabinFloor(ctx, w, h);
+  drawCabinWalls(ctx);
+
+  const items = [
+    ...CABIN.furniture.map(f => ({ type: 'furniture', y: f.y + f.h / 2, data: f })),
+    { type: 'player', y: CABIN.player.y, draw: () => drawCabinPlayer(ctx) }
+  ];
+  items.sort((a, b) => a.y - b.y);
+  for (const item of items) {
+    if (item.type === 'furniture') drawFurniturePixel(ctx, item.data);
+    else item.draw();
+  }
+
+  drawInteractionHint(ctx);
+  updateCabinPlayer();
+  requestAnimationFrame(renderCabinFrame);
+}
+
 // ========================
 // 船舱
 // ========================
@@ -1318,19 +1941,14 @@ function renderCabin() {
   const ship = SHIPS[currentShipLevel - 1];
   document.getElementById('cabinShipName').textContent = ship.name;
   document.getElementById('shipName').textContent = ship.name;
-  const grid = document.getElementById('cabinGrid');
-  const facilities = [
-    { icon: '🛏️', label: '床', id: 'bed' },
-    { icon: '👗', label: '衣橱', id: 'wardrobe' },
-    { icon: '🧵', label: '制衣台', id: 'crafting' },
-  ];
-  for (let i = 3; i < ship.grid; i++) facilities.push({ icon: '', label: '空位', id: 'empty' });
-  grid.innerHTML = facilities.map((f, i) => `
-    <div class="cabin-slot ${f.id !== 'empty' ? 'occupied' : ''}" onclick="clickCabinSlot('${f.id}')">
-      <div class="cabin-slot-icon">${f.icon || '◻️'}</div>
-      <div class="cabin-slot-label">${f.label}</div>
-    </div>
-  `).join('');
+  if (!CABIN.canvas) initCabinMap();
+  CABIN.running = true;
+  CABIN.player.x = 240;
+  CABIN.player.y = 180;
+  CABIN.targetX = undefined;
+  CABIN.targetY = undefined;
+  updateCabinCharPanel();
+  requestAnimationFrame(renderCabinFrame);
 }
 function clickCabinSlot(id) {
   if (id === 'wardrobe') openWardrobe();
