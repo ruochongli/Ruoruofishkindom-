@@ -19,6 +19,11 @@ namespace BurstFishingKingdom.UI
         public RawImage PreviewImage;
         public RenderTexture PreviewRenderTexture;
 
+        [Header("全身立绘")]
+        [Tooltip("2D全身立绘模式（替代RenderTexture预览）")]
+        public Image FullbodyImage;
+        public bool UseFullbodyInPanel = true;
+
         [Header("装备栏")]
         public EquipmentSlotUI[] EquipmentSlots;
 
@@ -67,9 +72,57 @@ namespace BurstFishingKingdom.UI
         /// </summary>
         public void UpdateAllUI()
         {
+            UpdateFullbodyPreview();
             UpdateEquipmentSlots();
             UpdateStats();
             UpdateCrewPanel();
+        }
+
+        private void UpdateFullbodyPreview()
+        {
+            if (Appearance == null) return;
+
+            bool useFullbody = UseFullbodyInPanel && Appearance.UseFullbodyMode && Appearance.FullbodyNormal != null;
+
+            // 切换显示模式
+            if (FullbodyImage != null)
+                FullbodyImage.gameObject.SetActive(useFullbody);
+            if (PreviewImage != null)
+                PreviewImage.gameObject.SetActive(!useFullbody);
+            if (PreviewCamera != null)
+                PreviewCamera.gameObject.SetActive(!useFullbody);
+
+            if (!useFullbody || FullbodyImage == null) return;
+
+            // 根据当前耐久度阶段显示对应立绘
+            var equipManager = GameManager.Instance.PlayerData?.GetComponent<Equipment.EquipmentManager>();
+            if (equipManager == null)
+            {
+                FullbodyImage.sprite = Appearance.FullbodyNormal;
+                return;
+            }
+
+            // 取外层装备的最差阶段
+            var outerSlots = new[] { Equipment.EquipmentSlot.Top, Equipment.EquipmentSlot.Bottom };
+            Equipment.DurabilityStage worstStage = Equipment.DurabilityStage.Full;
+
+            foreach (var slot in outerSlots)
+            {
+                var item = equipManager.GetEquipped(slot);
+                if (item == null) continue;
+                int current = equipManager.CurrentDurability[slot];
+                var stage = equipManager.GetDurabilityStage(current, item.MaxDurability);
+                if (stage > worstStage) worstStage = stage;
+            }
+
+            FullbodyImage.sprite = worstStage switch
+            {
+                Equipment.DurabilityStage.Full => Appearance.FullbodyNormal,
+                Equipment.DurabilityStage.Damaged => Appearance.FullbodyDamaged ?? Appearance.FullbodyNormal,
+                Equipment.DurabilityStage.Broken => Appearance.FullbodyBroken ?? Appearance.FullbodyDamaged ?? Appearance.FullbodyNormal,
+                Equipment.DurabilityStage.Destroyed => Appearance.FullbodyDestroyed ?? Appearance.FullbodyBroken ?? Appearance.FullbodyNormal,
+                _ => Appearance.FullbodyNormal
+            };
         }
 
         private void UpdateEquipmentSlots()

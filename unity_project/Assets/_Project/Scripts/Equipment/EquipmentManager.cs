@@ -187,13 +187,16 @@ namespace BurstFishingKingdom.Equipment
             }
         }
 
-        private DurabilityStage GetDurabilityStage(int current, int max)
+        /// <summary>
+        /// 获取耐久度阶段（4阶段：完整/轻微破损/中度破损/完全损坏）
+        /// </summary>
+        public DurabilityStage GetDurabilityStage(int current, int max)
         {
             if (max == 0) return DurabilityStage.Full;
             float ratio = (float)current / max;
             if (ratio <= 0) return DurabilityStage.Destroyed;
-            if (ratio <= 0.25f) return DurabilityStage.Broken;
-            if (ratio <= 0.6f) return DurabilityStage.Damaged;
+            if (ratio <= 0.15f) return DurabilityStage.Broken;
+            if (ratio <= 0.45f) return DurabilityStage.Damaged;
             return DurabilityStage.Full;
         }
 

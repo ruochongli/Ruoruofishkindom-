@@ -73,6 +73,10 @@ namespace BurstFishingKingdom.Battle
             }
 
             OnBattleStarted?.Invoke();
+            
+            // 初始化全身立绘为完整状态
+            UpdateFullbodyAppearance();
+            
             _battleCoroutine = StartCoroutine(BattleLoop());
         }
 
@@ -142,6 +146,9 @@ namespace BurstFishingKingdom.Battle
 
             // 更新羞耻值
             UpdateShame();
+
+            // 更新全身立绘爆衣状态
+            UpdateFullbodyAppearance();
         }
 
         private void PlayerAttack()
@@ -275,6 +282,9 @@ namespace BurstFishingKingdom.Battle
                 {
                     _crewSystem.RepairPlayerClothes();
                 }
+                
+                // 战斗胜利后恢复全身立绘
+                UpdateFullbodyAppearance();
             }
             else
             {
@@ -307,6 +317,38 @@ namespace BurstFishingKingdom.Battle
             CrewTotalDamage = 0;
             BattleLog.Clear();
             _playerData.SetShame(0);
+            
+            // 重置全身立绘为完整状态
+            var appearance = _playerData?.GetComponent<Player.PlayerAppearance>();
+            if (appearance != null && appearance.UseFullbodyMode)
+                appearance.SetFullbodyStage(Equipment.DurabilityStage.Full);
+        }
+
+        /// <summary>
+        /// 根据外层装备的最差耐久阶段，更新全身立绘
+        /// </summary>
+        private void UpdateFullbodyAppearance()
+        {
+            if (_playerData == null || _equipmentManager == null) return;
+
+            var appearance = _playerData.GetComponent<Player.PlayerAppearance>();
+            if (appearance == null || !appearance.UseFullbodyMode) return;
+
+            // 检查外层装备（Top 和 Bottom）的最差耐久阶段
+            var outerSlots = new[] { Equipment.EquipmentSlot.Top, Equipment.EquipmentSlot.Bottom };
+            Equipment.DurabilityStage worstStage = Equipment.DurabilityStage.Full;
+
+            foreach (var slot in outerSlots)
+            {
+                var item = _equipmentManager.GetEquipped(slot);
+                if (item == null) continue;
+
+                int current = _equipmentManager.CurrentDurability[slot];
+                var stage = _equipmentManager.GetDurabilityStage(current, item.MaxDurability);
+                if (stage > worstStage) worstStage = stage;
+            }
+
+            appearance.SetFullbodyStage(worstStage);
         }
     }
 

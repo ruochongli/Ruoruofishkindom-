@@ -4,7 +4,7 @@ namespace BurstFishingKingdom.Player
 {
     /// <summary>
     /// 玩家外观管理器
-    /// 管理角色捏脸参数和换装渲染
+    /// 管理角色捏脸参数、换装渲染、全身立绘
     /// </summary>
     public class PlayerAppearance : MonoBehaviour
     {
@@ -63,6 +63,15 @@ namespace BurstFishingKingdom.Player
         public SpriteRenderer HairFrontRenderer;
         public SpriteRenderer FaceRenderer;
 
+        [Header("全身立绘")]
+        [Tooltip("是否使用全身立绘模式（替代分部位渲染）")]
+        public bool UseFullbodyMode = true;
+        public SpriteRenderer FullbodyRenderer;
+        public Sprite FullbodyNormal;
+        public Sprite FullbodyDamaged;
+        public Sprite FullbodyBroken;
+        public Sprite FullbodyDestroyed;
+
         [Header("Sorting Group")]
         public SortingGroup SortingGroup;
 
@@ -87,6 +96,8 @@ namespace BurstFishingKingdom.Player
         /// </summary>
         public void SetClothingSprite(Equipment.EquipmentSlot slot, Sprite sprite)
         {
+            if (UseFullbodyMode) return; // 全身模式下不切换分部位
+
             switch (slot)
             {
                 case Equipment.EquipmentSlot.Underwear:
@@ -112,6 +123,8 @@ namespace BurstFishingKingdom.Player
         /// </summary>
         public void SetDamagedState(Equipment.EquipmentSlot slot, bool isDamaged)
         {
+            if (UseFullbodyMode) return;
+
             SpriteRenderer renderer = slot switch
             {
                 Equipment.EquipmentSlot.Top => TopRenderer,
@@ -125,6 +138,53 @@ namespace BurstFishingKingdom.Player
                 // 可以切换为破损sprite或降低透明度
                 renderer.color = new Color(renderer.color.r, renderer.color.g, renderer.color.b, isDamaged ? 0.3f : 1f);
             }
+        }
+
+        /// <summary>
+        /// 设置全身立绘的破损阶段
+        /// </summary>
+        public void SetFullbodyStage(Equipment.DurabilityStage stage)
+        {
+            if (!UseFullbodyMode || FullbodyRenderer == null) return;
+
+            FullbodyRenderer.sprite = stage switch
+            {
+                Equipment.DurabilityStage.Full => FullbodyNormal,
+                Equipment.DurabilityStage.Damaged => FullbodyDamaged ?? FullbodyNormal,
+                Equipment.DurabilityStage.Broken => FullbodyBroken ?? FullbodyDamaged ?? FullbodyNormal,
+                Equipment.DurabilityStage.Destroyed => FullbodyDestroyed ?? FullbodyBroken ?? FullbodyNormal,
+                _ => FullbodyNormal
+            };
+
+            // 确保全身立绘可见，分部位渲染器隐藏
+            FullbodyRenderer.gameObject.SetActive(true);
+            SetPartRenderersActive(false);
+        }
+
+        /// <summary>
+        /// 切换全身立绘模式开关
+        /// </summary>
+        public void SetFullbodyMode(bool enabled)
+        {
+            UseFullbodyMode = enabled;
+            
+            if (FullbodyRenderer != null)
+                FullbodyRenderer.gameObject.SetActive(enabled);
+            
+            SetPartRenderersActive(!enabled);
+        }
+
+        private void SetPartRenderersActive(bool active)
+        {
+            if (BodyRenderer != null) BodyRenderer.gameObject.SetActive(active);
+            if (UnderwearRenderer != null) UnderwearRenderer.gameObject.SetActive(active);
+            if (SocksRenderer != null) SocksRenderer.gameObject.SetActive(active);
+            if (BottomRenderer != null) BottomRenderer.gameObject.SetActive(active);
+            if (TopRenderer != null) TopRenderer.gameObject.SetActive(active);
+            if (AccessoryRenderer != null) AccessoryRenderer.gameObject.SetActive(active);
+            if (HairBackRenderer != null) HairBackRenderer.gameObject.SetActive(active);
+            if (HairFrontRenderer != null) HairFrontRenderer.gameObject.SetActive(active);
+            if (FaceRenderer != null) FaceRenderer.gameObject.SetActive(active);
         }
     }
 }
