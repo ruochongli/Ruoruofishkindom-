@@ -5,7 +5,7 @@ namespace BurstFishingKingdom.Inventory
     /// <summary>
     /// 物品基类 ScriptableObject
     /// </summary>
-    [CreateAssetMenu(fileName = "NewItem", menuName = "爆衣钓鱼王国/物品")]
+    [CreateAssetMenu(fileName = "NewItem", menuName = "若若的钓鱼王国/物品")]
     public class ItemSO : ScriptableObject
     {
         public string ItemId;

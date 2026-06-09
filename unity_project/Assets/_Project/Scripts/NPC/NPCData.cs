@@ -7,7 +7,7 @@ namespace BurstFishingKingdom.NPC
     /// <summary>
     /// NPC数据 ScriptableObject
     /// </summary>
-    [CreateAssetMenu(fileName = "NewNPC", menuName = "爆衣钓鱼王国/NPC")]
+    [CreateAssetMenu(fileName = "NewNPC", menuName = "若若的钓鱼王国/NPC")]
     public class NPCData : ScriptableObject
     {
         public string NPCId;

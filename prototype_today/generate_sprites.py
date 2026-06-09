@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-生成爆衣钓鱼王国 - 像素风格角色精灵图 V2
+生成若若的钓鱼王国 - 像素风格角色精灵图 V2
 可爱风格 / 清晰五官 / 白色内衣
 """
 from PIL import Image, ImageDraw

@@ -6,7 +6,7 @@ namespace BurstFishingKingdom.Equipment
     /// 衣服物品 ScriptableObject
     /// 每件衣服包含3个耐久阶段的Sprite，支持爆衣系统
     /// </summary>
-    [CreateAssetMenu(fileName = "NewClothing", menuName = "爆衣钓鱼王国/衣服")]
+    [CreateAssetMenu(fileName = "NewClothing", menuName = "若若的钓鱼王国/衣服")]
     public class ClothingItemSO : ScriptableObject
     {
         [Header("基础信息")]

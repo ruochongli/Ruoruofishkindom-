@@ -1,4 +1,4 @@
-# 爆衣钓鱼王国 - ComfyUI 安装脚本
+# 若若的钓鱼王国 - ComfyUI 安装脚本
 # 针对 RTX 5070 8GB 显存优化
 # 运行: 右键 -> 使用 PowerShell 运行
 
@@ -10,7 +10,7 @@ $LoraDir = "$ComfyDir\models\loras"
 $WorkflowDir = "$ComfyDir\user\default\workflows"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  ComfyUI 安装器 - 爆衣钓鱼王国专用" -ForegroundColor Cyan
+Write-Host "  ComfyUI 安装器 - 若若的钓鱼王国专用" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

@@ -226,8 +226,8 @@ html = html.replace(
 
 # ========== 7. Update title style ==========
 html = html.replace(
-    '<h1>🎣 爆衣钓鱼王国</h1>',
-    '<h1 style="text-shadow: 0 0 20px rgba(168,85,247,0.5), 0 2px 4px rgba(0,0,0,0.3); font-size: 32px;">🎣 爆衣钓鱼王国</h1>'
+    '<h1>🎣 若若的钓鱼王国</h1>',
+    '<h1 style="text-shadow: 0 0 20px rgba(168,85,247,0.5), 0 2px 4px rgba(0,0,0,0.3); font-size: 32px;">🎣 若若的钓鱼王国</h1>'
 )
 
 # ========== 8. Update shop item emoji size and style ==========

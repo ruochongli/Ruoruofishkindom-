@@ -7,7 +7,7 @@ namespace BurstFishingKingdom.Battle
     /// <summary>
     /// BOSS数据 ScriptableObject
     /// </summary>
-    [CreateAssetMenu(fileName = "NewBoss", menuName = "爆衣钓鱼王国/BOSS")]
+    [CreateAssetMenu(fileName = "NewBoss", menuName = "若若的钓鱼王国/BOSS")]
     public class BossData : ScriptableObject
     {
         public string BossId;

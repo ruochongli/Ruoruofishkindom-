@@ -1,4 +1,4 @@
-# 🎣 爆衣钓鱼王国 (Burst Fishing Kingdom)
+# 🎣 若若的钓鱼王国 (Burst Fishing Kingdom)
 
 > 模拟生存 / 恋爱养成 / 放置类 / 角色扮演 / 航海探索 / AI制衣
 >
