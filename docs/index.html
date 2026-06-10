@@ -520,24 +520,12 @@
           <input type="text" id="playerName" value="若若" maxlength="8" placeholder="输入角色名">
         </div>
         <div class="ctrl-row">
-          <label>肤色</label>
-          <div class="color-options" id="skinColors"></div>
-        </div>
-        <div class="ctrl-row">
           <label>发型</label>
           <div class="style-arrows">
             <button onclick="changeHair(-1)">◀</button>
             <span id="hairLabel">长发</span>
             <button onclick="changeHair(1)">▶</button>
           </div>
-        </div>
-        <div class="ctrl-row">
-          <label>发色</label>
-          <div class="color-options" id="hairColors"></div>
-        </div>
-        <div class="ctrl-row">
-          <label>瞳色</label>
-          <div class="color-options" id="eyeColors"></div>
         </div>
       </div>
     </div>
@@ -1288,12 +1276,6 @@ const previewCharImg = document.getElementById('previewCharImg');
 // 创角
 // ========================
 function initCreation() {
-  const skinBox = document.getElementById('skinColors');
-  skinBox.innerHTML = SKIN_TONES.map((c,i) => `<div class="color-dot ${i===0?'selected':''}" style="background:${c}" onclick="setSkin(${i},this)"></div>`).join('');
-  const hairBox = document.getElementById('hairColors');
-  hairBox.innerHTML = HAIR_COLORS.map((c,i) => `<div class="color-dot" style="background:${c}" onclick="setHairColor(${i},this)"></div>`).join('');
-  const eyeBox = document.getElementById('eyeColors');
-  eyeBox.innerHTML = EYE_COLORS.map((c,i) => `<div class="color-dot" style="background:${c}" onclick="setEyeColor(${i},this)"></div>`).join('');
   renderKeywordTags();
   drawPreview();
   animatePreview();
@@ -1316,9 +1298,6 @@ function setGender(g) {
   charData.gender = 'female';
   charData.hairStyle = 0; updateHairLabel(); drawPreview();
 }
-function setSkin(idx, el) { charData.skinTone = idx; selectDot(el); drawPreview(); }
-function setHairColor(idx, el) { charData.hairColor = idx; selectDot(el); drawPreview(); }
-function setEyeColor(idx, el) { charData.eyeColor = idx; selectDot(el); drawPreview(); }
 function selectDot(el) { el.parentElement.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected')); el.classList.add('selected'); }
 function changeHair(dir) {
   const max = HAIR_STYLES_F.length;
@@ -1337,14 +1316,8 @@ function selectDotByIndex(containerId, index) {
 }
 
 function randomizeChar() {
-  charData.skinTone = randInt(0, SKIN_TONES.length-1);
   charData.hairStyle = randInt(0, HAIR_STYLES_F.length-1);
-  charData.hairColor = randInt(0, HAIR_COLORS.length-1);
-  charData.eyeColor = randInt(0, EYE_COLORS.length-1);
   updateHairLabel();
-  selectDotByIndex('skinColors', charData.skinTone);
-  selectDotByIndex('hairColors', charData.hairColor);
-  selectDotByIndex('eyeColors', charData.eyeColor);
   document.getElementById('playerName').value = '若若';
   drawPreview();
 }
