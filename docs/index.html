@@ -65,6 +65,57 @@
   .btn-secondary { padding: 12px 24px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(255,255,255,0.05); color: #ddd; font-size: 14px; font-family: inherit; cursor: pointer; }
   .btn-secondary:hover { background: rgba(255,255,255,0.1); }
 
+  /* 主菜单 */
+  #mainMenu { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; min-height: 100vh; width: 100%; animation: fadeIn 0.8s ease; position: relative; overflow: hidden; padding-right: 6vw; }
+  .menu-bg-img { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; transition: opacity 1.2s ease; z-index: 0; }
+  .menu-bg-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(10,10,25,0.35) 0%, rgba(10,10,25,0.55) 100%); z-index: 0; pointer-events: none; }
+  .menu-bg-decoration { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; }
+  .menu-bg-decoration::before { content: '🎣'; position: absolute; font-size: 200px; opacity: 0.03; top: 10%; left: 5%; animation: float 6s ease-in-out infinite; }
+  .menu-bg-decoration::after { content: '🐟'; position: absolute; font-size: 160px; opacity: 0.03; bottom: 15%; right: 8%; animation: float 7s ease-in-out infinite reverse; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+  .menu-container { background: rgba(10,10,25,0.55); border-radius: 28px; padding: 48px 48px 48px 56px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); backdrop-filter: blur(16px) saturate(1.2); text-align: right; position: relative; z-index: 1; max-width: 420px; width: 100%; }
+  .menu-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(168,85,247,0.4), transparent); border-radius: 28px 28px 0 0; }
+  .menu-title { font-size: 42px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(90deg, #ff9a9e, #fad0c4, #a5b4fc); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; letter-spacing: 3px; text-shadow: 0 2px 12px rgba(0,0,0,0.3); text-align: right; }
+  .menu-subtitle { font-size: 14px; color: #c4b5fd; margin-bottom: 36px; letter-spacing: 2px; opacity: 0.9; text-shadow: 0 1px 6px rgba(0,0,0,0.4); text-align: right; }
+  .menu-btn-list { display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
+  .menu-btn { padding: 16px 32px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; background: rgba(255,255,255,0.04); color: #e0e0e0; font-size: 16px; font-family: inherit; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); letter-spacing: 2px; position: relative; overflow: hidden; min-width: 200px; text-align: right; }
+  .menu-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); transition: left 0.5s; }
+  .menu-btn:hover::before { left: 100%; }
+  .menu-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.08); border-color: rgba(168,85,247,0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.2); color: #fff; }
+  .menu-btn:active { transform: translateY(0); }
+  .menu-btn-primary { background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.2)); border-color: rgba(168,85,247,0.3); color: #fff; font-weight: 600; }
+  .menu-btn-primary:hover { background: linear-gradient(135deg, rgba(139,92,246,0.4), rgba(236,72,153,0.35)); box-shadow: 0 8px 28px rgba(139,92,246,0.25); }
+  .menu-btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  .menu-version { margin-top: 28px; font-size: 11px; color: #666; letter-spacing: 1px; }
+  .menu-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 8px 0; }
+
+  /* 图鉴面板 */
+  .encyclopedia-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
+  .encyclopedia-card { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 14px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.06); transition: all 0.2s; cursor: default; }
+  .encyclopedia-card:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); border-color: rgba(168,85,247,0.2); }
+  .encyclopedia-card .enc-emoji { font-size: 36px; margin-bottom: 6px; }
+  .encyclopedia-card .enc-name { font-size: 12px; color: #ddd; margin-bottom: 2px; }
+  .encyclopedia-card .enc-rarity { font-size: 11px; }
+  .encyclopedia-card.locked { opacity: 0.35; filter: grayscale(0.8); }
+  .encyclopedia-card.locked .enc-emoji { filter: blur(1px); }
+  .encyclopedia-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .encyclopedia-tab { padding: 8px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.2s; }
+  .encyclopedia-tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .encyclopedia-tab.active { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; border-color: transparent; }
+  .encyclopedia-stats { display: flex; gap: 20px; margin-bottom: 16px; font-size: 13px; color: #aaa; }
+  .encyclopedia-stats span { color: #facc15; font-weight: bold; }
+
+  /* 存档槽 */
+  .save-slot-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .save-slot { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.2s; }
+  .save-slot:hover { background: rgba(255,255,255,0.07); border-color: rgba(168,85,247,0.3); }
+  .save-slot-empty { opacity: 0.5; }
+  .save-slot-num { width: 32px; height: 32px; border-radius: 8px; background: rgba(168,85,247,0.15); color: #c4b5fd; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .save-slot-info { flex: 1; text-align: left; }
+  .save-slot-name { font-size: 14px; color: #fff; margin-bottom: 2px; }
+  .save-slot-meta { font-size: 11px; color: #888; }
+  .save-slot-action { font-size: 12px; color: #a5b4fc; }
+
   /* 游戏主界面 */
   .main-game { display: none; width: 100%; max-width: 1000px; }
   .top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.06); border-radius: 14px; padding: 12px 18px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 12px rgba(0,0,0,0.15); backdrop-filter: blur(8px); }
@@ -425,8 +476,28 @@
 </head>
 <body>
 
+<!-- ==================== 主菜单 ==================== -->
+<div id="mainMenu">
+  <div class="menu-bg-img" id="menuBgImg"></div>
+  <div class="menu-bg-overlay"></div>
+  <div class="menu-bg-decoration"></div>
+  <div class="menu-container">
+    <div class="menu-title">🎣 若若的钓鱼王国</div>
+    <div class="menu-subtitle">Ruoruo's Fishing Kingdom</div>
+    <div class="menu-btn-list">
+      <button class="menu-btn menu-btn-primary" onclick="menuNewGame()">✨ 开始游戏</button>
+      <button class="menu-btn" id="btnContinue" onclick="menuContinueGame()">📀 继续游戏</button>
+      <button class="menu-btn" onclick="menuLoadGame()">💾 读取游戏</button>
+      <button class="menu-btn" onclick="menuEncyclopedia()">📖 图鉴</button>
+      <div class="menu-divider"></div>
+      <button class="menu-btn" onclick="menuQuitGame()">🚪 结束游戏</button>
+    </div>
+    <div class="menu-version">Prototype v2.0</div>
+  </div>
+</div>
+
 <!-- ==================== 创角界面 ==================== -->
-<div id="creationScreen">
+<div id="creationScreen" style="display:none;">
   <h1 style="text-shadow: 0 0 30px rgba(168,85,247,0.4), 0 4px 8px rgba(0,0,0,0.3); font-size: 36px; letter-spacing: 4px; margin-bottom: 6px;">🎣 若若的钓鱼王国</h1>
   <div class="subtitle" style="font-size: 14px; color: #a5b4fc; letter-spacing: 1px; margin-bottom: 24px;"> </div>
   <div class="creation-panel">
@@ -530,6 +601,11 @@
         <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="openInventory()">🎒 Bag</button>
           <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="enterCity()">🏘️ City</button>
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="showScreen('encyclopedia')">📖 图鉴</button>
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px;" onclick="saveGame('auto'); addLog('💾 游戏已保存！', 'system');">💾 保存</button>
+          <button class="btn-game btn-secondary" style="flex:1; min-width:70px; font-size:11px; padding:6px 4px; color:#f87171;" onclick="returnToMainMenu()">🚪 退出</button>
         </div>
       </div>
     </div>
@@ -723,6 +799,13 @@
         </div>
         <!-- 钓鱼交互面板 -->
         <div class="panel-box" id="fishingInteractPanel">
+          <!-- 人物钓鱼画面 -->
+          <div id="fishingPortrait" style="width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; position:relative; margin-bottom:10px; background:linear-gradient(180deg,#1a2a4a,#0a1a2e); border:1px solid rgba(255,255,255,0.06);">
+            <img id="fishingPortraitBg" src="bg_day.png" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0.6; transition:opacity 0.5s;">
+            <img id="fishingPortraitChar" src="char_preview_f.png" style="position:absolute; bottom:-10%; left:50%; transform:translateX(-50%); height:90%; width:auto; object-fit:contain; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4)); transition:transform 0.3s;">
+            <img id="fishingPortraitFish" src="" style="position:absolute; bottom:10%; right:5%; width:28%; height:auto; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3)); opacity:0; transition:opacity 0.4s, transform 0.4s; transform:translateY(20px);">
+            <div style="position:absolute; bottom:6px; left:10px; font-size:11px; color:#a5b4fc; background:rgba(0,0,0,0.5); padding:2px 8px; border-radius:6px; pointer-events:none;">🎣 垂钓中</div>
+          </div>
           <canvas id="fishingSceneCanvas" width="220" height="70" style="width:100%; height:70px; border-radius:8px; background:linear-gradient(180deg,rgba(20,40,80,0.4),rgba(10,30,60,0.6)); margin-bottom:8px; display:block;"></canvas>
           <div style="font-size:12px; color:#aaa; text-align:center; letter-spacing:1px;" id="fishingStatus">等待指令...</div>
 
@@ -732,6 +815,7 @@
           <!-- 当前目标鱼信息 -->
           <div id="fishInfoPanel" class="hidden" style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.3); border-radius:10px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <img id="fishImg" src="" style="width:36px; height:36px; object-fit:contain; image-rendering:pixelated; display:none;">
               <span id="fishEmoji" style="font-size:22px;">🐟</span>
               <span id="fishName" style="font-weight:bold; color:#f0f0f0;">???</span>
               <span id="fishRarity" style="font-size:11px; padding:2px 8px; border-radius:8px; background:rgba(255,255,255,0.1);">普通</span>
@@ -762,6 +846,29 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ========== 图鉴界面 ========== -->
+  <div class="panel-box hidden" id="encyclopediaPanel">
+    <div class="panel-title">
+      <span>📖 海洋图鉴</span>
+      <span style="font-size:12px;color:#aaa;">收集进度</span>
+    </div>
+    <div class="encyclopedia-stats">
+      <div>🐟 鱼类: <span id="encFishCount">0</span>/<span id="encFishTotal">0</span></div>
+      <div>👗 服装: <span id="encClothCount">0</span>/<span id="encClothTotal">0</span></div>
+      <div>🎣 海域: <span id="encSeaCount">0</span>/<span id="encSeaTotal">0</span></div>
+    </div>
+    <div class="encyclopedia-tabs" id="encyclopediaTabs">
+      <button class="encyclopedia-tab active" onclick="switchEncTab('fish')">🐟 鱼类</button>
+      <button class="encyclopedia-tab" onclick="switchEncTab('cloth')">👗 服装</button>
+      <button class="encyclopedia-tab" onclick="switchEncTab('material')">🧵 材料</button>
+      <button class="encyclopedia-tab" onclick="switchEncTab('sea')">🌊 海域</button>
+    </div>
+    <div class="encyclopedia-grid" id="encyclopediaGrid"></div>
+    <div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">
+      <button class="btn-game btn-secondary" onclick="if(document.getElementById('encyclopediaPanel').dataset.menuMode==='1'){closeMenuEncyclopedia();}else{showScreen('cabin');}">⬅️ 返回</button>
     </div>
   </div>
 
@@ -866,6 +973,11 @@ async function preloadSprites() {
     loadSprite('f_q_stage5', 'sprite_f_q_stage5.png'),
     loadSprite('lily', 'sprite_lily.png'),
     loadSprite('boss', 'sprite_boss.png'),
+    // 新增像素鱼
+    loadSprite('fish_neon', 'fish_neon.png'),
+    loadSprite('fish_carp', 'fish_carp.png'),
+    loadSprite('fish_koi', 'fish_koi.png'),
+    loadSprite('fish_angler', 'fish_angler.png'),
   ]);
   spritesReady = true;
   console.log('All sprites loaded');
@@ -906,15 +1018,20 @@ const FISH_TYPES = {
   golden_fish:  { id: 'golden_fish',  name: '金鱼',     emoji: '🐡', hp: 100, maxHp: 100, struggleRate: 0.7, escapeTime: 3000,  exp: 50,  q: 2, desc: '金光闪闪的幸运象征' },
   legendary_fish:{ id: 'legendary_fish',name: '传说鱼',  emoji: '🦈', hp: 180, maxHp: 180, struggleRate: 0.85, escapeTime: 2500, exp: 100, q: 3, desc: '深海传说中的巨兽' },
   mythic_fish:  { id: 'mythic_fish',  name: '神话鱼',   emoji: '🐉', hp: 300, maxHp: 300, struggleRate: 0.95, escapeTime: 2000, exp: 200, q: 4, desc: '只存在于神话中的生物' },
+  // 新增像素鱼
+  neon_fish:    { id: 'neon_fish',    name: '霓虹灯鱼', emoji: '🐟', img: 'fish_neon.png',   hp: 25,  maxHp: 25,  struggleRate: 0.25, escapeTime: 5500,  exp: 12,  q: 0, desc: '热带小溪里常见的霓虹小鱼，尾鳍如火焰般鲜艳' },
+  carp_fish:    { id: 'carp_fish',    name: '金鳞鲫',   emoji: '🐠', img: 'fish_carp.png',   hp: 55,  maxHp: 55,  struggleRate: 0.45, escapeTime: 4200,  exp: 28,  q: 1, desc: '鳞片泛着金属光泽的淡水鱼，力气意外地大' },
+  koi_fish:     { id: 'koi_fish',     name: '红斑锦鲤', emoji: '🐡', img: 'fish_koi.png',    hp: 85,  maxHp: 85,  struggleRate: 0.65, escapeTime: 3500,  exp: 55,  q: 2, desc: '身上带有幸运红斑的锦鲤，传说能带来好运' },
+  angler_fish:  { id: 'angler_fish',  name: '深渊灯笼鱼',emoji:'🦈', img: 'fish_angler.png', hp: 160, maxHp: 160, struggleRate: 0.88, escapeTime: 2400,  exp: 110, q: 3, desc: '深海中潜伏的恐怖猎手，头顶的灯笼是致命的诱饵' },
 };
 
 // 海域鱼类分布 [海域难度] → [鱼的key数组，权重越高出现越多]
 const SEA_FISH_POOL = {
-  1: [['common_fish', 8], ['rare_fish', 2]],
-  2: [['common_fish', 5], ['rare_fish', 4], ['golden_fish', 1]],
-  4: [['common_fish', 3], ['rare_fish', 4], ['golden_fish', 3]],
-  7: [['rare_fish', 3], ['golden_fish', 4], ['legendary_fish', 3]],
-  10:[['golden_fish', 3], ['legendary_fish', 4], ['mythic_fish', 3]],
+  1: [['common_fish', 5], ['neon_fish', 5], ['rare_fish', 2]],
+  2: [['common_fish', 3], ['neon_fish', 3], ['rare_fish', 3], ['carp_fish', 2], ['golden_fish', 1]],
+  4: [['rare_fish', 3], ['carp_fish', 3], ['koi_fish', 2], ['golden_fish', 3]],
+  7: [['carp_fish', 2], ['koi_fish', 3], ['golden_fish', 3], ['angler_fish', 3], ['legendary_fish', 3]],
+  10:[['koi_fish', 2], ['angler_fish', 4], ['golden_fish', 2], ['legendary_fish', 3], ['mythic_fish', 3]],
 };
 
 // 钓鱼状态常量
@@ -1159,6 +1276,9 @@ let shopState = { items: [], refreshCount: 0, refreshCost: 100, day: 1 };
 // 当前配方
 let currentRecipe = null;
 
+// 图鉴收集状态
+let encyclopedia = { fish: [], cloth: [], material: [], sea: [] };
+
 const canvas = document.getElementById('charCanvas');
 const ctx = canvas.getContext('2d');
 const previewCharImg = document.getElementById('previewCharImg');
@@ -1176,6 +1296,20 @@ function initCreation() {
   renderKeywordTags();
   drawPreview();
   animatePreview();
+  // 检测是否有存档，更新继续游戏按钮
+  const hasSave = !!localStorage.getItem('rfk_save_auto');
+  const btn = document.getElementById('btnContinue');
+  if (btn) {
+    if (!hasSave) btn.classList.add('menu-btn-disabled');
+    else btn.classList.remove('menu-btn-disabled');
+  }
+  // 根据当地时间切换主菜单背景图
+  const hour = new Date().getHours();
+  const isDay = hour >= 6 && hour < 18;
+  const bgImg = document.getElementById('menuBgImg');
+  if (bgImg) {
+    bgImg.style.backgroundImage = `url('${isDay ? 'bg_day.png' : 'bg_night.png'}')`;
+  }
 }
 function setGender(g) {
   charData.gender = 'female';
@@ -1397,6 +1531,251 @@ function drawPreview(){
 }
 function animatePreview() { previewTime += 0.016; drawPreview(); requestAnimationFrame(animatePreview); }
 
+// ========================
+// 主菜单系统
+// ========================
+function menuNewGame() {
+  document.getElementById('mainMenu').style.display = 'none';
+  document.getElementById('creationScreen').style.display = 'block';
+}
+function menuContinueGame() {
+  const save = localStorage.getItem('rfk_save_auto');
+  if (!save) { alert('没有找到自动存档！'); return; }
+  try {
+    const data = JSON.parse(save);
+    loadGameData(data);
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    showScreen('cabin');
+    addLog('📀 继续上次的冒险...', 'system');
+  } catch (e) { console.error(e); alert('存档读取失败！'); }
+}
+function menuLoadGame() {
+  const slots = [1, 2, 3];
+  let html = '<div style="font-size:18px;margin-bottom:16px;">💾 选择存档</div>';
+  html += '<div class="save-slot-list">';
+  slots.forEach(n => {
+    const key = 'rfk_save_' + n;
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        const d = JSON.parse(raw);
+        const time = d._savedAt ? new Date(d._savedAt).toLocaleString('zh-CN') : '未知时间';
+        html += `<div class="save-slot" onclick="loadGameSlot(${n})"><div class="save-slot-num">${n}</div><div class="save-slot-info"><div class="save-slot-name">${d.charData?.name || '未知角色'}</div><div class="save-slot-meta">💰 ${d.player?.gold || 0} G | 🚢 Lv.${d.currentShipLevel || 1} | ${time}</div></div><div class="save-slot-action">读取</div></div>`;
+      } catch (e) {
+        html += `<div class="save-slot save-slot-empty"><div class="save-slot-num">${n}</div><div class="save-slot-info"><div class="save-slot-name">存档损坏</div><div class="save-slot-meta">无法读取</div></div></div>`;
+      }
+    } else {
+      html += `<div class="save-slot save-slot-empty"><div class="save-slot-num">${n}</div><div class="save-slot-info"><div class="save-slot-name">空存档槽</div><div class="save-slot-meta">无数据</div></div></div>`;
+    }
+  });
+  html += '</div><div style="margin-top:16px;text-align:center;"><button class="btn-game btn-secondary" onclick="closeOverlay()">取消</button></div>';
+  showOverlay(html);
+}
+function loadGameSlot(n) {
+  const raw = localStorage.getItem('rfk_save_' + n);
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    loadGameData(data);
+    closeOverlay();
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('gameScreen').style.display = 'block';
+    showScreen('cabin');
+    addLog('📀 存档读取成功！', 'system');
+  } catch (e) { alert('存档读取失败！'); }
+}
+function menuQuitGame() {
+  if (confirm('确定要退出游戏吗？')) {
+    window.close();
+    // fallback
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#aaa;font-size:18px;">感谢游玩！请关闭标签页。</div>';
+  }
+}
+function returnToMainMenu() {
+  if (confirm('返回主菜单将自动保存当前进度，是否继续？')) {
+    saveGame('auto');
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('creationScreen').style.display = 'none';
+    document.getElementById('mainMenu').style.display = 'flex';
+    // 重新检测存档状态
+    const hasSave = !!localStorage.getItem('rfk_save_auto');
+    const btn = document.getElementById('btnContinue');
+    if (btn) {
+      if (!hasSave) btn.classList.add('menu-btn-disabled');
+      else btn.classList.remove('menu-btn-disabled');
+    }
+  }
+}
+function menuEncyclopedia() {
+  document.getElementById('mainMenu').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  document.getElementById('encyclopediaPanel').classList.remove('hidden');
+  // 隐藏其他面板
+  ['shipCabinPanel','wardrobePanel','craftingPanel','inventoryPanel','seaSelectPanel','sailingPanel','battlePanel','cityPanel','npcPanel','giftPanel','shopPanel','characterPanel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  // 创建临时容器让图鉴能独立显示
+  const tmp = document.getElementById('encyclopediaPanel');
+  tmp.style.display = 'block';
+  tmp.style.position = 'fixed';
+  tmp.style.top = '50%';
+  tmp.style.left = '50%';
+  tmp.style.transform = 'translate(-50%,-50%)';
+  tmp.style.width = '90%';
+  tmp.style.maxWidth = '800px';
+  tmp.style.zIndex = '200';
+  tmp.dataset.menuMode = '1';
+  renderEncyclopedia();
+}
+function closeMenuEncyclopedia() {
+  const tmp = document.getElementById('encyclopediaPanel');
+  tmp.style.display = '';
+  tmp.style.position = '';
+  tmp.style.top = '';
+  tmp.style.left = '';
+  tmp.style.transform = '';
+  tmp.style.width = '';
+  tmp.style.maxWidth = '';
+  tmp.style.zIndex = '';
+  tmp.classList.add('hidden');
+  delete tmp.dataset.menuMode;
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('mainMenu').style.display = 'flex';
+}
+
+// ========================
+// 存档 / 读档
+// ========================
+function getSaveData() {
+  return {
+    _version: 2,
+    _savedAt: Date.now(),
+    charData: JSON.parse(JSON.stringify(charData)),
+    player: JSON.parse(JSON.stringify(player)),
+    selectedCloth: selectedCloth,
+    selectedSea: selectedSea,
+    currentShipLevel: currentShipLevel,
+    gameHour: gameHour,
+    inventory: JSON.parse(JSON.stringify(inventory)),
+    wardrobe: JSON.parse(JSON.stringify(wardrobe)),
+    encyclopedia: JSON.parse(JSON.stringify(encyclopedia)),
+    questStep: questStep,
+    spouseId: spouseId,
+    marriageDays: marriageDays,
+    activeCrewId: activeCrewId,
+    crewEquipment: JSON.parse(JSON.stringify(crewEquipment)),
+    shopState: JSON.parse(JSON.stringify(shopState)),
+  };
+}
+function saveGame(slot) {
+  const data = getSaveData();
+  const key = slot === 'auto' ? 'rfk_save_auto' : 'rfk_save_' + slot;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+function loadGameData(data) {
+  if (data.charData) Object.assign(charData, data.charData);
+  if (data.player) Object.assign(player, data.player);
+  if (data.selectedCloth !== undefined) selectedCloth = data.selectedCloth;
+  if (data.selectedSea !== undefined) selectedSea = data.selectedSea;
+  if (data.currentShipLevel !== undefined) currentShipLevel = data.currentShipLevel;
+  if (data.gameHour !== undefined) gameHour = data.gameHour;
+  if (data.inventory) inventory = data.inventory;
+  if (data.wardrobe) wardrobe = data.wardrobe;
+  if (data.encyclopedia) encyclopedia = data.encyclopedia;
+  if (data.questStep !== undefined) questStep = data.questStep;
+  if (data.spouseId !== undefined) spouseId = data.spouseId;
+  if (data.marriageDays !== undefined) marriageDays = data.marriageDays;
+  if (data.activeCrewId !== undefined) activeCrewId = data.activeCrewId;
+  if (data.crewEquipment) crewEquipment = data.crewEquipment;
+  if (data.shopState) shopState = data.shopState;
+  // UI sync
+  document.getElementById('playerName').value = charData.name;
+  document.getElementById('charName').textContent = charData.name;
+  document.getElementById('battleCharName').textContent = charData.name;
+  updateGold();
+  updateTimeDisplay();
+  updateCrewIndicator();
+  drawPreview();
+}
+
+// ========================
+// 图鉴系统
+// ========================
+let currentEncTab = 'fish';
+function switchEncTab(tab) {
+  currentEncTab = tab;
+  document.querySelectorAll('.encyclopedia-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderEncyclopedia();
+}
+function renderEncyclopedia() {
+  const grid = document.getElementById('encyclopediaGrid');
+  if (!grid) return;
+  const enc = encyclopedia || {};
+  let html = '';
+  if (currentEncTab === 'fish') {
+    const rarityColor = ['#94a3b8', '#4ade80', '#3b82f6', '#a855f7', '#f97316'];
+    const rarityName = ['普通', '稀有', '珍贵', '传说', '神话'];
+    Object.entries(FISH_TYPES).forEach(([key, f]) => {
+      const unlocked = enc.fish?.includes(key);
+      const color = rarityColor[f.q] || rarityColor[0];
+      const rName = rarityName[f.q] || rarityName[0];
+      html += `<div class="encyclopedia-card ${unlocked ? '' : 'locked'}"><div class="enc-emoji">${unlocked ? f.emoji : '❓'}</div><div class="enc-name">${unlocked ? f.name : '???'}</div><div class="enc-rarity" style="color:${color}">${unlocked ? rName : '未解锁'}</div></div>`;
+    });
+    document.getElementById('encFishCount').textContent = (enc.fish || []).length;
+    document.getElementById('encFishTotal').textContent = Object.keys(FISH_TYPES).length;
+  } else if (currentEncTab === 'cloth') {
+    Object.entries(CLOTHES).forEach(([key, c]) => {
+      const unlocked = enc.cloth?.includes(key);
+      html += `<div class="encyclopedia-card ${unlocked ? '' : 'locked'}"><div class="enc-emoji">${unlocked ? '👗' : '❓'}</div><div class="enc-name">${unlocked ? c.name : '???'}</div><div class="enc-rarity" style="color:#67e8f9">${unlocked ? (c.defense >= 15 ? '高级' : '普通') : '未解锁'}</div></div>`;
+    });
+    document.getElementById('encClothCount').textContent = (enc.cloth || []).length;
+    document.getElementById('encClothTotal').textContent = Object.keys(CLOTHES).length;
+  } else if (currentEncTab === 'material') {
+    Object.entries(MATERIAL_NAMES).forEach(([key, name]) => {
+      const unlocked = enc.material?.includes(key);
+      const emoji = ACC_EMOJI[key] || '📦';
+      html += `<div class="encyclopedia-card ${unlocked ? '' : 'locked'}"><div class="enc-emoji">${unlocked ? emoji : '❓'}</div><div class="enc-name">${unlocked ? name : '???'}</div><div class="enc-rarity" style="color:#a5b4fc">${unlocked ? '已发现' : '未解锁'}</div></div>`;
+    });
+  } else if (currentEncTab === 'sea') {
+    SEAS.forEach(s => {
+      const unlocked = enc.sea?.includes(s.id);
+      html += `<div class="encyclopedia-card ${unlocked ? '' : 'locked'}"><div class="enc-emoji">${unlocked ? '🌊' : '❓'}</div><div class="enc-name">${unlocked ? s.name : '???'}</div><div class="enc-rarity" style="color:#67e8f9">${unlocked ? '难度 ' + s.diff : '未解锁'}</div></div>`;
+    });
+    document.getElementById('encSeaCount').textContent = (enc.sea || []).length;
+    document.getElementById('encSeaTotal').textContent = SEAS.length;
+  }
+  grid.innerHTML = html;
+}
+function discoverEncyclopedia(category, id) {
+  if (!encyclopedia) encyclopedia = {};
+  if (!encyclopedia[category]) encyclopedia[category] = [];
+  if (!encyclopedia[category].includes(id)) {
+    encyclopedia[category].push(id);
+  }
+}
+
+// ========================
+// 覆盖层（用于弹窗）
+// ========================
+function showOverlay(html) {
+  let ov = document.getElementById('menuOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'menuOverlay';
+    ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = '<div style="background:rgba(20,20,40,0.95);border-radius:20px;padding:28px 32px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 8px 32px rgba(0,0,0,0.4);max-width:480px;width:100%;max-height:80vh;overflow-y:auto;">' + html + '</div>';
+  ov.style.display = 'flex';
+}
+function closeOverlay() {
+  const ov = document.getElementById('menuOverlay');
+  if (ov) ov.style.display = 'none';
+}
+
 function startGame() {
   charData.name = document.getElementById('playerName').value || '冒险者';
   document.getElementById('creationScreen').style.display = 'none';
@@ -1577,6 +1956,7 @@ function craftRecipe() {
   const itemId = 'crafted_' + Date.now();
   inventory[itemId] = { count: 1, q: currentRecipe.quality, isCloth: true, name: currentRecipe.name, clothData: clothData };
   CLOTHES[itemId] = clothData;
+  discoverEncyclopedia('cloth', itemId);
   addLog(`🎉 制作成功！获得 [${qName(currentRecipe.quality)}] ${currentRecipe.name}！`, 'craft');
   const box = document.getElementById('recipeResult');
   box.innerHTML = `
@@ -1686,6 +2066,7 @@ function buyShopItem(idx) {
   updateGold();
   if (inventory[item.id]) { inventory[item.id].count += 1; }
   else { inventory[item.id] = { count: 1, q: item.q }; }
+  discoverEncyclopedia('material', item.id);
   addLog(`🏪 购买成功: [${qName(item.q)}] ${item.name} ×1`, 'loot');
   shopState.items.splice(idx, 1);
   renderShop();
@@ -1723,7 +2104,7 @@ function showScreen(screen) {
   battleState = screen;
   const screens = ['shipCabinPanel', 'wardrobePanel', 'craftingPanel', 'inventoryPanel',
                    'seaSelectPanel', 'sailingPanel', 'battlePanel', 'cityPanel',
-                   'npcPanel', 'giftPanel', 'shopPanel', 'characterPanel'];
+                   'npcPanel', 'giftPanel', 'shopPanel', 'characterPanel', 'encyclopediaPanel'];
   screens.forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
   const show = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); };
   if (screen === 'cabin') { show('shipCabinPanel'); renderCabin(); }
@@ -1739,13 +2120,14 @@ function showScreen(screen) {
   if (screen === 'gift') show('giftPanel');
   if (screen === 'shop') show('shopPanel');
   if (screen === 'character') { show('characterPanel'); renderCharacterPanel(); }
+  if (screen === 'encyclopedia') { show('encyclopediaPanel'); renderEncyclopedia(); }
 
   const phaseMap = {
     cabin:'当前: 在船上', wardrobe:'当前: 配置装备', crafting:'当前: 制衣',
     inventory:'当前: 查看背包', seaselect:'当前: 选择海域', sailing:'当前: 航行中',
     fishing:'当前: 钓鱼中', battling:'当前: 战斗中', ended:'当前: 战斗结束',
     city:'当前: 在城里', npc:'当前: 与NPC互动', gift:'当前: 选择礼物', shop:'当前: 每日商店',
-    character:'当前: 查看人物'
+    character:'当前: 查看人物', encyclopedia:'当前: 图鉴'
   };
   document.getElementById('gamePhase').textContent = phaseMap[screen] || screen;
 }
@@ -2372,6 +2754,7 @@ function selectSea(id) {
 function startSailing() {
   if (!selectedSea) return;
   const sea = SEAS.find(s => s.id === selectedSea);
+  discoverEncyclopedia('sea', selectedSea);
   showScreen('sailing');
   document.getElementById('sailingShipEmoji').textContent = SHIPS[currentShipLevel-1].emoji;
   document.getElementById('sailingText').textContent = '正在出海...';
@@ -2420,12 +2803,24 @@ function setBattleBg() {
 function setFishingSceneMode(isFishing) {
   const charCanvas = document.getElementById('charCanvas');
   const charPanel = document.querySelector('.character-panel');
+  const portraitBg = document.getElementById('fishingPortraitBg');
   if (isFishing) {
     if (charCanvas) charCanvas.classList.add('fishing-scene');
     if (charPanel) charPanel.classList.add('fishing-scene');
+    // 切换钓鱼画面背景（白天/夜晚）
+    if (portraitBg) {
+      const isDay = (new Date().getHours() >= 6 && new Date().getHours() < 18);
+      portraitBg.src = isDay ? 'bg_day.png' : 'bg_night.png';
+    }
   } else {
     if (charCanvas) charCanvas.classList.remove('fishing-scene');
     if (charPanel) charPanel.classList.remove('fishing-scene');
+    // 隐藏钓鱼画面中的鱼
+    const portraitFish = document.getElementById('fishingPortraitFish');
+    if (portraitFish) {
+      portraitFish.style.opacity = '0';
+      portraitFish.style.transform = 'translateY(20px)';
+    }
   }
 }
 
@@ -2565,6 +2960,27 @@ function updateFishUI() {
   document.getElementById('fishRarity').textContent = Q_NAMES[currentFish.q] || '普通';
   document.getElementById('fishRarity').style.background = (Q_COLORS[currentFish.q] || '#e2e8f0') + '33';
   document.getElementById('fishRarity').style.color = Q_COLORS[currentFish.q] || '#e2e8f0';
+  // 显示鱼的实际图片
+  const fishImg = document.getElementById('fishImg');
+  if (currentFish.img) {
+    fishImg.src = currentFish.img;
+    fishImg.style.display = 'block';
+    fishImg.style.opacity = '0.9';
+  } else {
+    fishImg.style.display = 'none';
+  }
+  // 人物钓鱼画面中的鱼
+  const portraitFish = document.getElementById('fishingPortraitFish');
+  if (portraitFish) {
+    if (currentFish.img) {
+      portraitFish.src = currentFish.img;
+      portraitFish.style.opacity = '1';
+      portraitFish.style.transform = 'translateY(0)';
+    } else {
+      portraitFish.style.opacity = '0';
+      portraitFish.style.transform = 'translateY(20px)';
+    }
+  }
 }
 
 function updateTensionUI() {
@@ -2770,6 +3186,7 @@ function onFishCaught() {
   // 连击奖励
   const bonusExp = reelCombo >= 5 ? ` (连击x${reelCombo} 额外奖励!)` : '';
   addLog(`${fish.emoji} 成功钓到了 ${fish.name}！${bonusExp}`, 'loot');
+  discoverEncyclopedia('fish', fish.id);
   updateGold();
   setFishingUI('caught', `钓到了 ${fish.name}！`);
 
@@ -2790,6 +3207,9 @@ function onFishEscaped(reason) {
   fishingSubState = FISHING_STATE.ESCAPED;
   clearFishingTimers();
   if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  // 隐藏钓鱼画面中的鱼
+  const portraitFish = document.getElementById('fishingPortraitFish');
+  if (portraitFish) { portraitFish.style.opacity = '0'; portraitFish.style.transform = 'translateY(20px)'; }
 
   addLog(`💨 ${reason}`, 'danger');
   setFishingUI('escaped', reason);
@@ -3033,11 +3453,13 @@ function endBattle(victory) {
       addLog('🐟 获得稀有鱼 x1', 'loot');
       if (inventory['rare_fish']) inventory['rare_fish'].count++;
       else inventory['rare_fish'] = { count: 1, q: 2 };
+      discoverEncyclopedia('fish', 'rare_fish');
     }
     if (Math.random() < 0.3) {
       addLog('🐟 获得海兽鳞片 x1（紫色材料）', 'loot');
       if (inventory['boss_scale']) inventory['boss_scale'].count++;
       else inventory['boss_scale'] = { count: 1, q: 3 };
+      discoverEncyclopedia('material', 'boss_scale');
     }
 
     // NPC船员胜利台词
