@@ -841,6 +841,7 @@
             <button class="btn-game btn-primary hidden" id="btnReel" onclick="doReel()">🎣 收线！</button>
             <button class="btn-game btn-secondary hidden" id="btnStopFish" onclick="stopAutoFishing()">⏹️ 停止</button>
             <button class="btn-game btn-secondary hidden" id="btnReturnDeck" onclick="returnToDeck()">🚢 返回甲板</button>
+            <button class="btn-game btn-secondary hidden" id="btnContinueFish" onclick="continueFishingAfterBattle()">🎣 继续钓鱼</button>
             <button class="btn-game btn-secondary hidden" id="btnReturn" onclick="returnToShipAfterBattle()">🚢 返航</button>
             <button class="btn-game btn-secondary" id="btnReset" onclick="resetBattle()">🔄 重置</button>
           </div>
@@ -1468,9 +1469,6 @@ function drawCharacterPreview(c,w,h,t){
 
     // 嘴
     R(30,27,4,2,o);R(31,28,2,1,[220,100,120]);
-
-    // 腮红
-    c.globalAlpha=0.35;R(20,22,5,4,[255,160,170]);R(39,22,5,4,[255,160,170]);c.globalAlpha=1;
 
     // ========== 前发（蓬松层次）==========
     const hs=charData.hairStyle%5;
@@ -2862,8 +2860,12 @@ function setFishingUI(state, extra) {
   const btnReturnDeck = document.getElementById('btnReturnDeck');
   const prog = document.getElementById('fishingProgress');
   if (btnReturnDeck) {
-    if (state === 'idle') btnReturnDeck.classList.remove('hidden');
-    else btnReturnDeck.classList.add('hidden');
+    // 返回甲板按钮在所有非战斗状态都可见
+    if (state === 'idle' || state === 'casting' || state === 'waiting' || state === 'biting' || state === 'reeling' || state === 'caught' || state === 'escaped') {
+      btnReturnDeck.classList.remove('hidden');
+    } else {
+      btnReturnDeck.classList.add('hidden');
+    }
   }
 
   switch (state) {
@@ -2969,18 +2971,6 @@ function updateFishUI() {
   } else {
     fishImg.style.display = 'none';
   }
-  // 人物钓鱼画面中的鱼
-  const portraitFish = document.getElementById('fishingPortraitFish');
-  if (portraitFish) {
-    if (currentFish.img) {
-      portraitFish.src = currentFish.img;
-      portraitFish.style.opacity = '1';
-      portraitFish.style.transform = 'translateY(0)';
-    } else {
-      portraitFish.style.opacity = '0';
-      portraitFish.style.transform = 'translateY(20px)';
-    }
-  }
 }
 
 function updateTensionUI() {
@@ -3058,6 +3048,20 @@ function onFishBite() {
   updateFishUI();
   setFishingUI('biting');
   addLog(`🌊 浮标下沉了！有${currentFish.name}咬钩了！`, 'system');
+
+  // 人物钓鱼画面中显示鱼图（仅短暂出现）
+  const portraitFish = document.getElementById('fishingPortraitFish');
+  if (portraitFish && currentFish.img) {
+    portraitFish.src = currentFish.img;
+    portraitFish.style.opacity = '1';
+    portraitFish.style.transform = 'translateY(0)';
+    // 3秒后自动隐藏
+    const hideTimer = setTimeout(() => {
+      portraitFish.style.opacity = '0';
+      portraitFish.style.transform = 'translateY(20px)';
+    }, 3000);
+    fishingTimers.push(hideTimer);
+  }
 
   // 咬钩窗口期：必须在 escapeTime 内点击收线，否则鱼跑了
   const t = setTimeout(() => {
@@ -3439,7 +3443,7 @@ function endBattle(victory) {
   document.getElementById('btnStartFish').classList.add('hidden');
   document.getElementById('btnReel').classList.add('hidden');
   document.getElementById('btnStopFish').classList.add('hidden');
-  document.getElementById('btnReturn').classList.remove('hidden');
+  document.getElementById('btnReturnDeck').classList.add('hidden');
 
   if (victory) {
     addLog('═══════════════════════════════', 'system');
@@ -3476,6 +3480,13 @@ function endBattle(victory) {
     if (activeCrewId) {
       showRepairOverlay();
     }
+
+    // 显示继续钓鱼和返航按钮
+    document.getElementById('btnContinueFish').classList.remove('hidden');
+    document.getElementById('btnReturn').classList.remove('hidden');
+  } else {
+    // 失败只显示返航
+    document.getElementById('btnReturn').classList.remove('hidden');
   }
 }
 
@@ -3543,6 +3554,27 @@ function closeRepairOverlay() {
   document.getElementById('repairOverlay').classList.add('hidden');
 }
 
+function continueFishingAfterBattle() {
+  closeRepairOverlay();
+  clearFishingTimers();
+  if (fishStruggleTimer) { clearInterval(fishStruggleTimer); fishStruggleTimer = null; }
+  boss = { hp: 0, maxHp: 0 };
+  player.activeSkills = [];
+  document.getElementById('btnContinueFish').classList.add('hidden');
+  document.getElementById('btnReturn').classList.add('hidden');
+  document.getElementById('fishingStatus').textContent = '准备继续垂钓...';
+  addLog('═══════════════════════════════', 'system');
+  addLog('🎣 收起战利品，准备继续钓鱼！', 'system');
+  // 恢复钓鱼状态
+  battleState = 'fishing';
+  autoFishing = true;
+  currentFish = null;
+  tension = 0;
+  reelCombo = 0;
+  setFishingUI('idle');
+  castRod();
+}
+
 function returnToShipAfterBattle() {
   closeRepairOverlay();
   clearFishingTimers();
@@ -3551,6 +3583,7 @@ function returnToShipAfterBattle() {
   autoFishing = false;
   currentFish = null;
   tension = 0;
+  document.getElementById('btnContinueFish').classList.add('hidden');
   showScreen('cabin');
   // 返航时保留衣服耐久度和害羞度，不重置
   player.activeSkills = [];
@@ -4126,19 +4159,6 @@ function drawCharacterOnContext(c, w, h, t, isPreview) {
     const eyeY = by + bh * 0.19;
     c.fillRect(bx + bw * 0.32, eyeY, eyeW, eyeH);
     c.fillRect(bx + bw * 0.52, eyeY, eyeW, eyeH);
-  }
-
-  // Blush overlay based on shame
-  if (!isPreview && player.shame > 20) {
-    const blushAlpha = Math.min(player.shame / 100, 0.5);
-    c.fillStyle = `rgba(255, 100, 120, ${blushAlpha})`;
-    const blushR = bw * 0.12;
-    c.beginPath();
-    c.ellipse(bx + bw * 0.22, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
-    c.fill();
-    c.beginPath();
-    c.ellipse(bx + bw * 0.78, by + bh * 0.28, blushR, blushR * 0.7, 0, 0, Math.PI * 2);
-    c.fill();
   }
 
   // Damage indicator lines
