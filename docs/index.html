@@ -702,15 +702,20 @@
   <!-- ========== 城市 ========== -->
   <div class="panel-box hidden" id="cityPanel">
     <div class="panel-title">🏘️ 宁静港湾村 — 当前时间: <span id="cityTime">08:00</span></div>
-    <div style="margin-bottom:12px; font-size:12px; color:#aaa;">
-      NPC位置会随时间变化！<button class="btn-game btn-secondary" style="padding:4px 10px; font-size:11px; margin-left:8px;" onclick="advanceTime()">⏩ 推进2小时</button>
+    <div style="margin-bottom:8px; font-size:12px; color:#aaa; display:flex; justify-content:space-between; align-items:center;">
+      <span>WASD/方向键移动，靠近建筑按空格互动</span>
+      <button class="btn-game btn-secondary" style="padding:4px 10px; font-size:11px;" onclick="advanceTime()">⏩ 推进2小时</button>
     </div>
-    <div class="city-buildings">
+    <div style="position:relative; border-radius:12px; overflow:hidden; border:2px solid rgba(255,255,255,0.08); background:#1a2e1a;">
+      <canvas id="cityMap" width="1408" height="768" style="display:block; width:100%; height:auto; image-rendering:pixelated; cursor:pointer;"></canvas>
+      <div id="cityInteractHint" style="position:absolute; bottom:8px; left:50%; transform:translateX(-50%); font-size:13px; color:#facc15; background:rgba(0,0,0,0.6); padding:4px 14px; border-radius:8px; pointer-events:none; white-space:nowrap;"></div>
+    </div>
+    <div class="city-buildings" style="margin-top:10px;">
       <button class="building-btn" onclick="visitNPC('lily')">💐<br>花店找莉莉</button>
       <button class="building-btn" onclick="visitMarket()">🏪<br>市场</button>
       <button class="building-btn" onclick="visitDailyShop()">🏪<br>每日商店</button>
     </div>
-    <div style="text-align:center; margin-top:14px;">
+    <div style="text-align:center; margin-top:10px;">
       <button class="btn-game btn-secondary" onclick="returnToShip()">⬅️ 返回船上</button>
     </div>
   </div>
@@ -967,6 +972,8 @@ async function preloadSprites() {
     loadSprite('fish_carp', 'fish_carp.png'),
     loadSprite('fish_koi', 'fish_koi.png'),
     loadSprite('fish_angler', 'fish_angler.png'),
+    loadSprite('bg_town', 'bg_town.png'),
+    loadSprite('bg_fishing', 'bg_fishing.png'),
   ]);
   spritesReady = true;
   console.log('All sprites loaded');
@@ -979,12 +986,20 @@ preloadSprites();
 const SKIN_TONES = ['#f5d0c5','#e8b4a0','#d4a373','#c68642','#8d5524','#3d2314'];
 const HAIR_COLORS = ['#5c3a21','#2d2d2d','#d4a017','#c0392b','#8e44ad','#2980b9','#27ae60','#ecf0f1','#e91e63','#ff9800','#c0c0c0','#ffb6c1','#ff4500','#4b0082','#708090','#d2b48c'];
 const EYE_COLORS = ['#3b82f6','#22c55e','#a855f7','#ef4444','#f59e0b','#14b8a6','#6366f1','#ec4899','#ffd700','#8b0000','#808080','#ffbf00','#00008b','#e0115f','#50c878','#1a1a2e'];
-const HAIR_STYLES_F = ['长发','短发','双马尾'];
+const HAIR_STYLES_F = ['长发','短发','双马尾','卷发','丸子头','姬发','粉红低马尾','白发长直'];
 
 const CLOTHES = {
   underwear: { name: "白色蕾丝内衣", maxDur: { top: 60, bottom: 60, legs: 50 }, defense: 5, attack: 10, color: "#fff0f5", brokenColor: "#ffb6c1", preview: "cloth_underwear.png", desc: "轻薄可爱，害羞度积累较快。" },
   dress: { name: "新手布衣", maxDur: { top: 100, bottom: 100, legs: 100 }, defense: 15, attack: 20, color: "#67e8f9", brokenColor: "#155e75", preview: "cloth_dress.png", desc: "结实耐用的基础衣服。" },
-  pajamas: { name: "轻薄睡衣", maxDur: { top: 40, bottom: 40, legs: 30 }, defense: 0, attack: 15, color: "#fbcfe8", brokenColor: "#9d174d", preview: "cloth_pajamas.png", desc: "几乎没有防护，害羞度积累极快。" }
+  pajamas: { name: "轻薄睡衣", maxDur: { top: 40, bottom: 40, legs: 30 }, defense: 0, attack: 15, color: "#fbcfe8", brokenColor: "#9d174d", preview: "cloth_pajamas.png", desc: "几乎没有防护，害羞度积累极快。" },
+  autumn_uniform: { name: "秋天校服", maxDur: { top: 120, bottom: 120, legs: 110 }, defense: 18, attack: 22, color: "#2d3a5c", brokenColor: "#8b4513", preview: "outfit_autumn_uniform.png", desc: "经典的秋日学院风校服，温暖又端庄。" },
+  red_bikini: { name: "红色比基尼", maxDur: { top: 30, bottom: 30, legs: 20 }, defense: 2, attack: 8, color: "#c0392b", brokenColor: "#ff6b6b", preview: "outfit_red_bikini.png", desc: "热情的红色泳装，害羞度极高。" },
+  white_tights: { name: "白色运动紧身衣", maxDur: { top: 90, bottom: 90, legs: 80 }, defense: 12, attack: 18, color: "#f0f0f0", brokenColor: "#e0e0e0", preview: "outfit_white_tights.png", desc: "贴身的运动装，活动自如。" },
+  krul: { name: "克鲁鲁风格套装", maxDur: { top: 150, bottom: 150, legs: 140 }, defense: 25, attack: 30, color: "#8e1a2e", brokenColor: "#d4a017", preview: "outfit_krul.png", desc: "吸血鬼女王风格的华丽礼服。" },
+  suigintou: { name: "水银灯风格套装", maxDur: { top: 140, bottom: 140, legs: 130 }, defense: 22, attack: 28, color: "#2d2d2d", brokenColor: "#8e44ad", preview: "outfit_suigintou.png", desc: "哥特风黑色礼服，优雅而神秘。" },
+  set1: { name: "战术套装·暗鸦", maxDur: { top: 130, bottom: 130, legs: 120 }, defense: 20, attack: 26, color: "#2d2d5c", brokenColor: "#c0392b", preview: "outfit_set1.png", desc: "暗色战术风格战斗服，适合隐秘行动。" },
+  set2: { name: "战术套装·赤刃", maxDur: { top: 130, bottom: 130, legs: 120 }, defense: 20, attack: 26, color: "#5c1a1a", brokenColor: "#c0392b", preview: "outfit_set2.png", desc: "黑红配色的战斗服，充满攻击性。" },
+  sailor: { name: "女高中生水手服", maxDur: { top: 110, bottom: 110, legs: 100 }, defense: 16, attack: 20, color: "#1a3a6b", brokenColor: "#f0f0f0", preview: "outfit_sailor.png", desc: "经典的水手服，青春洋溢。" }
 };
 
 const SKILLS = [
@@ -1091,6 +1106,14 @@ const CRAFT_KEYWORDS = {
   '弗洛洛': {type:'preset', style:'哥特洛丽塔', colors:['red','black','white'], q:3, acc:['lace','ribbon']},
   '女仆': {type:'preset', style:'maid', colors:['black','white'], q:2, acc:['ribbon','lace']},
   '泳装': {type:'preset', style:'swimsuit', colors:['blue','white'], q:2},
+  '秋天校服': {type:'preset', style:'学院风', colors:['blue','red','white'], q:2, acc:['ribbon']},
+  '红色比基尼': {type:'preset', style:'泳装', colors:['red'], q:1},
+  '白色紧身衣': {type:'preset', style:'运动', colors:['white'], q:1, acc:['silk_thread']},
+  '克鲁鲁': {type:'preset', style:'吸血鬼', colors:['red','black','gold'], q:4, acc:['lace','gem','golden_thread','boss_scale']},
+  '水银灯': {type:'preset', style:'哥特', colors:['black','white','purple'], q:4, acc:['lace','gem','golden_thread','boss_scale']},
+  '暗鸦': {type:'preset', style:'战术', colors:['black','blue'], q:3, acc:['silk_thread','boss_scale']},
+  '赤刃': {type:'preset', style:'战术', colors:['red','black'], q:3, acc:['silk_thread','boss_scale']},
+  '水手服': {type:'preset', style:'水手', colors:['blue','white'], q:2, acc:['ribbon']},
 };
 
 const DYE_INFO = {
@@ -1170,6 +1193,51 @@ const NPCS = {
       playerSkillLines: ["好、好厉害...那是...什么力量...（脸红）", "加油！我也在支持你！"],
       victoryLines: ["太、太厉害了！我们赢了！", "我就知道你能做到！"],
       repairLines: ["真是的...又弄得破破烂烂的...（脸微红）", "下次穿结实一点...虽然我知道说了也没用...", "来，我帮你缝好..."],
+    },
+    fisherman: {
+      id: 'fisherman', name: '老渔夫', gender: 'male', emoji: '🎣',
+      sexuality: 'hetero', shameReaction: 'none',
+      favor: 5, maxFavor: 200, stage: 0,
+      stageNames: ['陌生', '认识', '友好', '熟络', '老友', '忘年交', '家人'],
+      liked: ['fish'], disliked: ['flower'], favoriteItem: 'rare_fish',
+      currentOutfit: '渔夫装',
+      schedule: [
+        { start: 5, end: 8, loc: '🌊 码头', act: '整理渔网' },
+        { start: 8, end: 12, loc: '🌊 码头', act: '卖鱼/教钓鱼' },
+        { start: 12, end: 14, loc: '🏪 市场', act: '卖鱼' },
+        { start: 14, end: 18, loc: '🌊 码头', act: '修补渔具' },
+        { start: 18, end: 22, loc: '🍺 酒馆', act: '喝酒讲故事' },
+        { start: 22, end: 5, loc: '🏠 家中', act: '睡觉 💤' },
+      ],
+      dialogues: {
+        stranger: ["哼，新来的？想学钓鱼得先拜师。", "这海里的鱼，可比城里的姑娘难懂多了。"],
+        acquaintance: ["哟，是你啊。上次教你的抛竿练了吗？", "最近码头那边有大家伙出没，小心点。"],
+        friendly: ["你这小子/丫头有点天赋，比我当年强。", "来，这个鱼饵配方传给你，独家秘方。"],
+        intimate: ["哈哈！你现在的技术，可以跟我出海了！", "这条鱼送给你，是我今早钓到的最大的。"],
+        lover: ["...你、你说什么？（老脸一红）我、我都这把年纪了...", "海上的日出，总想找个人一起看..."],
+        engaged: ["等这趟鱼季结束，咱们一起去远海吧。", "这枚鱼钩给你，是我年轻时的幸运符。"],
+        married: ["老伴...啊不，亲爱的，今天出海小心。", "回来啦？饭在锅里，鱼在桶里。"],
+      },
+      giftReactions: {
+        fish: { text: "好货色！这鱼新鲜得很，今晚加餐！", favor: 20 },
+        flower: { text: "嗯...谢谢。（挠头）我一个大老粗要这干啥...", favor: 3 },
+      },
+      combatData: {
+        baseDps: 15,
+        critChance: 0.1,
+        critMultiplier: 2.5,
+        healAmount: 0,
+        healChance: 0,
+        baseRepairPercent: 0.05,
+        repairPriority: 'none',
+        canCombatRepair: false,
+        type: 'dps',
+        battleStartLines: ["让老头子我来会会这畜生！", "哼，比我钓过的最大的鱼还小！"],
+        playerShyLines: ["...（默默转过头）", "丫头，注意点形象..."],
+        playerSkillLines: ["好身手！", "跟我年轻时一样猛！"],
+        victoryLines: ["哈哈！今晚吃全鱼宴！", "这点小风浪，不足为惧！"],
+        repairLines: ["衣服破了？下次穿结实点。", "我这有针线，帮你缝两针。"],
+      }
     }
   }
 };
@@ -1444,24 +1512,36 @@ function drawCharacterPreview(c,w,h,t){
     R(30,27,4,2,o);R(31,28,2,1,[220,100,120]);
 
     // ========== 前发（蓬松层次）==========
-    const hs=charData.hairStyle%5;
-    if(hs===0||hs===2||hs===3){
+    const hs=charData.hairStyle;
+    const drawStyle = (hs===1)?1:(hs===2)?2:(hs===3||hs===6)?3:(hs===4)?4:(hs===5)?5:0;
+    if(drawStyle===0||drawStyle===2||drawStyle===3){
       R(16,8,32,10,o);R(17,9,30,8,hair);R(18,10,28,6,hl);
       R(14,12,4,30,o);R(15,13,3,28,hair);R(15,16,2,24,hd);
       R(48,12,4,30,o);R(49,13,3,28,hair);R(50,16,2,24,hd);
       R(12,22,4,32,o);R(13,23,3,30,hair);R(13,26,2,26,hd);
       R(52,22,4,32,o);R(53,23,3,30,hair);R(54,26,2,26,hd);
-    }else if(hs===1){
+    }else if(drawStyle===1){
       R(16,8,32,10,o);R(17,9,30,8,hair);
       R(16,14,4,18,o);R(17,15,3,16,hair);R(17,18,2,12,hd);
       R(44,14,4,18,o);R(45,15,3,16,hair);R(46,18,2,12,hd);
+    }else if(drawStyle===4){
+      // 丸子头：头顶大圆
+      R(22,0,16,14,o);R(23,1,14,12,hair);R(24,2,12,10,hl);
+      R(20,10,20,8,o);R(21,11,18,6,hair);R(22,12,16,4,hl);
+    }else if(drawStyle===5){
+      // 姬发：公主切，前发较短
+      R(16,8,32,10,o);R(17,9,30,8,hair);R(18,10,28,6,hl);
+      R(14,14,4,20,o);R(15,15,3,18,hair);R(15,18,2,14,hd);
+      R(48,14,4,20,o);R(49,15,3,18,hair);R(50,18,2,14,hd);
     }else{
       R(16,8,32,10,o);R(17,9,30,8,hair);
       R(14,12,4,24,o);R(15,13,3,22,hair);R(15,16,2,18,hd);
       R(46,12,4,24,o);R(47,13,3,22,hair);R(48,16,2,18,hd);
     }
     // 头顶
-    R(18,4,28,10,o);R(19,5,26,8,hair);R(20,6,24,6,hl);R(22,7,20,4,hair);R(24,8,16,2,hl);
+    if(drawStyle!==4){
+      R(18,4,28,10,o);R(19,5,26,8,hair);R(20,6,24,6,hl);R(22,7,20,4,hair);R(24,8,16,2,hl);
+    }
     // 刘海
     R(18,10,28,8,o);R(19,11,26,6,hair);R(20,12,5,4,hl);R(28,12,8,4,hl);R(38,12,6,4,hl);
     R(21,13,3,3,hmd);R(35,13,3,3,hmd);
@@ -1469,12 +1549,14 @@ function drawCharacterPreview(c,w,h,t){
     R(18,14,4,14,o);R(19,15,3,12,hair);R(19,18,2,10,hd);
     R(42,14,4,14,o);R(43,15,3,12,hair);R(44,18,2,10,hd);
     // 头顶高光
-    R(38,0,3,4,o);R(39,1,2,2,hl);
+    if(drawStyle!==4){
+      R(38,0,3,4,o);R(39,1,2,2,hl);
+    }
 
-    if(hs===2){
+    if(drawStyle===2){
       R(10,16,6,20,o);R(11,17,4,18,hair);R(11,20,2,16,hd);
       R(48,16,6,20,o);R(49,17,4,18,hair);R(50,20,2,16,hd);
-    }else if(hs===3){
+    }else if(drawStyle===3){
       R(44,12,8,28,o);R(45,13,6,26,hair);R(46,16,2,24,hd);
     }
 
@@ -1483,7 +1565,12 @@ function drawCharacterPreview(c,w,h,t){
 const HAIR_STYLE_IMAGES = {
   0: 'char_preview_f.png',    // 长发/黑长直
   1: 'hair_short.png',         // 短发
-  2: 'hair_twin_tail.png'      // 双马尾
+  2: 'hair_twin_tail.png',    // 双马尾
+  3: 'hair_curly_black.png',  // 卷发
+  4: 'hair_bun_black.png',    // 丸子头
+  5: 'hair_hime_black.png',   // 姬发
+  6: 'hair_pink_low_ponytail.png', // 粉红低马尾
+  7: 'hair_white_long.png'    // 白发长直
 };
 
 function drawPreview(){
@@ -1762,13 +1849,17 @@ function startGame() {
   updateCrewIndicator();
   drawCharacter();
   animateCharacter();
+  // 解锁所有预设服装图鉴
+  for (const id of Object.keys(CLOTHES)) {
+    discoverEncyclopedia('cloth', id);
+  }
 }
 
 // ========================
 // 关键词标签
 // ========================
 function renderKeywordTags() {
-  const tags = ['弗洛洛','哥特','红色','黑色','蕾丝','连衣裙','蝴蝶结','华丽','性感','黑丝','传说'];
+  const tags = ['弗洛洛','哥特','红色','黑色','蕾丝','连衣裙','蝴蝶结','华丽','性感','黑丝','传说','秋天校服','红色比基尼','白色紧身衣','克鲁鲁','水银灯','暗鸦','赤刃','水手服'];
   const box = document.getElementById('keywordTags');
   if (!box) return;
   box.innerHTML = tags.map(t => `<span class="keyword-tag" onclick="addKeyword('${t}')">${t}</span>`).join('');
@@ -1840,6 +1931,14 @@ function parseCraftInput(input) {
   else if (inpt.includes('弗洛洛')) preview = 'cloth_lolita.png';
   else if (inpt.includes('睡衣') || inpt.includes('睡裙')) preview = 'cloth_pajamas.png';
   else if (inpt.includes('连衣裙') || inpt.includes('裙子')) preview = 'cloth_dress.png';
+  else if (inpt.includes('秋天校服') || inpt.includes('校服')) preview = 'outfit_autumn_uniform.png';
+  else if (inpt.includes('红色比基尼') || inpt.includes('比基尼')) preview = 'outfit_red_bikini.png';
+  else if (inpt.includes('白色紧身衣') || inpt.includes('紧身衣')) preview = 'outfit_white_tights.png';
+  else if (inpt.includes('克鲁鲁')) preview = 'outfit_krul.png';
+  else if (inpt.includes('水银灯')) preview = 'outfit_suigintou.png';
+  else if (inpt.includes('暗鸦')) preview = 'outfit_set1.png';
+  else if (inpt.includes('赤刃')) preview = 'outfit_set2.png';
+  else if (inpt.includes('水手服')) preview = 'outfit_sailor.png';
   return { fabricNeed, quality, colors, accessories, clothName, preview };
 }
 
@@ -1906,26 +2005,48 @@ function craftRecipe() {
     if (inpt.includes(cn)) { mainColor = hex; break; }
   }
 
-  // 生成预览图
-  const previewDataUrl = generateClothCanvas(clothType, mainColor, accentColor, currentRecipe.quality);
-
-  // 生成衣服数据
-  const baseDur = 60 + currentRecipe.quality * 15;
-  const clothData = {
-    name: currentRecipe.name,
-    maxDur: { top: baseDur, bottom: baseDur, legs: Math.max(30, baseDur - 10) },
-    defense: 8 + currentRecipe.quality * 6,
-    attack: 12 + currentRecipe.quality * 6,
-    color: mainColor,
-    brokenColor: accentColor,
-    preview: previewDataUrl,
-    desc: '亲手制作的' + currentRecipe.name,
-    quality: currentRecipe.quality,
-    type: clothType
+  // 检测是否为预设套装配方
+  const PRESET_OUTFITS = {
+    '秋天校服': 'autumn_uniform', '校服': 'autumn_uniform',
+    '红色比基尼': 'red_bikini', '比基尼': 'red_bikini',
+    '白色紧身衣': 'white_tights', '紧身衣': 'white_tights',
+    '克鲁鲁': 'krul',
+    '水银灯': 'suigintou',
+    '暗鸦': 'set1',
+    '赤刃': 'set2',
+    '水手服': 'sailor'
   };
+  let presetId = null;
+  for (const [kw, id] of Object.entries(PRESET_OUTFITS)) {
+    if (currentRecipe.input.includes(kw)) { presetId = id; break; }
+  }
+
+  let clothData, previewDataUrl;
+  if (presetId && CLOTHES[presetId]) {
+    const preset = CLOTHES[presetId];
+    clothData = { ...preset, desc: '亲手制作的' + preset.name, quality: currentRecipe.quality };
+    previewDataUrl = preset.preview;
+  } else {
+    // 生成预览图
+    previewDataUrl = generateClothCanvas(clothType, mainColor, accentColor, currentRecipe.quality);
+    // 生成衣服数据
+    const baseDur = 60 + currentRecipe.quality * 15;
+    clothData = {
+      name: currentRecipe.name,
+      maxDur: { top: baseDur, bottom: baseDur, legs: Math.max(30, baseDur - 10) },
+      defense: 8 + currentRecipe.quality * 6,
+      attack: 12 + currentRecipe.quality * 6,
+      color: mainColor,
+      brokenColor: accentColor,
+      preview: previewDataUrl,
+      desc: '亲手制作的' + currentRecipe.name,
+      quality: currentRecipe.quality,
+      type: clothType
+    };
+  }
 
   const itemId = 'crafted_' + Date.now();
-  inventory[itemId] = { count: 1, q: currentRecipe.quality, isCloth: true, name: currentRecipe.name, clothData: clothData };
+  inventory[itemId] = { count: 1, q: currentRecipe.quality, isCloth: true, name: clothData.name, clothData: clothData };
   CLOTHES[itemId] = clothData;
   discoverEncyclopedia('cloth', itemId);
   addLog(`🎉 制作成功！获得 [${qName(currentRecipe.quality)}] ${currentRecipe.name}！`, 'craft');
@@ -1981,8 +2102,36 @@ function showItemDetail(id) {
   const itemInfo = SHOP_POOL.find(s => s.id === id);
   const name = itemInfo ? itemInfo.name : (data.name || id);
   const q = data.q || 0;
+  let sellPrice = 0;
+  if (itemInfo) {
+    sellPrice = Math.ceil(itemInfo.price * (0.5 + q * 0.15));
+  } else if (data.isCloth) {
+    sellPrice = [50, 150, 500, 1500, 5000, 15000][q] || 50;
+  } else {
+    sellPrice = 10 + q * 10;
+  }
   const detail = document.getElementById('inventoryDetail');
-  detail.innerHTML = `<strong style="color:${qColor(q)};">${name}</strong> (${qName(q)}品质) ×${data.count}<br>${itemInfo ? '类别: ' + itemInfo.category : ''}${data.isCloth ? '<br>👗 这是一件衣服，可以在衣橱中装备' : ''}`;
+  detail.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <div>
+        <strong style="color:${qColor(q)};">${name}</strong> (${qName(q)}品质) ×${data.count}<br>
+        <span style="font-size:11px; color:#aaa;">${itemInfo ? '类别: ' + itemInfo.category : ''}${data.isCloth ? '👗 可在衣橱装备' : ''}</span>
+      </div>
+      <button class="btn-game btn-primary" style="padding:6px 14px; font-size:12px;" onclick="sellItem('${id}', ${sellPrice})">💰 出售 (${sellPrice}G/个)</button>
+    </div>
+  `;
+}
+function sellItem(id, pricePerUnit) {
+  const data = inventory[id];
+  if (!data || data.count <= 0) return;
+  const count = data.count;
+  const total = pricePerUnit * count;
+  player.gold += total;
+  updateGold();
+  delete inventory[id];
+  renderInventory();
+  document.getElementById('inventoryDetail').innerHTML = '';
+  addLog(`💰 出售了 ${data.name || id} ×${count}，获得 ${total} 金币`, 'loot');
 }
 
 // ========================
@@ -2080,13 +2229,14 @@ function showScreen(screen) {
   const show = (id) => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); };
   if (screen === 'cabin') { show('shipCabinPanel'); renderCabin(); }
   else if (typeof CABIN !== 'undefined') { CABIN.running = false; }
+  if (screen === 'city') { show('cityPanel'); renderCity(); }
+  else if (typeof CITY !== 'undefined') { CITY.running = false; }
   if (screen === 'wardrobe') show('wardrobePanel');
   if (screen === 'crafting') show('craftingPanel');
   if (screen === 'inventory') show('inventoryPanel');
   if (screen === 'seaselect') show('seaSelectPanel');
   if (screen === 'sailing') show('sailingPanel');
   if (screen === 'fishing' || screen === 'battling' || screen === 'ended') show('battlePanel');
-  if (screen === 'city') show('cityPanel');
   if (screen === 'npc') show('npcPanel');
   if (screen === 'gift') show('giftPanel');
   if (screen === 'shop') show('shopPanel');
@@ -2365,26 +2515,8 @@ function drawFurniturePixel(ctx, f) {
 }
 
 function getCabinPlayerSprite() {
-  if (!player.dur) return SPRITES['f_q'] || SPRITES['f'];
-  const cloth = CLOTHES[selectedCloth];
-  const maxTotal = cloth.maxDur.top + cloth.maxDur.bottom + cloth.maxDur.legs;
-  const curTotal = (player.dur.top || 0) + (player.dur.bottom || 0) + (player.dur.legs || 0);
-  const brokenRatio = 1 - (curTotal / maxTotal);
-  let key = 'f_q';
-  if (brokenRatio > 0.85) {
-    key = 'f_q_stage5';
-  } else if (brokenRatio > 0.70) {
-    key = 'f_q_stage4';
-  } else if (brokenRatio > 0.50) {
-    key = 'f_q_stage3';
-  } else if (brokenRatio > 0.30) {
-    key = 'f_q_stage2';
-  } else if (brokenRatio > 0.15) {
-    key = 'f_q_stage1';
-  } else {
-    key = 'f_q_full';
-  }
-  return SPRITES[key] || SPRITES['f_q'] || SPRITES['f'];
+  // 暂时只有一张Q版立绘，所有状态都用它
+  return SPRITES['f_q'];
 }
 
 function drawCabinPlayer(ctx) {
@@ -2588,6 +2720,382 @@ function renderCabin() {
   updateCabinCharPanel();
   requestAnimationFrame(renderCabinFrame);
 }
+
+// ===== 城市像素地图系统 =====
+var CITY = {
+  canvas: null, ctx: null,
+  width: 1408, height: 768, tileSize: 20,
+  running: false, animTime: 0,
+  player: { x: 520, y: 320, w: 16, h: 16, speed: 3.5, facing: 'down' },
+  targetX: undefined, targetY: undefined,
+  keys: {},
+  buildings: [
+    { id: 'flower', x: 320, y: 420, w: 200, h: 160, label: '花店', color: '#d4739c', roof: '#e8a0bf', emoji: '💐', interactRadius: 80 },
+    { id: 'market', x: 420, y: 80, w: 220, h: 180, label: '市场', color: '#c49a6c', roof: '#d4b080', emoji: '🏪', interactRadius: 90 },
+    { id: 'shop', x: 720, y: 140, w: 180, h: 140, label: '每日商店', color: '#8fa8d3', roof: '#b0c4de', emoji: '🏪', interactRadius: 80 },
+    { id: 'tavern', x: 80, y: 120, w: 180, h: 150, label: '酒馆', color: '#a67c52', roof: '#c49a6c', emoji: '🍺', interactRadius: 90 },
+    { id: 'dock', x: 920, y: 420, w: 400, h: 280, label: '码头', color: '#6b8cae', roof: '#8fa8c9', emoji: '⚓', interactRadius: 80 },
+    { id: 'ship', x: 820, y: 600, w: 160, h: 100, label: '返回船上', color: '#5a7a9a', roof: '#7a9ab8', emoji: '🚢', interactRadius: 70 },
+  ],
+  walls: [
+    { x: 0, y: 0, w: 1408, h: 20 },
+    { x: 0, y: 0, w: 20, h: 768 },
+    { x: 1388, y: 0, w: 20, h: 768 },
+    { x: 0, y: 748, w: 1408, h: 20 },
+  ],
+  npcs: [
+    { id: 'lily', x: 420, y: 560, w: 14, h: 14, emoji: '💐', name: '莉莉', interactRadius: 50 },
+    { id: 'fisherman', x: 1080, y: 560, w: 14, h: 14, emoji: '🎣', name: '老渔夫', interactRadius: 50 }
+  ]
+};
+
+function initCityMap() {
+  CITY.canvas = document.getElementById('cityMap');
+  CITY.ctx = CITY.canvas.getContext('2d');
+  window.addEventListener('keydown', cityKeyDown);
+  window.addEventListener('keyup', cityKeyUp);
+  CITY.canvas.addEventListener('click', cityCanvasClick);
+}
+
+function cityKeyDown(e) {
+  CITY.keys[e.key] = true;
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    tryInteractCity();
+  }
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
+    e.preventDefault();
+  }
+}
+
+function cityKeyUp(e) {
+  CITY.keys[e.key] = false;
+}
+
+function cityCanvasClick(e) {
+  const rect = CITY.canvas.getBoundingClientRect();
+  const scaleX = CITY.canvas.width / rect.width;
+  const scaleY = CITY.canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  for (const b of CITY.buildings) {
+    if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+      if (isNearBuilding(b)) {
+        interactWithBuilding(b.id);
+      } else {
+        CITY.targetX = b.x + b.w / 2;
+        CITY.targetY = b.y + b.h + 18;
+      }
+      return;
+    }
+  }
+
+  for (const n of CITY.npcs) {
+    if (mx >= n.x - 8 && mx <= n.x + n.w + 8 && my >= n.y - 8 && my <= n.y + n.h + 8) {
+      if (isNearNPC(n)) {
+        visitNPC(n.id);
+      } else {
+        CITY.targetX = n.x + n.w / 2;
+        CITY.targetY = n.y + n.h + 12;
+      }
+      return;
+    }
+  }
+
+  CITY.targetX = Math.max(24, Math.min(616, mx));
+  CITY.targetY = Math.max(24, Math.min(356, my));
+}
+
+function drawCityGround(ctx, w, h) {
+  const bg = SPRITES['bg_town'];
+  if (bg && bg.complete) {
+    ctx.drawImage(bg, 0, 0, w, h);
+  } else {
+    ctx.fillStyle = '#3a5a3a';
+    ctx.fillRect(0, 0, w, h);
+  }
+}
+
+function drawCityWalls(ctx) {
+  ctx.fillStyle = '#4a3728';
+  for (const wall of CITY.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+  }
+  ctx.fillStyle = '#6b5a4a';
+  for (const wall of CITY.walls) {
+    ctx.fillRect(wall.x, wall.y, wall.w, 2);
+    ctx.fillRect(wall.x, wall.y, 2, wall.h);
+  }
+}
+
+function drawBuildingPixel(ctx, b) {
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(b.x + 3, b.y + 3, b.w, b.h);
+  ctx.fillStyle = b.roof;
+  ctx.fillRect(b.x, b.y - 8, b.w, 12);
+  ctx.fillStyle = b.color;
+  ctx.fillRect(b.x, b.y, b.w, b.h);
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillRect(b.x, b.y, b.w, 2);
+  ctx.fillRect(b.x, b.y, 2, b.h);
+
+  if (b.id === 'flower') {
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(b.x + 10, b.y + 20, 30, 40);
+    ctx.fillRect(b.x + 50, b.y + 20, 30, 40);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(b.x + 14, b.y + 26, 10, 10);
+    ctx.fillRect(b.x + 54, b.y + 26, 10, 10);
+  } else if (b.id === 'market') {
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(b.x + 10, b.y + 25, 20, 40);
+    ctx.fillRect(b.x + 45, b.y + 25, 20, 40);
+    ctx.fillRect(b.x + 80, b.y + 25, 20, 40);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(b.x + 12, b.y + 30, 8, 12);
+    ctx.fillRect(b.x + 47, b.y + 30, 8, 12);
+    ctx.fillRect(b.x + 82, b.y + 30, 8, 12);
+  } else if (b.id === 'shop') {
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(b.x + 15, b.y + 20, 25, 40);
+    ctx.fillRect(b.x + 55, b.y + 20, 25, 40);
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(b.x + 42, b.y + 8, 16, 10);
+  } else if (b.id === 'tavern') {
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(b.x + 15, b.y + 22, 30, 43);
+    ctx.fillRect(b.x + 55, b.y + 22, 30, 43);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(b.x + 20, b.y + 28, 8, 12);
+    ctx.fillRect(b.x + 60, b.y + 28, 8, 12);
+  } else if (b.id === 'dock') {
+    ctx.fillStyle = '#5a4a3a';
+    ctx.fillRect(b.x + 10, b.y + 30, b.w - 20, 6);
+    ctx.fillRect(b.x + 15, b.y + 45, b.w - 30, 6);
+    ctx.fillStyle = '#4a7a9a';
+    ctx.fillRect(b.x + 5, b.y + 55, b.w - 10, 20);
+  } else if (b.id === 'ship') {
+    ctx.fillStyle = '#8fa8c9';
+    ctx.fillRect(b.x + 10, b.y + 10, 60, 20);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(b.x + 15, b.y + 8, 8, 8);
+  }
+
+  ctx.font = '14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(b.emoji, b.x + b.w / 2, b.y - 2);
+
+  if (isNearBuilding(b)) {
+    ctx.strokeStyle = 'rgba(255,255,100,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(b.x - 2, b.y - 2, b.w + 4, b.h + 4);
+  }
+}
+
+function drawCityNPC(ctx, n) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(n.x - 6, n.y + n.h - 2, n.w + 12, 4);
+  ctx.font = '18px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(n.emoji, n.x + n.w / 2, n.y + n.h);
+  if (isNearNPC(n)) {
+    ctx.strokeStyle = 'rgba(100,255,100,0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(n.x - 4, n.y - 4, n.w + 8, n.h + 8);
+  }
+}
+
+function drawCityPlayer(ctx) {
+  const p = CITY.player;
+  const sprite = getCabinPlayerSprite();
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(p.x - 8, p.y + 8, 16, 4);
+  if (sprite && sprite.complete) {
+    const scale = 0.4;
+    const sw = 64 * scale;
+    const sh = 96 * scale;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sprite, p.x - sw / 2, p.y - sh + 8, sw, sh);
+  } else {
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 5, p.y - 12, 10, 10);
+    ctx.fillStyle = (CLOTHES[selectedCloth] && CLOTHES[selectedCloth].color) || '#fff';
+    ctx.fillRect(p.x - 6, p.y - 2, 12, 8);
+    ctx.fillStyle = '#f5d0c5';
+    ctx.fillRect(p.x - 2, p.y + 6, 4, 4);
+  }
+}
+
+function checkCityCollision(x, y) {
+  const pw = CITY.player.w;
+  const ph = CITY.player.h;
+  const px = x - pw / 2;
+  const py = y - ph / 2;
+  for (const wall of CITY.walls) {
+    if (rectsOverlap(px, py, pw, ph, wall.x, wall.y, wall.w, wall.h)) return true;
+  }
+  for (const b of CITY.buildings) {
+    if (b.id === 'dock') continue;
+    if (rectsOverlap(px, py, pw, ph, b.x, b.y, b.w, b.h)) return true;
+  }
+  return false;
+}
+
+function updateCityPlayer() {
+  const p = CITY.player;
+  let dx = 0, dy = 0;
+  if (CITY.keys['w'] || CITY.keys['ArrowUp']) dy -= p.speed;
+  if (CITY.keys['s'] || CITY.keys['ArrowDown']) dy += p.speed;
+  if (CITY.keys['a'] || CITY.keys['ArrowLeft']) dx -= p.speed;
+  if (CITY.keys['d'] || CITY.keys['ArrowRight']) dx += p.speed;
+  if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
+
+  if (CITY.targetX !== undefined) {
+    const tx = CITY.targetX - p.x;
+    const ty = CITY.targetY - p.y;
+    const dist = Math.sqrt(tx * tx + ty * ty);
+    if (dist > 4) { dx = (tx / dist) * p.speed; dy = (ty / dist) * p.speed; }
+    else { CITY.targetX = undefined; CITY.targetY = undefined; }
+  }
+
+  const newX = p.x + dx;
+  if (!checkCityCollision(newX, p.y)) p.x = newX;
+  const newY = p.y + dy;
+  if (!checkCityCollision(p.x, newY)) p.y = newY;
+
+  if (dy < 0) p.facing = 'up';
+  if (dy > 0) p.facing = 'down';
+  if (dx < 0) p.facing = 'left';
+  if (dx > 0) p.facing = 'right';
+
+  p.x = Math.max(24, Math.min(616, p.x));
+  p.y = Math.max(24, Math.min(356, p.y));
+}
+
+function isNearBuilding(b) {
+  const bx = b.x + b.w / 2;
+  const by = b.y + b.h / 2;
+  const dist = Math.sqrt((CITY.player.x - bx) ** 2 + (CITY.player.y - by) ** 2);
+  return dist < b.interactRadius;
+}
+
+function getNearBuilding() {
+  for (const b of CITY.buildings) {
+    if (isNearBuilding(b)) return b;
+  }
+  return null;
+}
+
+function isNearNPC(n) {
+  const nx = n.x + n.w / 2;
+  const ny = n.y + n.h / 2;
+  const dist = Math.sqrt((CITY.player.x - nx) ** 2 + (CITY.player.y - ny) ** 2);
+  return dist < n.interactRadius;
+}
+
+function getNearCityNPC() {
+  for (const n of CITY.npcs) {
+    if (isNearNPC(n)) return n;
+  }
+  return null;
+}
+
+function drawCityInteractionHint(ctx) {
+  const b = getNearBuilding();
+  const n = getNearCityNPC();
+  const hintEl = document.getElementById('cityInteractHint');
+  if (b) {
+    let action = '';
+    switch (b.id) {
+      case 'flower': action = '💐 花店 [SPACE]'; break;
+      case 'market': action = '🏪 市场 [SPACE]'; break;
+      case 'shop': action = '🏪 每日商店 [SPACE]'; break;
+      case 'tavern': action = '🍺 酒馆 [SPACE]'; break;
+      case 'dock': action = '⚓ 码头 [SPACE]'; break;
+      case 'ship': action = '🚢 返回船上 [SPACE]'; break;
+    }
+    hintEl.textContent = action;
+    const bx = b.x + b.w / 2;
+    const by = b.y - 14;
+    const bounce = Math.sin(CITY.animTime * 4) * 3;
+    ctx.fillStyle = 'rgba(255,255,100,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(bx, by + bounce);
+    ctx.lineTo(bx - 5, by - 7 + bounce);
+    ctx.lineTo(bx + 5, by - 7 + bounce);
+    ctx.closePath();
+    ctx.fill();
+  } else if (n) {
+    hintEl.textContent = '💬 ' + n.name + ' [SPACE]';
+    const nx = n.x + n.w / 2;
+    const ny = n.y - 14;
+    const bounce = Math.sin(CITY.animTime * 4) * 3;
+    ctx.fillStyle = 'rgba(100,255,100,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(nx, ny + bounce);
+    ctx.lineTo(nx - 5, ny - 7 + bounce);
+    ctx.lineTo(nx + 5, ny - 7 + bounce);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    hintEl.textContent = '';
+  }
+}
+
+function tryInteractCity() {
+  const b = getNearBuilding();
+  const n = getNearCityNPC();
+  if (b) interactWithBuilding(b.id);
+  else if (n) visitNPC(n.id);
+}
+
+function interactWithBuilding(id) {
+  if (id === 'flower') { visitNPC('lily'); }
+  else if (id === 'market') { visitMarket(); }
+  else if (id === 'shop') { visitDailyShop(); }
+  else if (id === 'tavern') { addLog('🍺 酒馆还在装修中，暂时无法进入...', 'system'); }
+  else if (id === 'dock') { addLog('⚓ 码头上吹着海风， fishes are jumping...', 'system'); }
+  else if (id === 'ship') { returnToShip(); }
+}
+
+function renderCityFrame(ts) {
+  if (!CITY.running) return;
+  CITY.animTime = ts / 1000;
+  const ctx = CITY.ctx;
+  const w = CITY.width;
+  const h = CITY.height;
+  ctx.clearRect(0, 0, w, h);
+  drawCityGround(ctx, w, h);
+  drawCityWalls(ctx);
+
+  const items = [
+    ...CITY.buildings.map(b => ({ type: 'building', y: b.y + b.h / 2, data: b })),
+    ...CITY.npcs.map(n => ({ type: 'npc', y: n.y + n.h / 2, data: n })),
+    { type: 'player', y: CITY.player.y, draw: () => drawCityPlayer(ctx) }
+  ];
+  items.sort((a, b) => a.y - b.y);
+  for (const item of items) {
+    if (item.type === 'building') drawBuildingPixel(ctx, item.data);
+    else if (item.type === 'npc') drawCityNPC(ctx, item.data);
+    else item.draw();
+  }
+
+  drawCityInteractionHint(ctx);
+  updateCityPlayer();
+  requestAnimationFrame(renderCityFrame);
+}
+
+function renderCity() {
+  if (!CITY.canvas) initCityMap();
+  CITY.running = true;
+  CITY.player.x = 320;
+  CITY.player.y = 190;
+  CITY.targetX = undefined;
+  CITY.targetY = undefined;
+  requestAnimationFrame(renderCityFrame);
+}
+
 function clickCabinSlot(id) {
   if (id === 'wardrobe') openWardrobe();
   if (id === 'crafting') openCrafting();
@@ -2778,10 +3286,10 @@ function setFishingSceneMode(isFishing) {
   if (isFishing) {
     if (charCanvas) charCanvas.classList.add('fishing-scene');
     if (charPanel) charPanel.classList.add('fishing-scene');
-    // 切换钓鱼画面背景（白天/夜晚）
+    // 切换钓鱼画面背景
     if (portraitBg) {
-      const isDay = (new Date().getHours() >= 6 && new Date().getHours() < 18);
-      portraitBg.src = isDay ? 'bg_day.png' : 'bg_night.png';
+      portraitBg.src = 'bg_fishing.png';
+      portraitBg.style.opacity = '0.85';
     }
   } else {
     if (charCanvas) charCanvas.classList.remove('fishing-scene');
@@ -2833,8 +3341,8 @@ function setFishingUI(state, extra) {
   const btnReturnDeck = document.getElementById('btnReturnDeck');
   const prog = document.getElementById('fishingProgress');
   if (btnReturnDeck) {
-    // 返回甲板按钮在所有非战斗状态都可见
-    if (state === 'idle' || state === 'casting' || state === 'waiting' || state === 'biting' || state === 'reeling' || state === 'caught' || state === 'escaped') {
+    // 钓鱼时不显示返回按钮，避免误操作；只有不在钓鱼流程中时才显示
+    if (state === 'ended') {
       btnReturnDeck.classList.remove('hidden');
     } else {
       btnReturnDeck.classList.add('hidden');
@@ -3709,7 +4217,7 @@ function renderNPCPanel(npc) {
   // 互动按钮
   html += '<div style="display:flex; gap:8px; flex-wrap:wrap;">';
   html += `<button class="btn-game btn-secondary" onclick="talkAgain('${npc.id}')">💬 聊天</button>`;
-  if (npc.stage >= 1) html += `<button class="btn-game btn-primary" onclick="openGiftPanel('${npc.id}')">🎁 送礼</button>`;
+  html += `<button class="btn-game btn-primary" onclick="openGiftPanel('${npc.id}')">🎁 送礼</button>`;
   if (canRomance && npc.stage >= 2 && npc.stage < 6) html += `<button class="btn-game btn-selected" onclick="inviteNPC('${npc.id}')">❤️ 邀约出海</button>`;
   // 告白/求婚/结婚后按钮
   if (canRomance && npc.stage === 4) html += `<button class="btn-game btn-romance" onclick="proposeNPC('${npc.id}')">💍 求婚</button>`;
@@ -3737,7 +4245,7 @@ function renderNPCPanel(npc) {
 
 function isRomanceable(npc) {
   switch (npc.sexuality) {
-    case 'hetero': return false;
+    case 'hetero': return npc.gender === 'male';
     case 'homo': return npc.gender === 'female';
     case 'bi': case 'pan': case 'player_only': return true;
   }
@@ -3749,13 +4257,12 @@ function talkAgain(npcId) {
   const dialogueKey = Object.keys(npc.dialogues)[Math.min(npc.stage, Object.keys(npc.dialogues).length-1)];
   const dialogues = npc.dialogues[dialogueKey];
   const dialogueText = dialogues ? dialogues[randInt(0, dialogues.length-1)] : '...';
-  if (npc.stage >= 1) {
-    npc.favor = Math.min(npc.favor + 2, npc.maxFavor);
-    checkStageUp(npc);
-  }
+  const gain = npc.stage >= 1 ? 2 : 1;
+  npc.favor = Math.min(npc.favor + gain, npc.maxFavor);
+  checkStageUp(npc);
   renderNPCPanel(npc);
   addLog(`${npc.name}: "${dialogueText}"`, 'npc');
-  if (npc.stage >= 1) addLog(`💕 与${npc.name}聊天，好感度 +2`, 'favor');
+  addLog(`💕 与${npc.name}聊天，好感度 +${gain}！（当前: ${npc.favor}/${npc.maxFavor}）`, 'favor');
 }
 
 function checkStageUp(npc) {
